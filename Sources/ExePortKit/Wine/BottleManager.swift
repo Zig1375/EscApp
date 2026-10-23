@@ -46,8 +46,11 @@ public struct BottleManager: Sendable {
         let staging = paths.templates.appending(path: ".staging-\(runtime.id)", directoryHint: .isDirectory)
         try? fileManager.removeItem(at: staging)
 
+        let wine = Wine(runtimeFolder: runtimeFolder)
+        // Without its own Wine Mono, wineboot opens Wine's "install Wine Mono?" dialog and would fetch an
+        // unpinned download. A runtime must carry it; say so instead of showing that dialog.
+        guard Self.hasMono(wine) else { throw BottleError.monoMissing(runtime.id) }
         do {
-            let wine = Wine(runtimeFolder: runtimeFolder)
             let environment = WineEnvironment.make(host: host, bottle: staging.path)
             try await ProcessRunner.check(wine.wine.path, ["wineboot", "--init"], environment: environment)
             // wineboot returns before wineserver has written the registry to disk.
@@ -116,6 +119,12 @@ public struct BottleManager: Sendable {
         return text.flatMap(WindowsVersion.read(fromUserReg:)) ?? .default
     }
 
+    static func hasMono(_ wine: Wine) -> Bool {
+        let mono = wine.root.appending(path: "share/wine/mono", directoryHint: .isDirectory)
+        let entries = (try? FileManager.default.contentsOfDirectory(atPath: mono.path)) ?? []
+        return entries.contains { $0.hasPrefix("wine-mono-") }
+    }
+
     /// The Windows user folder wineboot made (named after the Mac user).
     static func userFolder(in bottle: URL) throws -> URL {
         let users = bottle.appending(path: "drive_c/users", directoryHint: .isDirectory)
@@ -156,12 +165,14 @@ public enum BottleError: Error, Equatable, CustomStringConvertible {
     case runtimeMissing(String)
     case unexpectedUsers([String])
     case cloneFailed(String)
+    case monoMissing(String)
 
     public var description: String {
         switch self {
         case let .runtimeMissing(id): "The Windows components (\(id)) aren't installed."
         case let .unexpectedUsers(names): "Windows was set up with unexpected user folders: \(names)."
         case let .cloneFailed(reason): "Couldn't prepare a copy of Windows for this game: \(reason)."
+        case let .monoMissing(id): "The Windows components (\(id)) are incomplete: Wine Mono is missing."
         }
     }
 }

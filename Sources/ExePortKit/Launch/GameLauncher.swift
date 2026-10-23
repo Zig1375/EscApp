@@ -44,8 +44,18 @@ public struct GameLauncher: Sendable {
 
     /// Everything up to starting the process. Throws `LaunchError` for games that can't run, before any
     /// bottle is made for them.
+    /// What `prepare` is doing, for the "getting the game ready" sheet.
+    public enum Step: Sendable, Equatable {
+        /// Making the game's Windows; `firstTime` when the runtime's template must be built first (~30 s, once).
+        case windows(WindowsVersion, firstTime: Bool)
+        case graphics(GraphicsBackend, directX: ExecutableTraits.DirectX?)
+        /// Everything is ready; Wine is being started.
+        case starting
+    }
+
     public func prepare(_ game: GameRecord, runtime: RuntimeManifest.Runtime,
-                        backend override: GraphicsBackend? = nil, verboseLog: Bool = false) async throws -> Prepared {
+                        backend override: GraphicsBackend? = nil, verboseLog: Bool = false,
+                        progress: @Sendable (Step) -> Void = { _ in }) async throws -> Prepared {
         let exe = URL(filePath: game.executable)
         guard FileManager.default.fileExists(atPath: exe.path) else { throw LaunchError.missingExecutable(exe.path) }
         let info = try ExecutableInfo.read(exe)
@@ -60,14 +70,20 @@ public struct GameLauncher: Sendable {
         guard let runtimeFolder = RuntimeInstaller(paths: paths).installed(runtime) else {
             throw BottleError.runtimeMissing(runtime.id)
         }
-        let bottle = try await BottleManager(paths: paths, host: host)
-            .ensureBottle(for: game.id, runtime: runtime, windows: game.windowsVersion)
+        let bottles = BottleManager(paths: paths, host: host)
+        progress(.windows(game.windowsVersion, firstTime: !bottles.hasTemplate(for: runtime)))
+        let bottle = try await bottles.ensureBottle(for: game.id, runtime: runtime, windows: game.windowsVersion)
+        progress(.graphics(backend, directX: info.directX.max()))
+        // Wine's own "the program has crashed" dialog (winedbg) would pop up over the Mac; ExePort reports
+        // crashes itself, from the log.
+        try BottleManager.disableCrashDialog(bottle: bottle)
         // Retina only for games that say they handle high DPI; others would draw a tiny interface.
         try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\Mac Driver"#, name: "RetinaMode",
                                             value: info.dpiAware ? "y" : "n")
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
         try BackendTree.prepareBottle(bottle, for: backend, wine: wine)
         let environment = WineEnvironment.make(host: host, bottle: bottle.path, verboseLog: verboseLog)
+        progress(.starting)
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
                         environment: environment, log: newLogFile(for: game.id))
     }
@@ -114,7 +130,8 @@ public struct GameLauncher: Sendable {
                 continuation.resume(throwing: error)
                 return
             }
-            started(GameSession(wine: prepared.wine, environment: prepared.environment))
+            started(GameSession(wine: prepared.wine, environment: prepared.environment,
+                                processID: process.processIdentifier))
         }
         let processDuration = Date().timeIntervalSince(startedAt)
         // The game may live on after `wine` returns (launchers); it's over when the bottle's server is.
@@ -157,6 +174,12 @@ extension GameLauncher.Outcome {
 public struct GameSession: Sendable {
     let wine: Wine
     let environment: [String: String]
+    /// The `wine` process started for the game. The game's own windows may belong to it or to processes it
+    /// starts, all running Wine's binaries.
+    public let processID: Int32
+
+    /// Wine's folder: any process running from inside it belongs to this game's session.
+    public var wineRoot: URL { wine.root }
 
     /// Ends everything in the game's bottle, like closing a hung game from Task Manager.
     public func stop() async {
@@ -185,6 +208,15 @@ public enum LaunchError: Error, Equatable, CustomStringConvertible {
 }
 
 extension BottleManager {
+    static func disableCrashDialog(bottle: URL) throws {
+        let userReg = bottle.appending(path: "user.reg")
+        let text = try String(contentsOf: userReg, encoding: .utf8)
+        let key = #"Software\Wine\WineDbg"#
+        guard !WineRegistry.contains(text, key: key, entry: #""ShowCrashDialog"=dword:00000000"#) else { return }
+        try WineRegistry.setDWord(in: text, key: key, name: "ShowCrashDialog", value: 0)
+            .write(to: userReg, atomically: true, encoding: .utf8)
+    }
+
     /// Sets a string in the bottle's `user.reg`, writing only if it changes. Only while the bottle is idle.
     static func setRegistryString(bottle: URL, key: String, name: String, value: String) throws {
         let userReg = bottle.appending(path: "user.reg")

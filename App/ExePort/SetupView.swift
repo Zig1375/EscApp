@@ -9,6 +9,7 @@ struct SetupView: View {
             WarmBackground()
             content
         }
+        .focusEffectDisabled()
     }
 
     private var content: some View {

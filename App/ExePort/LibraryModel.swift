@@ -10,7 +10,29 @@ import UniformTypeIdentifiers
 final class LibraryModel {
     enum PlayState: Equatable {
         case starting
-        case running
+        /// The game's window is up.
+        case running(since: Date)
+    }
+
+    /// The "getting the game ready" sheet (Launching.dc.html, first panel).
+    struct Launch: Identifiable, Equatable {
+        enum StepState: Equatable { case waiting, active, done }
+
+        let id: GameID
+        let name: String
+        let firstTime: Bool
+        var windows: (version: WindowsVersion, firstTime: Bool)?
+        var windowsState: StepState = .active
+        var graphics: String?
+        var startState: StepState = .waiting
+        /// Set after a while without a game window, to say that this can take a minute.
+        var slow = false
+
+        static func == (lhs: Launch, rhs: Launch) -> Bool {
+            lhs.id == rhs.id && lhs.windows?.version == rhs.windows?.version
+                && lhs.windows?.firstTime == rhs.windows?.firstTime && lhs.windowsState == rhs.windowsState
+                && lhs.graphics == rhs.graphics && lhs.startState == rhs.startState && lhs.slow == rhs.slow
+        }
     }
 
     /// Something to tell the user, with the log when there is one.
@@ -27,11 +49,15 @@ final class LibraryModel {
     private(set) var infos: [GameID: ExecutableInfo] = [:]
     private(set) var states: [GameID: PlayState] = [:]
     var notice: Notice?
+    var launch: Launch?
+    /// Ticks once a minute so "12 min" in the menu bar and cards stays current.
+    private(set) var now = Date()
     /// Whether double-clicking an .exe in Finder opens ExePort.
     private(set) var isDefaultForExe = true
 
-    private let paths: AppPaths
+    let paths: AppPaths
     private var sessions: [GameID: GameSession] = [:]
+    private var launchTasks: [GameID: Task<Void, Never>] = [:]
     /// Files opened before the components were installed; played once setup finishes.
     private var pending: [URL] = []
     private var isReady = false
@@ -49,7 +75,9 @@ final class LibraryModel {
 
     /// Setup finished: play whatever the user opened while it ran.
     func becameReady() {
+        guard !isReady else { return }
         isReady = true
+        startClock()
         reload()
         let waiting = pending
         pending = []
@@ -82,11 +110,14 @@ final class LibraryModel {
     func play(_ game: GameRecord) {
         guard states[game.id] == nil else { return }
         states[game.id] = .starting
+        launch = Launch(id: game.id, name: game.name, firstTime: (game.launches ?? 0) == 0)
         let paths = paths
-        Task {
+        launchTasks[game.id] = Task {
             defer {
                 states[game.id] = nil
                 sessions[game.id] = nil
+                launchTasks[game.id] = nil
+                if launch?.id == game.id { launch = nil }
                 reload()
             }
             do {
@@ -96,10 +127,15 @@ final class LibraryModel {
                     return
                 }
                 let launcher = GameLauncher(paths: paths)
-                let prepared = try await launcher.prepare(game, runtime: runtime)
-                states[game.id] = .running
+                let prepared = try await launcher.prepare(game, runtime: runtime) { step in
+                    Task { @MainActor in self.apply(step, to: game.id) }
+                }
+                try Task.checkCancellation()
                 let outcome = try await launcher.run(prepared) { session in
-                    Task { @MainActor in self.sessions[game.id] = session }
+                    Task { @MainActor in
+                        self.sessions[game.id] = session
+                        self.watchForWindow(of: game.id, session: session)
+                    }
                 }
                 var library = try GameLibrary.load(from: paths.library)
                 library.recordPlay(of: game.id, outcome: outcome)
@@ -113,6 +149,8 @@ final class LibraryModel {
                             """),
                         log: outcome.log)
                 }
+            } catch is CancellationError {
+                // The player pressed Cancel.
             } catch {
                 notice = Notice(title: String(localized: "\(game.name) can't start"),
                                 message: String(describing: error))
@@ -120,9 +158,83 @@ final class LibraryModel {
         }
     }
 
+    /// "Cancel" in the launch sheet: stop whatever has started and forget the launch.
+    func cancelLaunch() {
+        guard let id = launch?.id else { return }
+        launch = nil
+        launchTasks[id]?.cancel()
+        if let session = sessions[id] { Task { await session.stop() } }
+    }
+
     func stop(_ game: GameRecord) {
         guard let session = sessions[game.id] else { return }
         Task { await session.stop() }
+    }
+
+    /// "Show Game": brings the running game's window to the front.
+    func showGame(_ game: GameRecord) {
+        guard let session = sessions[game.id] else { return }
+        let owners = GameWindows.owners(under: session.wineRoot)
+        GameWindows.bringForward(owners.first ?? session.processID)
+    }
+
+    /// Games whose window is up, with when they started, for the cards and the menu bar.
+    var runningGames: [(game: GameRecord, since: Date)] {
+        games.compactMap { game in
+            if case let .running(since)? = states[game.id] { (game, since) } else { nil }
+        }
+    }
+
+    private func apply(_ step: GameLauncher.Step, to id: GameID) {
+        guard var current = launch, current.id == id else { return }
+        switch step {
+        case let .windows(version, firstTime):
+            current.windows = (version, firstTime)
+            current.windowsState = .active
+        case let .graphics(backend, directX):
+            current.windowsState = .done
+            let api: String? = switch directX {
+            case .legacy?: "DirectDraw"
+            case .d3d9?: "DirectX 9"
+            case .d3d11?: "DirectX 11"
+            case .d3d12?: "DirectX 12"
+            case nil: nil
+            }
+            current.graphics = api.map { "\(backend.displayName) (\($0))" } ?? backend.displayName
+        case .starting:
+            current.startState = .active
+        }
+        launch = current
+    }
+
+    /// Waits for the game's first window, then brings it forward and marks the game as running. Says so when
+    /// it takes long: Wine's first start under Rosetta can need most of a minute.
+    private func watchForWindow(of id: GameID, session: GameSession) {
+        Task {
+            let started = Date()
+            while sessions[id] != nil, states[id] == .starting {
+                if let owner = GameWindows.owners(under: session.wineRoot).first {
+                    states[id] = .running(since: Date())
+                    if launch?.id == id { launch = nil }
+                    GameWindows.bringForward(owner)
+                    return
+                }
+                if Date().timeIntervalSince(started) > 15, launch?.id == id, launch?.slow == false {
+                    launch?.slow = true
+                }
+                try? await Task.sleep(for: .milliseconds(400))
+            }
+        }
+    }
+
+    /// Keeps `now` current for durations shown while games run.
+    func startClock() {
+        Task {
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(30))
+                now = Date()
+            }
+        }
     }
 
     func removeFromApp(_ game: GameRecord) {
@@ -138,11 +250,6 @@ final class LibraryModel {
 
     func game(_ id: GameID) -> GameRecord? { games.first { $0.id == id } }
 
-    /// Applied to the bottle at the next launch (the registry can't change while the game runs).
-    func setWindowsVersion(_ version: WindowsVersion, for game: GameRecord) {
-        update(game.id) { $0.windowsVersion = version }
-    }
-
     /// Lets the user pick which exe in the game's folder starts the game (a launcher instead of the game).
     func chooseExecutable(for game: GameRecord) {
         let panel = NSOpenPanel()
@@ -153,69 +260,6 @@ final class LibraryModel {
         update(game.id) { $0.executable = url.path(percentEncoded: false) }
         icons[game.id] = nil
         reload()
-    }
-
-    func runs(for game: GameRecord) -> [LaunchHistory.Run] {
-        LaunchHistory.runs(in: paths.logs(forGame: game.id))
-    }
-
-    /// Size of the game's folder on disk.
-    func folderSize(of game: GameRecord) async -> Int64 {
-        let folder = URL(filePath: game.folder, directoryHint: .isDirectory)
-        return await Task.detached(priority: .utility) { Self.allocatedSize(of: folder) }.value
-    }
-
-    nonisolated private static func allocatedSize(of folder: URL) -> Int64 {
-        let keys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .isRegularFileKey]
-        guard let files = FileManager.default.enumerator(at: folder, includingPropertiesForKeys: keys) else { return 0 }
-        var total: Int64 = 0
-        for case let file as URL in files {
-            let values = try? file.resourceValues(forKeys: Set(keys))
-            if values?.isRegularFile == true { total += Int64(values?.totalFileAllocatedSize ?? 0) }
-        }
-        return total
-    }
-
-    /// "From disk": the game's folder goes to the Trash (recoverable), then ExePort forgets the game.
-    func moveToTrash(_ game: GameRecord) {
-        let folder = URL(filePath: game.folder, directoryHint: .isDirectory)
-        NSWorkspace.shared.recycle([folder]) { _, error in
-            Task { @MainActor in
-                if let error {
-                    self.notice = Notice(title: String(localized: "Couldn't move \(game.name) to the Trash"),
-                                         message: error.localizedDescription)
-                } else {
-                    self.removeFromApp(game)
-                }
-            }
-        }
-    }
-
-    private func update(_ id: GameID, _ change: (inout GameRecord) -> Void) {
-        do {
-            var library = try GameLibrary.load(from: paths.library)
-            guard var game = library[id] else { return }
-            change(&game)
-            library[id] = game
-            try library.save(to: paths.library)
-            reload()
-        } catch {
-            notice = Notice(title: String(localized: "Couldn't save the change"), message: String(describing: error))
-        }
-    }
-
-    func showInFinder(_ game: GameRecord) {
-        NSWorkspace.shared.activateFileViewerSelecting([URL(filePath: game.executable)])
-    }
-
-    func latestLog(for game: GameRecord) -> URL? {
-        let folder = paths.logs(forGame: game.id)
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
-        return names.filter { $0.hasSuffix(".log") }.max().map { folder.appending(path: $0) }
-    }
-
-    func openLog(_ url: URL) {
-        NSWorkspace.shared.open(url)
     }
 
     func makeDefaultForExe() {

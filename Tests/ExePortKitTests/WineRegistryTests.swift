@@ -55,6 +55,15 @@ import Testing
         #expect(WineRegistry.string(in: edited, key: #"Software\App"#, name: "Path") == value)
     }
 
+    @Test func writesDWordsAndReplacesAnyTypeOfValue() {
+        let key = #"Software\Wine\WineDbg"#
+        var text = WineRegistry.setDWord(in: userReg, key: key, name: "ShowCrashDialog", value: 1, now: now)
+        #expect(WineRegistry.contains(text, key: key, entry: #""ShowCrashDialog"=dword:00000001"#))
+        text = WineRegistry.setDWord(in: text, key: key, name: "ShowCrashDialog", value: 0, now: now)
+        #expect(WineRegistry.contains(text, key: key, entry: #""ShowCrashDialog"=dword:00000000"#))
+        #expect(text.components(separatedBy: "ShowCrashDialog").count == 2)
+    }
+
     @Test func missingKeyOrValueReadsAsNil() {
         #expect(WindowsVersion.read(fromUserReg: userReg) == nil)
         #expect(WineRegistry.string(in: userReg, key: #"Control Panel\Desktop"#, name: "Nope") == nil)

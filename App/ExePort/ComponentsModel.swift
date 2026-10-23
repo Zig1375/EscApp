@@ -18,13 +18,15 @@ final class ComponentsModel {
     private(set) var checkError: String?
     private(set) var updating: UpdateProgress?
     private(set) var updateError: String?
+    private(set) var diskUsage: DiskUsage?
 
+    /// "Update components automatically" in Settings: check daily and install what's new without asking.
     var autoCheck: Bool {
         didSet { UserDefaults.standard.set(autoCheck, forKey: Self.autoCheckKey) }
     }
 
     private static let autoCheckKey = "AutoCheckComponentUpdates"
-    private let paths: AppPaths
+    let paths: AppPaths
     private var updater: ManifestUpdater { ManifestUpdater(paths: paths) }
     private var installer: RuntimeInstaller { RuntimeInstaller(paths: paths) }
 
@@ -64,6 +66,17 @@ final class ComponentsModel {
     func checkIfDue() async {
         guard autoCheck, ManifestUpdater.isDue(lastChecked: updater.cached()?.checkedAt) else { return }
         await checkNow()
+        // The new runtime installs next to the current one; games move to it at their next launch.
+        if catalog?.updateAvailable == true { await installUpdate() }
+    }
+
+    /// Recounts what ExePort takes on disk (a few seconds on a large library, so off the main thread).
+    func measureDisk() {
+        let paths = paths
+        Task.detached(priority: .utility) {
+            let usage = DiskUsage.measure(paths: paths)
+            await MainActor.run { self.diskUsage = usage }
+        }
     }
 
     /// Installs the newest runtime next to the current one. The old one stays until no game needs it.

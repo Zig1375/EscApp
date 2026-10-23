@@ -8,14 +8,23 @@ import SwiftUI
 struct WindowChrome: NSViewRepresentable {
     static let headerHeight: CGFloat = 56
 
+    /// Centre of the close button: (22, 28) in the main window's header; (22, 22) at the top of the Settings
+    /// sidebar (Settings.dc.html). The other two follow 20 pt apart.
+    var firstLight = CGPoint(x: 22, y: headerHeight / 2)
+    /// Size on first open, and the defaults key AppKit saves the frame under (so a saved size wins).
+    var initialSize = NSSize(width: 1200, height: 780)
+    var frameKey = "NSWindow Frame library"
+
     func makeNSView(context: Context) -> NSView {
         let view = ChromeView()
+        view.chrome = self
         return view
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {}
 
     private final class ChromeView: NSView {
+        var chrome = WindowChrome()
         private var observers: [NSObjectProtocol] = []
 
         override func viewDidMoveToWindow() {
@@ -30,31 +39,33 @@ struct WindowChrome: NSViewRepresentable {
             observers = [NSWindow.didResizeNotification, NSWindow.didEndLiveResizeNotification,
                          NSWindow.didExitFullScreenNotification, NSWindow.didBecomeKeyNotification]
                 .map { name in
-                    NotificationCenter.default.addObserver(forName: name, object: window, queue: .main) { _ in
-                        MainActor.assumeIsolated { ChromeView.placeButtons(in: window) }
+                    let first = chrome.firstLight
+                    return NotificationCenter.default.addObserver(forName: name, object: window, queue: .main) { _ in
+                        MainActor.assumeIsolated { ChromeView.placeButtons(in: window, first: first) }
                     }
                 }
-            Self.placeButtons(in: window)
-            // First open (nothing saved yet): the design's 1200 × 780. SwiftUI's defaultSize loses to the content's
+            Self.placeButtons(in: window, first: chrome.firstLight)
+            // First open (nothing saved yet): the design's size. SwiftUI's defaultSize loses to the content's
             // minimum size here, so set it directly.
-            if UserDefaults.standard.string(forKey: "NSWindow Frame library") == nil {
+            if UserDefaults.standard.string(forKey: chrome.frameKey) == nil {
+                let size = chrome.initialSize
                 // After SwiftUI's own first sizing pass, which would undo it.
                 DispatchQueue.main.async {
-                    guard window.frame.width < 1100 else { return }
-                    window.setContentSize(NSSize(width: 1200, height: 780))
+                    guard window.frame.width < size.width - 50 else { return }
+                    window.setContentSize(size)
                     window.center()
                 }
             }
         }
 
-        /// Design: three 12-pt dots, 8 pt apart, starting 16 pt from the left, centred in the 56-pt header.
-        /// AppKit's buttons are 14 pt with their own spacing; centring each on the design's dot keeps them aligned.
-        static func placeButtons(in window: NSWindow) {
+        /// Design: three 12-pt dots, 8 pt apart. AppKit's buttons are 14 pt; centring each on the design's dot
+        /// keeps them aligned.
+        static func placeButtons(in window: NSWindow, first: CGPoint) {
             let kinds: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
             for (index, kind) in kinds.enumerated() {
                 guard let button = window.standardWindowButton(kind), let container = button.superview else { continue }
-                let centreX = 16 + 6 + CGFloat(index) * 20
-                let centreFromTop = WindowChrome.headerHeight / 2
+                let centreX = first.x + CGFloat(index) * 20
+                let centreFromTop = first.y
                 let y = container.isFlipped
                     ? centreFromTop - button.frame.height / 2
                     : container.bounds.height - centreFromTop - button.frame.height / 2

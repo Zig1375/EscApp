@@ -38,8 +38,15 @@ struct ExePortApp: App {
             }
         }
 
+        // Launching.dc.html: a running game shows in the menu bar, so ExePort's window can be closed.
+        MenuBarExtra(isInserted: Binding(get: { !delegate.library.runningGames.isEmpty }, set: { _ in })) {
+            RunningGamesMenu(library: delegate.library)
+        } label: {
+            RunningGamesLabel(library: delegate.library)
+        }
+
         Settings {
-            SettingsView(components: components)
+            SettingsView(components: components, library: delegate.library)
         }
     }
 }
@@ -63,5 +70,31 @@ private struct CheckForUpdatesButton: View {
             openSettings()
             Task { await components.checkNow() }
         }
+    }
+}
+
+private struct RunningGamesLabel: View {
+    let library: LibraryModel
+
+    var body: some View {
+        if let first = library.runningGames.first {
+            let time = GameText.duration(max(library.now, Date()).timeIntervalSince(first.since))
+            Label("\(first.game.name) · \(time)", systemImage: "gamecontroller.fill")
+                .labelStyle(.titleAndIcon)
+        }
+    }
+}
+
+private struct RunningGamesMenu: View {
+    let library: LibraryModel
+
+    var body: some View {
+        ForEach(library.runningGames, id: \.game.id) { running in
+            Text(running.game.name)
+            Button("Show Game") { library.showGame(running.game) }
+            Button("Stop") { library.stop(running.game) }
+            Divider()
+        }
+        Text("You can close ExePort; the game keeps running.")
     }
 }

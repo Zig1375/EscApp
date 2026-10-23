@@ -28,6 +28,8 @@ struct LibraryView: View {
             }
         }
         .background(Color.windowBackground)
+        // The design has no keyboard focus rings; macOS draws a blue one around the focused button.
+        .focusEffectDisabled()
         .ignoresSafeArea(edges: .top)
         .background(WindowChrome())
         .overlay {
@@ -46,6 +48,9 @@ struct LibraryView: View {
                 }
             }
             return !providers.isEmpty
+        }
+        .sheet(item: Binding(get: { library.launch }, set: { if $0 == nil { library.cancelLaunch() } })) { launch in
+            LaunchSheet(launch: launch, library: library)
         }
         .alert(library.notice?.title ?? "", isPresented: Binding(get: { library.notice != nil },
                                                                  set: { if !$0 { library.notice = nil } }),
@@ -222,11 +227,17 @@ struct GameCard: View {
                 }
                 .buttonStyle(.plain)
                 HStack(spacing: 8) {
-                    if game.lastPlayed == nil { Pill(text: "New", background: .newBackground, foreground: .newText) }
-                    Text(GameText.summary(game))
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.secondaryText)
-                        .lineLimit(1)
+                    if case let .running(since)? = library.states[game.id] {
+                        RunningBadge(since: since, now: library.now)
+                    } else {
+                        if game.lastPlayed == nil {
+                            Pill(text: "New", background: .newBackground, foreground: .newText)
+                        }
+                        Text(GameText.summary(game))
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.secondaryText)
+                            .lineLimit(1)
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -269,8 +280,13 @@ struct PlayButton: View {
             .font(.system(size: 13))
             .frame(height: large ? 40 : 34)
         case .running?:
-            Button("Stop") { library.stop(game) }
-                .buttonStyle(BrandButtonStyle(height: large ? 40 : 34))
+            // Launching.dc.html, "Game is running": Show Game and Stop.
+            HStack(spacing: 8) {
+                Button("Stop") { library.stop(game) }
+                    .buttonStyle(BrandButtonStyle(height: large ? 40 : 34))
+                Button("Show Game") { library.showGame(game) }
+                    .buttonStyle(BrandButtonStyle(kind: .primary, height: large ? 40 : 34))
+            }
         case nil:
             Button {
                 library.play(game)
@@ -311,6 +327,21 @@ struct GameIconTile: View {
                 }
             }
             .accessibilityHidden(true)
+    }
+}
+
+/// Green dot, "Running · 12 min" (Launching.dc.html).
+struct RunningBadge: View {
+    let since: Date
+    let now: Date
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Circle().fill(Color.green).frame(width: 8, height: 8)
+            Text("Running · \(GameText.duration(max(now, Date()).timeIntervalSince(since)))")
+        }
+        .font(.system(size: 12, weight: .semibold))
+        .foregroundStyle(Color.okText)
     }
 }
 

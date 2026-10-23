@@ -21,8 +21,25 @@ public enum WineRegistry {
     /// Returns `text` with the value set, adding the key if it doesn't exist yet.
     public static func setString(in text: String, key: String, name: String, value: String,
                                  now: Date = Date()) -> String {
+        setEntry(in: text, key: key, name: name, entry: "\(quote(name))=\(quote(value))", now: now)
+    }
+
+    /// `"Name"=dword:0000000a`.
+    public static func setDWord(in text: String, key: String, name: String, value: UInt32,
+                                now: Date = Date()) -> String {
+        let hex = String(value, radix: 16)
+        let entry = "\(quote(name))=dword:\(String(repeating: "0", count: 8 - hex.count))\(hex)"
+        return setEntry(in: text, key: key, name: name, entry: entry, now: now)
+    }
+
+    /// Whether `text` already has exactly this line in the key, so a file isn't rewritten for nothing.
+    static func contains(_ text: String, key: String, entry: String) -> Bool {
+        let lines = text.components(separatedBy: "\n")
+        return sectionRange(in: lines, key: key).map { lines[$0].contains(entry) } ?? false
+    }
+
+    private static func setEntry(in text: String, key: String, name: String, entry: String, now: Date) -> String {
         var lines = text.components(separatedBy: "\n")
-        let entry = "\(quote(name))=\(quote(value))"
         let stamp = Int(now.timeIntervalSince1970)
 
         guard let section = sectionRange(in: lines, key: key) else {
@@ -31,8 +48,10 @@ public enum WineRegistry {
             lines += ["", "[\(escapeKey(key))] \(stamp)", "#time=\(String(stamp, radix: 16))", entry, ""]
             return lines.joined(separator: "\n")
         }
+        // Any value of that name, whatever its type, is replaced.
         if let index = lines[section].firstIndex(where: {
-            parseValue($0).map { $0.0.caseInsensitiveCompare(name) == .orderedSame } ?? false
+            readQuoted(Substring($0)).map { $0.0.caseInsensitiveCompare(name) == .orderedSame && $0.1.hasPrefix("=") }
+                ?? false
         }) {
             lines[index] = entry
         } else {

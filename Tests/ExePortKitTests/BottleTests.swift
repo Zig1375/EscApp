@@ -61,6 +61,15 @@ import Testing
         #expect(try FileManager.default.attributesOfItem(atPath: userReg.path)[.modificationDate] as? Date == modified)
     }
 
+    @Test func aRuntimeWithoutMonoIsRefused() throws {
+        let temp = try TempFolder()
+        let wine = Wine(root: temp.url)
+        #expect(!BottleManager.hasMono(wine))
+        try FileManager.default.createDirectory(at: temp.url.appending(path: "share/wine/mono/wine-mono-10.4.1"),
+                                                withIntermediateDirectories: true)
+        #expect(BottleManager.hasMono(wine))
+    }
+
     @Test func userFolderIgnoresPublic() throws {
         let temp = try TempFolder()
         for name in ["Public", "zig"] {
@@ -68,5 +77,30 @@ import Testing
                                                     withIntermediateDirectories: true)
         }
         #expect(try BottleManager.userFolder(in: temp.url).lastPathComponent == "zig")
+    }
+}
+
+@Suite struct DiskUsageTests {
+    @Test func aCloneCountsOnlyWhatChanged() throws {
+        let temp = try TempFolder()
+        let paths = AppPaths(root: temp.url, games: temp.url.appending(path: "Games"))
+        let template = paths.template(forRuntime: "r1")
+        try FileManager.default.createDirectory(at: template.appending(path: "drive_c"),
+                                                withIntermediateDirectories: true)
+        try Data(repeating: 1, count: 200_000).write(to: template.appending(path: "system.reg"))
+        try Data(repeating: 2, count: 100_000).write(to: template.appending(path: "drive_c/big.dll"))
+
+        let bottle = paths.bottle(forGame: .make())
+        try FileManager.default.createDirectory(at: paths.bottles, withIntermediateDirectories: true)
+        try BottleManager.clone(template, to: bottle)
+        try JSONEncoder.iso.encode(BottleManager.BottleInfo(runtime: "r1", createdAt: Date()))
+            .write(to: bottle.appending(path: BottleManager.bottleMarker))
+        try Data(repeating: 3, count: 50_000).write(to: bottle.appending(path: "drive_c/save.dat"))
+
+        let usage = DiskUsage.measure(paths: paths)
+        #expect(usage.bottleCount == 1)
+        #expect(usage.templates >= 300_000)
+        // The new save and the marker count; the cloned system.reg and big.dll don't.
+        #expect(usage.bottles >= 50_000 && usage.bottles < 150_000)
     }
 }

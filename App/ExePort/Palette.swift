@@ -21,6 +21,13 @@ extension Color {
     static let newText = Color("NewText")
     static let danger = Color("Danger")
     static let dangerBorder = Color("DangerBorder")
+    static let navSelected = Color("NavSelected")
+    static let navSelectedText = Color("NavSelectedText")
+    static let sidebar = Color("Sidebar")
+    static let okText = Color("OkText")
+    static let diskTemplate = Color("DiskTemplate")
+    static let diskGames = Color("DiskGames")
+    static let track = Color("Track")
 }
 
 /// The design's two button looks: white with a thin border, and the amber primary.

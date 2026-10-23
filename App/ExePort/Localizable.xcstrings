@@ -194,52 +194,12 @@
         }
       }
     },
-    "A newer version of ExePort is needed.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нужна более новая версия ExePort."
-          }
-        }
-      }
-    },
-    "An update is available": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Доступно обновление"
-          }
-        }
-      }
-    },
-    "Check Now": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Проверить сейчас"
-          }
-        }
-      }
-    },
     "Check for Component Updates…": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Проверить обновления компонентов…"
-          }
-        }
-      }
-    },
-    "Check for updates automatically": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Проверять обновления автоматически"
           }
         }
       }
@@ -260,16 +220,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Компоненты"
-          }
-        }
-      }
-    },
-    "Components aren't installed": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Компоненты не установлены"
           }
         }
       }
@@ -304,32 +254,12 @@
         }
       }
     },
-    "Everything is up to date": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Всё актуально"
-          }
-        }
-      }
-    },
     "Finishing…": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Завершаем…"
-          }
-        }
-      }
-    },
-    "Games keep their settings and saves.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Настройки и сохранения игр останутся на месте."
           }
         }
       }
@@ -350,46 +280,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Устанавливаем %@…"
-          }
-        }
-      }
-    },
-    "Kept until no game uses them any more.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Хранятся, пока ими пользуется хотя бы одна игра."
-          }
-        }
-      }
-    },
-    "Last checked %@": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Последняя проверка: %@"
-          }
-        }
-      }
-    },
-    "No components for this Mac": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нет компонентов для этого Mac"
-          }
-        }
-      }
-    },
-    "Not checked yet": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ещё не проверяли"
           }
         }
       }
@@ -424,62 +314,12 @@
         }
       }
     },
-    "Previous versions": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Предыдущие версии"
-          }
-        }
-      }
-    },
-    "ExePort checks once a day and tells you when there's something new.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ExePort проверяет раз в день и сообщит, когда выйдет что-то новое."
-          }
-        }
-      }
-    },
-    "ExePort installs them the first time it opens.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ExePort установит их при первом запуске."
-          }
-        }
-      }
-    },
-    "Space used": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Занято на диске"
-          }
-        }
-      }
-    },
     "Update": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Обновить"
-          }
-        }
-      }
-    },
-    "removed": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "удалён"
           }
         }
       }
@@ -1328,6 +1168,429 @@
           }
         }
       }
+    },
+    "%@ available": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "есть %@"
+          }
+        }
+      }
+    },
+    "Applies after ExePort restarts": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Применится после перезапуска ExePort"
+          }
+        }
+      }
+    },
+    "As in macOS": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как в системе"
+          }
+        }
+      }
+    },
+    "Check for Updates": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить обновления"
+          }
+        }
+      }
+    },
+    "Clean Windows (template)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чистая Windows (шаблон)"
+          }
+        }
+      }
+    },
+    "Disk Space": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Место на диске"
+          }
+        }
+      }
+    },
+    "ExePort is the default app for .exe and .msi": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ExePort — программа по умолчанию для .exe и .msi"
+          }
+        }
+      }
+    },
+    "Finder shows more: the games' Windows setups are copies of the template that share its space. Games and saves aren't counted here.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder покажет больше: среды игр — копии шаблона, которые делят с ним место. Игры и сохранения сюда не входят."
+          }
+        }
+      }
+    },
+    "Games write AppData and Saved Games here. “My Documents” is your Documents folder.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сюда игры пишут AppData и Saved Games. «Мои документы» — это ваша папка «Документы»."
+          }
+        }
+      }
+    },
+    "General": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Основные"
+          }
+        }
+      }
+    },
+    "Language": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Язык"
+          }
+        }
+      }
+    },
+    "Latest": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последняя"
+          }
+        }
+      }
+    },
+    "Licenses": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лицензии"
+          }
+        }
+      }
+    },
+    "Not installed yet": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё не установлены"
+          }
+        }
+      }
+    },
+    "Open .exe files with a double-click": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открывать .exe двойным щелчком"
+          }
+        }
+      }
+    },
+    "Saves": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранения"
+          }
+        }
+      }
+    },
+    "Shared by all games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Общие для всех игр"
+          }
+        }
+      }
+    },
+    "Show": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать"
+          }
+        }
+      }
+    },
+    "Update components automatically": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновлять компоненты сами"
+          }
+        }
+      }
+    },
+    "Wine and graphics": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wine и графика"
+          }
+        }
+      }
+    },
+    "": {
+      "shouldTranslate": false
+    },
+    "%@": {
+      "shouldTranslate": false
+    },
+    "%@ %@": {
+      "shouldTranslate": false
+    },
+    "Apple": {
+      "shouldTranslate": false
+    },
+    "Windows for %lld games": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Windows for %lld game"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Windows for %lld games"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Среда %lld игры"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Среды %lld игр"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Среды %lld игр"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Среды %lld игры"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Components aren't installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Компоненты не установлены"
+          }
+        }
+      }
+    },
+    "Rosetta is installed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установлена"
+          }
+        }
+      }
+    },
+    "First launch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Первый запуск"
+          }
+        }
+      }
+    },
+    "Getting the game ready": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовим игру к запуску"
+          }
+        }
+      }
+    },
+    "Getting the game ready for its first launch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовим игру к первому запуску"
+          }
+        }
+      }
+    },
+    "Graphics: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Графика: %@"
+          }
+        }
+      }
+    },
+    "Its own %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Своя среда %@"
+          }
+        }
+      }
+    },
+    "Running · %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Работает · %@"
+          }
+        }
+      }
+    },
+    "Show Game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать игру"
+          }
+        }
+      }
+    },
+    "Starting": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запуск"
+          }
+        }
+      }
+    },
+    "Starting the game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускаем игру"
+          }
+        }
+      }
+    },
+    "Wine is still starting. The first launch can take up to a minute.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wine ещё запускается. Первый запуск может занять до минуты."
+          }
+        }
+      }
+    },
+    "You can close ExePort; the game keeps running.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ExePort можно закрыть, игра продолжит работать."
+          }
+        }
+      }
+    },
+    "instant": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "мгновенно"
+          }
+        }
+      }
+    },
+    "once, about 30 s": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "один раз, около 30 с"
+          }
+        }
+      }
+    },
+    "%@ · %@": {
+      "shouldTranslate": false
     }
   },
   "version": "1.0"

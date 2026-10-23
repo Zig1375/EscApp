@@ -82,7 +82,9 @@ extension EscAppCommand {
                     progress("\(Self.describe(failed)). Trying \(next.displayName).")
                 case let .working(backend, _):
                     progress("\(backend.displayName) works; the game keeps running.")
-                case .preparing, .windowShown:
+                case .windowShown:
+                    progress("The game's window is up.")
+                case .preparing:
                     break
                 }
             }

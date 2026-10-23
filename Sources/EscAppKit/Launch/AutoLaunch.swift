@@ -131,7 +131,7 @@ public struct AutoLaunch: Sendable {
                 return verdict
             }
             do {
-                try await Task.sleep(for: .milliseconds(400))
+                try await Task.sleep(for: .milliseconds(100))
             } catch {
                 await running.session.stop()
                 _ = await running.finish()

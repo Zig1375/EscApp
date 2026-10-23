@@ -49,11 +49,11 @@ extension LibraryModel {
 
     func update(_ id: GameID, _ change: (inout GameRecord) -> Void) {
         do {
-            var library = try GameLibrary.load(from: paths.library)
-            guard var game = library[id] else { return }
-            change(&game)
-            library[id] = game
-            try library.save(to: paths.library)
+            try GameLibrary.modify(paths.library) { library in
+                guard var game = library[id] else { return }
+                change(&game)
+                library[id] = game
+            }
             reload()
         } catch {
             notice = Notice(title: String(localized: "Couldn't save the change"), message: String(describing: error))

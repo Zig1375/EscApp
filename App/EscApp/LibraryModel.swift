@@ -106,7 +106,7 @@ final class LibraryModel {
     /// "Show Game": brings the running game's window to the front.
     func showGame(_ game: GameRecord) {
         guard let session = sessions[game.id] else { return }
-        let owners = GameWindows.owners(under: session.wineRoot)
+        let owners = GameWindows.owners(of: session)
         GameWindows.bringForward(owners.first ?? session.processID)
     }
 

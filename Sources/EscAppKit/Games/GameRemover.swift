@@ -5,8 +5,15 @@ public enum GameRemover {
     /// Deletes the game's entry, its bottle, its logs and its `.escapp` file. The game folder and the shared profile
     /// (saves) stay; opening the exe again adds the game back as new.
     public static func removeFromApp(_ id: GameID, paths: AppPaths) throws {
-        var library = try GameLibrary.load(from: paths.library)
-        guard let game = library[id] else { return }
+        try GameLibrary.modify(paths.library) { library in
+            guard let game = library[id] else { return }
+            forget(game, paths: paths)
+            library[id] = nil
+        }
+    }
+
+    private static func forget(_ game: GameRecord, paths: AppPaths) {
+        let id = game.id
         let fileManager = FileManager.default
         try? fileManager.removeItem(at: paths.bottle(forGame: id))
         try? fileManager.removeItem(at: paths.logs(forGame: id))
@@ -19,7 +26,5 @@ public enum GameRemover {
                 try? fileManager.removeItem(at: marker)
             }
         }
-        library[id] = nil
-        try library.save(to: paths.library)
     }
 }

@@ -1,4 +1,5 @@
 import Foundation
+import Synchronization
 
 /// One game EscApp knows about.
 public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
@@ -72,6 +73,30 @@ public struct GameLibrary: Codable, Sendable, Equatable {
         if let working { game.backend = working }
         self[id] = game
     }
+
+    /// Reads, changes and writes `Games.json` as one step. Launches record their results from background
+    /// tasks, so two games ending together (or a launch and a settings change) each loaded the file, and
+    /// whichever saved last wiped out the other's change. The lock file covers the CLI running alongside the app.
+    public static func modify<T>(_ file: URL, _ change: (inout GameLibrary) throws -> T) throws -> T {
+        try lock.withLock { _ in
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(),
+                                                    withIntermediateDirectories: true)
+            let descriptor = open(file.path(percentEncoded: false) + ".lock", O_CREAT | O_RDWR, 0o644)
+            if descriptor >= 0 { flock(descriptor, LOCK_EX) }
+            defer {
+                if descriptor >= 0 {
+                    flock(descriptor, LOCK_UN)
+                    close(descriptor)
+                }
+            }
+            var library = try load(from: file)
+            let result = try change(&library)
+            try library.save(to: file)
+            return result
+        }
+    }
+
+    private static let lock = Mutex(())
 
     public static func load(from file: URL) throws -> GameLibrary {
         guard FileManager.default.fileExists(atPath: file.path) else { return GameLibrary() }

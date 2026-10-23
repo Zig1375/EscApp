@@ -128,9 +128,7 @@ extension EscAppCommand {
         var record = game
         if let windows {
             record.windowsVersion = windows
-            var library = try GameLibrary.load(from: paths.library)
-            library[record.id] = record
-            try library.save(to: paths.library)
+            try GameLibrary.modify(paths.library) { $0[record.id] = record }
         }
         let bottles = BottleManager(paths: paths, host: host)
         if !bottles.hasTemplate(for: runtime) { progress("Setting up Windows for \(runtime.id) (once)…") }

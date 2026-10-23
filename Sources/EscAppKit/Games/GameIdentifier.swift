@@ -41,10 +41,12 @@ public struct GameIdentifier: Sendable {
     }
 
     public func identify(executable: URL, now: Date = Date()) throws -> Result {
+        try GameLibrary.modify(paths.library) { try identify(executable, now: now, in: &$0) }
+    }
+
+    private func identify(_ executable: URL, now: Date, in library: inout GameLibrary) throws -> Result {
         let exe = executable.resolvingSymlinksInPath().standardizedFileURL
         let exeFolder = exe.deletingLastPathComponent()
-        var library = try GameLibrary.load(from: paths.library)
-        defer { try? library.save(to: paths.library) }
 
         if let (folder, id) = findMarker(from: exeFolder) {
             if var record = library[id] {

@@ -166,7 +166,7 @@ extension GameLauncher.Outcome {
 /// A running game, as far as stopping it goes.
 public struct GameSession: Sendable {
     let wine: Wine
-    let environment: [String: String]
+    public let environment: [String: String]
     /// The `wine` process started for the game. The game's own windows may belong to it or to processes it
     /// starts, all running Wine's binaries.
     public let processID: Int32

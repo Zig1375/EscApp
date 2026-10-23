@@ -122,3 +122,19 @@ import Testing
         #expect(old.games == nil)
     }
 }
+
+@Suite struct GameWindowsTests {
+    @Test func readsTheEnvironmentAfterTheArguments() {
+        var bytes: [UInt8] = [2, 0, 0, 0]
+        for part in ["/opt/wine/bin/wine", "", "", "wine", "game.exe", "WINEPREFIX=/b/1", "HOME=/u", "X"] {
+            bytes += Array(part.utf8) + [0]
+        }
+        #expect(GameWindows.parseProcArgs(bytes) == ["WINEPREFIX": "/b/1", "HOME": "/u"])
+        #expect(GameWindows.parseProcArgs([1, 0]).isEmpty)
+    }
+
+    @Test func readsItsOwnEnvironment() {
+        let own = GameWindows.environment(of: getpid())
+        #expect(own["HOME"] == ProcessInfo.processInfo.environment["HOME"])
+    }
+}

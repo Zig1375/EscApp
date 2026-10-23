@@ -39,11 +39,11 @@ public struct AutoLaunch: Sendable {
 
     let paths: AppPaths
     let host: [String: String]
-    /// The game's window owners under a Wine folder; injectable so the loop doesn't depend on the screen.
-    let windows: @Sendable (URL) -> [Int32]
+    /// The game's window owners; injectable so the loop doesn't depend on the screen.
+    let windows: @Sendable (GameSession) -> [Int32]
 
     public init(paths: AppPaths, host: [String: String] = ProcessInfo.processInfo.environment,
-                windows: @escaping @Sendable (URL) -> [Int32] = GameWindows.owners(under:)) {
+                windows: @escaping @Sendable (GameSession) -> [Int32] = GameWindows.owners(of:)) {
         self.paths = paths
         self.host = host
         self.windows = windows
@@ -124,7 +124,7 @@ public struct AutoLaunch: Sendable {
         var judge = AttemptJudge(windowTimeout: timeout)
         var announced = false
         while true {
-            let owners = windows(running.session.wineRoot)
+            let owners = windows(running.session)
             if let owner = owners.first, !announced {
                 announced = true
                 events(.windowShown(pid: owner))
@@ -155,17 +155,15 @@ public struct AutoLaunch: Sendable {
     }
 
     private func record(_ id: GameID, duration: TimeInterval, working: GraphicsBackend?) throws {
-        var library = try GameLibrary.load(from: paths.library)
-        library.recordPlay(of: id, duration: duration, working: working)
-        try library.save(to: paths.library)
+        try GameLibrary.modify(paths.library) { $0.recordPlay(of: id, duration: duration, working: working) }
     }
 
     private func update(_ id: GameID, _ change: (inout GameRecord) -> Void) throws {
-        var library = try GameLibrary.load(from: paths.library)
-        guard var game = library[id] else { return }
-        change(&game)
-        library[id] = game
-        try library.save(to: paths.library)
+        try GameLibrary.modify(paths.library) { library in
+            guard var game = library[id] else { return }
+            change(&game)
+            library[id] = game
+        }
     }
 }
 

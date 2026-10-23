@@ -43,15 +43,22 @@ public struct BottleManager: Sendable {
         }
         let fileManager = FileManager.default
         try fileManager.createDirectory(at: paths.templates, withIntermediateDirectories: true)
-        let staging = paths.templates.appending(path: ".staging-\(runtime.id)", directoryHint: .isDirectory)
-        try? fileManager.removeItem(at: staging)
+        // Each build gets its own staging folder: two games started at once on a new runtime both build the
+        // template, and sharing one folder made their wineboots trample each other's files.
+        let staging = paths.templates.appending(path: ".staging-\(runtime.id)-\(UUID().uuidString)",
+                                                directoryHint: .isDirectory)
+        Self.removeStaleStaging(in: paths.templates)
 
         let wine = Wine(runtimeFolder: runtimeFolder)
         // Without its own Wine Mono, wineboot opens Wine's "install Wine Mono?" dialog and would fetch an
         // unpinned download. A runtime must carry it; say so instead of showing that dialog.
         guard Self.hasMono(wine) else { throw BottleError.monoMissing(runtime.id) }
         do {
-            let environment = WineEnvironment.make(host: host, bottle: staging.path)
+            // Without the Mac driver: our Wine build shows "updating the Wine configuration" over the Mac while
+            // wineboot works, and the template needs no display. Games run with the driver as usual.
+            let environment = WineEnvironment.make(
+                host: host, bottle: staging.path,
+                extra: ["WINEDLLOVERRIDES": WineEnvironment.dllOverrides + ";winemac.drv=d"])
             try await ProcessRunner.check(wine.wine.path, ["wineboot", "--init"], environment: environment)
             // wineboot returns before wineserver has written the registry to disk.
             try await ProcessRunner.check(wine.wineserver.path, ["-w"], environment: environment)
@@ -61,12 +68,29 @@ public struct BottleManager: Sendable {
             let marker = try JSONEncoder.iso.encode(BottleInfo(runtime: runtime.id, createdAt: Date()))
             try marker.write(to: staging.appending(path: Self.templateMarker))
 
+            // Whichever build finishes first wins; the others' work is thrown away.
+            if hasTemplate(for: runtime) {
+                try? fileManager.removeItem(at: staging)
+                return destination
+            }
             try? fileManager.removeItem(at: destination)
             try fileManager.moveItem(at: staging, to: destination)
             return destination
         } catch {
             try? fileManager.removeItem(at: staging)
+            if hasTemplate(for: runtime) { return destination }
             throw error
+        }
+    }
+
+    /// Staging folders left by a build that was killed. A build takes about 35 s, so an hour-old one is dead.
+    static func removeStaleStaging(in templates: URL) {
+        let fileManager = FileManager.default
+        let keys: [URLResourceKey] = [.creationDateKey]
+        let folders = (try? fileManager.contentsOfDirectory(at: templates, includingPropertiesForKeys: keys)) ?? []
+        for folder in folders where folder.lastPathComponent.hasPrefix(".staging-") {
+            let created = (try? folder.resourceValues(forKeys: [.creationDateKey]))?.creationDate ?? .distantPast
+            if Date().timeIntervalSince(created) > 3600 { try? fileManager.removeItem(at: folder) }
         }
     }
 

@@ -3,4 +3,4 @@
 .DS_Store
 *.xcodeproj/
 DerivedData/
-App/ExePort/Info.plist
+App/EscApp/Info.plist

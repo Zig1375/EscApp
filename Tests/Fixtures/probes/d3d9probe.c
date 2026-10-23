@@ -5,7 +5,7 @@
 #include "common.h"
 
 int main(int argc, char **argv) {
-    HWND window = probe_window(L"ExePort D3D9 probe");
+    HWND window = probe_window(L"EscApp D3D9 probe");
     IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
     if (!d3d) { PROBE_REPORT("PROBE d3d9 FAIL Direct3DCreate9"); return 2; }
 

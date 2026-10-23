@@ -20,7 +20,7 @@ jobs:
       - name: Build the app
         run: |
           xcodegen generate
-          xcodebuild -project ExePort.xcodeproj -scheme ExePort -configuration Debug \
+          xcodebuild -project EscApp.xcodeproj -scheme EscApp -configuration Debug \
             -destination 'platform=macOS,arch=arm64' -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO build
       - name: Every UI string has a Russian translation
         run: scripts/check-translations.py .build/xcode

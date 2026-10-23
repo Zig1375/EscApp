@@ -1,6 +1,6 @@
-# ExePort
+# EscApp
 
-ExePort plays Windows games on Apple Silicon Macs. Double-click a game's `.exe` in Finder and it runs: ExePort downloads
+EscApp plays Windows games on Apple Silicon Macs. Double-click a game's `.exe` in Finder and it runs: EscApp downloads
 Wine and the graphics layers, sets up a private Windows for the game, picks the settings that work and remembers
 them. There are no bottles or prefixes to manage, and no store is required.
 
@@ -12,11 +12,11 @@ for the design and the plan (in Russian).
 Needs macOS 15+, Apple Silicon and Xcode 16+.
 
 ```bash
-swift test                 # ExePortKit and CLI tests, no Wine needed
-swift run exeport help         # debugging CLI
+swift test                 # EscAppKit and CLI tests, no Wine needed
+swift run escapp help         # debugging CLI
 brew install xcodegen
-xcodegen generate          # creates ExePort.xcodeproj from project.yml
-open ExePort.xcodeproj
+xcodegen generate          # creates EscApp.xcodeproj from project.yml
+open EscApp.xcodeproj
 ```
 
 ## License

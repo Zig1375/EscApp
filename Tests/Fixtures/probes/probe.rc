@@ -1,4 +1,4 @@
-// Version, manifest and icon, so the probes also test what ExePort reads from an exe.
+// Version, manifest and icon, so the probes also test what EscApp reads from an exe.
 #include <winver.h>
 1 ICON "probe.ico"
 1 24 "probe.manifest"
@@ -11,8 +11,8 @@ BEGIN
   BEGIN
     BLOCK "040904b0"
     BEGIN
-      VALUE "FileDescription", "ExePort graphics probe"
-      VALUE "ProductName", "ExePort Probe"
+      VALUE "FileDescription", "EscApp graphics probe"
+      VALUE "ProductName", "EscApp Probe"
       VALUE "FileVersion", "1.0.0.0"
     END
   END

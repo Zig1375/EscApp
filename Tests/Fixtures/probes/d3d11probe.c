@@ -5,7 +5,7 @@
 #include "common.h"
 
 int main(int argc, char **argv) {
-    HWND window = probe_window(L"ExePort D3D11 probe");
+    HWND window = probe_window(L"EscApp D3D11 probe");
     DXGI_SWAP_CHAIN_DESC desc = {0};
     desc.BufferCount = 2;
     desc.BufferDesc.Width = 640;

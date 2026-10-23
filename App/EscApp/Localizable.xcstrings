@@ -1,0 +1,1807 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "EscApp": {
+      "shouldTranslate": false
+    },
+    "Getting ready to play": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовимся к игре"
+          }
+        }
+      }
+    },
+    "EscApp downloads what Windows games need. This happens once and takes a few minutes.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp скачивает то, что нужно Windows-играм. Это делается один раз и занимает несколько минут."
+          }
+        }
+      }
+    },
+    "Windows games are built for Intel processors. Rosetta 2 from Apple lets this Mac run them.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Windows-игры сделаны для процессоров Intel. Rosetta 2 от Apple позволяет этому Mac их запускать."
+          }
+        }
+      }
+    },
+    "Installing Rosetta means you agree to [Apple's license](https://www.apple.com/legal/sla/).": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устанавливая Rosetta, вы соглашаетесь с [лицензией Apple](https://www.apple.com/legal/sla/)."
+          }
+        }
+      }
+    },
+    "Agree and Install": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Согласиться и установить"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Попробовать снова"
+          }
+        }
+      }
+    },
+    "This Mac needs a newer version of EscApp.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для этого Mac нужна более новая версия EscApp."
+          }
+        }
+      }
+    },
+    "Apple's translator for Intel apps": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переводчик Apple для программ под Intel"
+          }
+        }
+      }
+    },
+    "Rosetta couldn't be installed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось установить Rosetta: %@"
+          }
+        }
+      }
+    },
+    "Runs Windows programs": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускает программы Windows"
+          }
+        }
+      }
+    },
+    ".NET for games and installers that need it": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".NET для игр и установщиков, которым он нужен"
+          }
+        }
+      }
+    },
+    "Graphics for DirectX 10 and 11 games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Графика для игр на DirectX 10 и 11"
+          }
+        }
+      }
+    },
+    "Your games will appear here": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь появятся ваши игры"
+          }
+        }
+      }
+    },
+    "Find the game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найдите игру"
+          }
+        }
+      }
+    },
+    "In any folder or on any disk: Downloads, an external drive, a disc image.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В любой папке или на любом диске: Загрузки, внешний диск, образ диска."
+          }
+        }
+      }
+    },
+    "Double-click its .exe": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дважды щёлкните её .exe"
+          }
+        }
+      }
+    },
+    "Or drag the file onto the EscApp icon in the Dock.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Или перетащите файл на значок EscApp в Dock."
+          }
+        }
+      }
+    },
+    "Play": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Играть"
+          }
+        }
+      }
+    },
+    "On the first launch EscApp picks the settings that work and remembers them.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "При первом запуске EscApp сам подберёт работающие настройки и запомнит их."
+          }
+        }
+      }
+    },
+    "Check for Component Updates…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить обновления компонентов…"
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверяем…"
+          }
+        }
+      }
+    },
+    "Components": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Компоненты"
+          }
+        }
+      }
+    },
+    "Couldn't check for updates. EscApp will try again later.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось проверить обновления. EscApp попробует позже."
+          }
+        }
+      }
+    },
+    "Details": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробнее"
+          }
+        }
+      }
+    },
+    "Downloading %@…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скачиваем %@…"
+          }
+        }
+      }
+    },
+    "Finishing…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завершаем…"
+          }
+        }
+      }
+    },
+    "Installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установлено"
+          }
+        }
+      }
+    },
+    "Installing %@…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устанавливаем %@…"
+          }
+        }
+      }
+    },
+    "Not installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не установлено"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Хорошо"
+          }
+        }
+      }
+    },
+    "Preparing…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовимся…"
+          }
+        }
+      }
+    },
+    "Update": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновить"
+          }
+        }
+      }
+    },
+    "Rosetta 2": {
+      "shouldTranslate": false
+    },
+    "%@ can't start": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ не запускается"
+          }
+        }
+      }
+    },
+    "Couldn't remove %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось удалить %@"
+          }
+        }
+      }
+    },
+    "Installers are coming soon": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установщики появятся позже"
+          }
+        }
+      }
+    },
+    "Open .exe Files with EscApp": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открывать .exe в EscApp"
+          }
+        }
+      }
+    },
+    "Open Settings → Components to install them.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установите их в Настройки → Компоненты."
+          }
+        }
+      }
+    },
+    "Remove from EscApp": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить из EscApp"
+          }
+        }
+      }
+    },
+    "EscApp can't open this file": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp не может открыть этот файл"
+          }
+        }
+      }
+    },
+    "EscApp can't run .msi installers yet. Installing games arrives in a later version.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp пока не умеет запускать установщики .msi. Установка игр появится в одной из следующих версий."
+          }
+        }
+      }
+    },
+    "Show Last Log": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать последний лог"
+          }
+        }
+      }
+    },
+    "Show Log": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать лог"
+          }
+        }
+      }
+    },
+    "Show in Finder": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать в Finder"
+          }
+        }
+      }
+    },
+    "Starting…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускается…"
+          }
+        }
+      }
+    },
+    "Stop": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Остановить"
+          }
+        }
+      }
+    },
+    "Start playing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Играйте"
+          }
+        }
+      }
+    },
+    "%@ (default)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (по умолчанию)"
+          }
+        }
+      }
+    },
+    "%@ is out. It installs next to the current version; games keep their saves and settings.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вышел %@. Он встанет рядом с текущей версией, сохранения и настройки игр останутся."
+          }
+        }
+      }
+    },
+    "%@ · %@ in total · from disk": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · всего %@ · с диска"
+          }
+        }
+      }
+    },
+    "%@ · closed after %lld s (code %d)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · закрылась через %lld с (код %d)"
+          }
+        }
+      }
+    },
+    "%@ · no errors": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · без ошибок"
+          }
+        }
+      }
+    },
+    "%@ · running or interrupted": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · идёт или прервана"
+          }
+        }
+      }
+    },
+    "16-bit": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "16-бит"
+          }
+        }
+      }
+    },
+    "32-bit": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "32-бит"
+          }
+        }
+      }
+    },
+    "64-bit": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "64-бит"
+          }
+        }
+      }
+    },
+    "About": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Об игре"
+          }
+        }
+      }
+    },
+    "Added": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавлена"
+          }
+        }
+      }
+    },
+    "All Games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все игры"
+          }
+        }
+      }
+    },
+    "All · %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все · %lld"
+          }
+        }
+      }
+    },
+    "Auto": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто"
+          }
+        }
+      }
+    },
+    "Auto: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто: %@"
+          }
+        }
+      }
+    },
+    "Auto: %@ first": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто: сначала %@"
+          }
+        }
+      }
+    },
+    "By name": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "По названию"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отмена"
+          }
+        }
+      }
+    },
+    "Change": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сменить"
+          }
+        }
+      }
+    },
+    "Choose the game's .exe": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите .exe игры"
+          }
+        }
+      }
+    },
+    "Choose which program starts %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите, какая программа запускает %@"
+          }
+        }
+      }
+    },
+    "Clear": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Очистить"
+          }
+        }
+      }
+    },
+    "Couldn't move %@ to the Trash": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось переместить %@ в Корзину"
+          }
+        }
+      }
+    },
+    "Couldn't save the change": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сохранить изменение"
+          }
+        }
+      }
+    },
+    "Delete %@?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить %@?"
+          }
+        }
+      }
+    },
+    "Delete…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить…"
+          }
+        }
+      }
+    },
+    "Folder": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Папка"
+          }
+        }
+      }
+    },
+    "From disk · %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С диска · %lld"
+          }
+        }
+      }
+    },
+    "Game size": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Размер игры"
+          }
+        }
+      }
+    },
+    "Games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игры"
+          }
+        }
+      }
+    },
+    "Graphics": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Графика"
+          }
+        }
+      }
+    },
+    "How to delete": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как удалить"
+          }
+        }
+      }
+    },
+    "Log": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лог"
+          }
+        }
+      }
+    },
+    "Most played": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Больше всего сыграно"
+          }
+        }
+      }
+    },
+    "Move to Trash": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переместить в Корзину"
+          }
+        }
+      }
+    },
+    "New": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Новая"
+          }
+        }
+      }
+    },
+    "No games match “%@”.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет игр по запросу «%@»."
+          }
+        }
+      }
+    },
+    "Not launched yet · from disk": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё не запускалась · с диска"
+          }
+        }
+      }
+    },
+    "Not supported": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не поддерживается"
+          }
+        }
+      }
+    },
+    "Not yet": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё не играли"
+          }
+        }
+      }
+    },
+    "Only from EscApp": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Только из EscApp"
+          }
+        }
+      }
+    },
+    "Open": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть"
+          }
+        }
+      }
+    },
+    "Open Game Folder": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть папку игры"
+          }
+        }
+      }
+    },
+    "Open Game…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть игру…"
+          }
+        }
+      }
+    },
+    "Order": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Порядок"
+          }
+        }
+      }
+    },
+    "Played": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сыграно"
+          }
+        }
+      }
+    },
+    "Recent": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Недавние"
+          }
+        }
+      }
+    },
+    "Recent runs": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последние запуски"
+          }
+        }
+      }
+    },
+    "Saves are kept either way.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранения останутся в любом случае."
+          }
+        }
+      }
+    },
+    "Search games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поиск игр"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки"
+          }
+        }
+      }
+    },
+    "Source": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откуда"
+          }
+        }
+      }
+    },
+    "Starts": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускает"
+          }
+        }
+      }
+    },
+    "System": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Система"
+          }
+        }
+      }
+    },
+    "The game folder%@ goes to the Trash. Until the Trash is emptied, the game can be restored.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Папка игры%@ уйдёт в Корзину. Пока Корзина не очищена, игру можно восстановить."
+          }
+        }
+      }
+    },
+    "The game hasn't been started yet.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игру ещё не запускали."
+          }
+        }
+      }
+    },
+    "The game stays in %@. EscApp forgets it and deletes its Windows setup. Double-click the exe to bring it back.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра останется в %@. EscApp забудет её и удалит её среду Windows. Вернуть можно двойным щелчком по exe."
+          }
+        }
+      }
+    },
+    "This game is no longer in EscApp.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этой игры больше нет в EscApp."
+          }
+        }
+      }
+    },
+    "To add a game, double-click its .exe or .msi in Finder, or drag the file onto the EscApp icon in the Dock.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы добавить игру, дважды щёлкните по .exe или .msi в Finder или перетащите файл на значок EscApp в Dock."
+          }
+        }
+      }
+    },
+    "Today": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сегодня"
+          }
+        }
+      }
+    },
+    "under a minute": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "меньше минуты"
+          }
+        }
+      }
+    },
+    "%lld launches": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld launch"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld launches"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld запуск"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld запуска"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld запусков"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld запуска"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "From disk": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С диска"
+          }
+        }
+      }
+    },
+    "EscApp runs Windows games on this Mac. Just open a game, and it takes care of the rest.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp запускает Windows-игры на этом Mac. Просто откройте игру, остальное он сделает сам."
+          }
+        }
+      }
+    },
+    "%@ available": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "есть %@"
+          }
+        }
+      }
+    },
+    "Applies after EscApp restarts": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Применится после перезапуска EscApp"
+          }
+        }
+      }
+    },
+    "As in macOS": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Как в системе"
+          }
+        }
+      }
+    },
+    "Check for Updates": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить обновления"
+          }
+        }
+      }
+    },
+    "Clean Windows (template)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чистая Windows (шаблон)"
+          }
+        }
+      }
+    },
+    "Disk Space": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Место на диске"
+          }
+        }
+      }
+    },
+    "EscApp is the default app for .exe and .msi": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp — программа по умолчанию для .exe и .msi"
+          }
+        }
+      }
+    },
+    "Finder shows more: the games' Windows setups are copies of the template that share its space. Games and saves aren't counted here.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder покажет больше: среды игр — копии шаблона, которые делят с ним место. Игры и сохранения сюда не входят."
+          }
+        }
+      }
+    },
+    "Games write AppData and Saved Games here. “My Documents” is your Documents folder.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сюда игры пишут AppData и Saved Games. «Мои документы» — это ваша папка «Документы»."
+          }
+        }
+      }
+    },
+    "General": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Основные"
+          }
+        }
+      }
+    },
+    "Language": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Язык"
+          }
+        }
+      }
+    },
+    "Latest": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последняя"
+          }
+        }
+      }
+    },
+    "Licenses": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Лицензии"
+          }
+        }
+      }
+    },
+    "Not installed yet": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё не установлены"
+          }
+        }
+      }
+    },
+    "Open .exe files with a double-click": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открывать .exe двойным щелчком"
+          }
+        }
+      }
+    },
+    "Saves": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранения"
+          }
+        }
+      }
+    },
+    "Shared by all games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Общие для всех игр"
+          }
+        }
+      }
+    },
+    "Show": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать"
+          }
+        }
+      }
+    },
+    "Update components automatically": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновлять компоненты сами"
+          }
+        }
+      }
+    },
+    "Wine and graphics": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wine и графика"
+          }
+        }
+      }
+    },
+    "": {
+      "shouldTranslate": false
+    },
+    "%@": {
+      "shouldTranslate": false
+    },
+    "%@ %@": {
+      "shouldTranslate": false
+    },
+    "Apple": {
+      "shouldTranslate": false
+    },
+    "Windows for %lld games": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Windows for %lld game"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Windows for %lld games"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Среда %lld игры"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Среды %lld игр"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Среды %lld игр"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Среды %lld игры"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Components aren't installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Компоненты не установлены"
+          }
+        }
+      }
+    },
+    "Rosetta is installed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installed"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установлена"
+          }
+        }
+      }
+    },
+    "First launch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Первый запуск"
+          }
+        }
+      }
+    },
+    "Getting the game ready": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовим игру к запуску"
+          }
+        }
+      }
+    },
+    "Getting the game ready for its first launch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовим игру к первому запуску"
+          }
+        }
+      }
+    },
+    "Graphics: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Графика: %@"
+          }
+        }
+      }
+    },
+    "Its own %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Своя среда %@"
+          }
+        }
+      }
+    },
+    "Running · %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Работает · %@"
+          }
+        }
+      }
+    },
+    "Show Game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать игру"
+          }
+        }
+      }
+    },
+    "Starting": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запуск"
+          }
+        }
+      }
+    },
+    "Starting the game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускаем игру"
+          }
+        }
+      }
+    },
+    "Wine is still starting. The first launch can take up to a minute.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wine ещё запускается. Первый запуск может занять до минуты."
+          }
+        }
+      }
+    },
+    "You can close EscApp; the game keeps running.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp можно закрыть, игра продолжит работать."
+          }
+        }
+      }
+    },
+    "instant": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "мгновенно"
+          }
+        }
+      }
+    },
+    "once, about 30 s": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "один раз, около 30 с"
+          }
+        }
+      }
+    },
+    "%@ · %@": {
+      "shouldTranslate": false
+    },
+    "%@ doesn't seem to suit this game. Starting with %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Похоже, %1$@ этой игре не подходит. Запускаем с %2$@"
+          }
+        }
+      }
+    },
+    "%@ started with %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ запущена с %2$@"
+          }
+        }
+      }
+    },
+    "(attempt %lld of %lld)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(попытка %1$lld из %2$lld)"
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрыть"
+          }
+        }
+      }
+    },
+    "Closed %lld s after starting": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрылась через %lld с после старта"
+          }
+        }
+      }
+    },
+    "Copy Report": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировать отчёт"
+          }
+        }
+      }
+    },
+    "Didn't start": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не запустилась"
+          }
+        }
+      }
+    },
+    "Don't Retry": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не повторять"
+          }
+        }
+      }
+    },
+    "It closes right after starting (code %@).": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Она закрывается сразу после старта (код %@)."
+          }
+        }
+      }
+    },
+    "It crashes while starting.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Она падает при запуске."
+          }
+        }
+      }
+    },
+    "It needs DirectX 12, which EscApp doesn't support yet.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ей нужен DirectX 12, а EscApp его пока не поддерживает."
+          }
+        }
+      }
+    },
+    "It uses %@ anti-cheat, which doesn't run on a Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Она использует античит %@, а он не работает на Mac."
+          }
+        }
+      }
+    },
+    "Its graphics can't start on this Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Её графика не запускается на этом Mac."
+          }
+        }
+      }
+    },
+    "Its window never appeared.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окно игры так и не появилось."
+          }
+        }
+      }
+    },
+    "Next time it starts this way right away": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В следующий раз сразу так"
+          }
+        }
+      }
+    },
+    "No window after %lld s": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окно не появилось за %lld с"
+          }
+        }
+      }
+    },
+    "Open Log": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть лог"
+          }
+        }
+      }
+    },
+    "Show Game Folder": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать папку игры"
+          }
+        }
+      }
+    },
+    "The game didn't start with any graphics option.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра не запустилась ни с одним вариантом графики."
+          }
+        }
+      }
+    },
+    "The game didn't start.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра не запустилась."
+          }
+        }
+      }
+    },
+    "The game failed — EscApp is trying again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра упала — EscApp пробует ещё раз сам"
+          }
+        }
+      }
+    },
+    "The log says **%@** is missing — the game isn't fully installed.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В логе: не найден файл **%@** — игра установлена не полностью."
+          }
+        }
+      }
+    },
+    "Tried: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пробовали: %@"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

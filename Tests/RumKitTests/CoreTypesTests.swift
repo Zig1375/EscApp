@@ -69,8 +69,9 @@ import Testing
 
     @Test func backendOverrides() {
         #expect(WineEnvironment.make(host: [:], bottle: "/b", backend: .dxvk)["WINEDLLOVERRIDES"]
-            == "d3d10core,d3d11=n,b")
-        #expect(WineEnvironment.make(host: [:], bottle: "/b", backend: .wined3d)["WINEDLLOVERRIDES"] == nil)
+            == "d3d10core,d3d11=n,b;winemenubuilder.exe=d")
+        #expect(WineEnvironment.make(host: [:], bottle: "/b", backend: .wined3d)["WINEDLLOVERRIDES"]
+            == "winemenubuilder.exe=d")
     }
 
     @Test func userSettingsWinLast() {

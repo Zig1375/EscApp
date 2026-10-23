@@ -31,6 +31,11 @@ xcodebuild -project Rum.xcodeproj -scheme Rum -destination 'platform=macOS,arch=
   by SHA-256), `ManifestUpdater` (daily fetch of the same file from `main`), `RuntimeInstaller` (staging folder,
   `RUNTIME.json` marker written last), `RuntimeCatalog` (installed vs. newest). `rum runtime status|install`
   does the same as the app.
+- Bottles: `BottleManager` builds one template per runtime (`wineboot`, staging + `TEMPLATE.json`) and APFS-clones
+  it per game (`BOTTLE.json`). `SharedProfile` links AppData and Saved Games to `Rum/Profile` in the template.
+  `WineRegistry` edits `user.reg` as text (only while the bottle's wineserver is stopped).
+- Games: `GameIdentifier` finds the game for an exe via the `.rum` file in its root folder, then last path, then a
+  fingerprint; `GameLibrary` is `Games.json`. `rum game identify|prepare|list` exercises both.
 - `RumPaths` is the only place that builds paths under `~/Library/Application Support/Rum` (`RUM_HOME` overrides).
 
 ## Rules

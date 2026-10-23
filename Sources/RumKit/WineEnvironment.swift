@@ -21,17 +21,19 @@ public enum WineEnvironment {
         // Silent by default so a long session doesn't write gigabytes of fixme lines. The verbose log adds
         // exceptions and DLL loads, which is what diagnosing a crash at start needs.
         env["WINEDEBUG"] = verboseLog ? "+seh,+loaddll" : "-all"
-        if let overrides = dllOverrides(for: backend) {
-            env["WINEDLLOVERRIDES"] = overrides
-        }
+        env["WINEDLLOVERRIDES"] = dllOverrides(for: backend)
         env.merge(extra) { _, user in user }
         return env
     }
 
     /// `d3d11,dxgi=n,b`: load the backend's copy first, fall back to Wine's builtin if it's missing.
-    static func dllOverrides(for backend: GraphicsBackend) -> String? {
-        let dlls = backend.nativeDLLs
-        guard !dlls.isEmpty else { return nil }
-        return dlls.sorted().joined(separator: ",") + "=n,b"
+    /// `winemenubuilder` is always off: it would add Start Menu shortcuts and file associations for every
+    /// installer to the Mac (`~/Applications`, Launch Services), which Rum manages itself.
+    static func dllOverrides(for backend: GraphicsBackend) -> String {
+        var parts = ["winemenubuilder.exe=d"]
+        if !backend.nativeDLLs.isEmpty {
+            parts.insert(backend.nativeDLLs.sorted().joined(separator: ",") + "=n,b", at: 0)
+        }
+        return parts.joined(separator: ";")
     }
 }

@@ -47,6 +47,8 @@ public struct RumCommand: Sendable {
             return env(rest)
         case "runtime":
             return await runtime(rest)
+        case "game":
+            return await game(rest)
         case "help", "--help", "-h":
             return success(Self.usage)
         default:
@@ -66,6 +68,10 @@ public struct RumCommand: Sendable {
           runtime status                   Show Rosetta and whether the current runtime is installed
           runtime install [--accept-rosetta-license]
                                            Download, check and install Wine, DXVK and DXMT
+          game identify <exe>              Show which game an .exe belongs to (creates its .rum)
+          game prepare <exe> [--windows winxp|win7|win10|win11]
+                                           Identify the game and make its bottle (needs the runtime)
+          game list                        List known games
         """
 
     private func pathsReport() -> String {
@@ -170,6 +176,62 @@ public struct RumCommand: Sendable {
         } catch {
             return failure("\(error)")
         }
+    }
+
+    private func game(_ arguments: [String]) async -> Output {
+        var options = Options(arguments)
+        guard let action = options.positional() else { return failure("game needs identify, prepare or list") }
+        if action == "list" { return gameList() }
+        guard action == "identify" || action == "prepare" else { return failure("Unknown game action: \(action)") }
+
+        let windowsValue = options.value("--windows")
+        guard let path = options.positional() else { return failure("game \(action) needs the path to an .exe") }
+        if let unknown = options.leftover { return failure("Unknown option: \(unknown)") }
+        let windows = windowsValue.flatMap(WindowsVersion.init(wineValue:))
+        if let windowsValue, windows == nil {
+            return failure("Unknown Windows version: \(windowsValue). Use winxp, win7, win10 or win11.")
+        }
+        guard FileManager.default.fileExists(atPath: path) else { return failure("No such file: \(path)") }
+
+        do {
+            let result = try GameIdentifier(paths: paths).identify(executable: URL(filePath: path))
+            let summary = [
+                "Game: \(result.record.name) (\(result.record.id))",
+                "Found by: \(result.method.rawValue)",
+                "Folder: \(result.record.folder)",
+            ]
+            guard action == "prepare" else { return success(summary.joined(separator: "\n")) }
+            return try await gamePrepare(result.record, windows: windows, summary: summary)
+        } catch {
+            return failure("\(error)")
+        }
+    }
+
+    private func gameList() -> Output {
+        guard let library = try? GameLibrary.load(from: paths.library) else { return failure("Can't read Games.json") }
+        let lines = library.games.map { "\($0.id)  \($0.name)  \($0.windowsVersion.displayName)  \($0.executable)" }
+        return success(lines.isEmpty ? "No games yet." : lines.joined(separator: "\n"))
+    }
+
+    private func gamePrepare(_ game: GameRecord, windows: WindowsVersion?, summary: [String]) async throws -> Output {
+        guard let runtime = try manifest().newest(forRum: Self.rumVersion, macOS: Self.macOSVersion),
+              RuntimeInstaller(paths: paths).installed(runtime) != nil
+        else { return failure("The runtime isn't installed. Run: rum runtime install") }
+        var record = game
+        if let windows {
+            record.windowsVersion = windows
+            var library = try GameLibrary.load(from: paths.library)
+            library[record.id] = record
+            try library.save(to: paths.library)
+        }
+        let bottles = BottleManager(paths: paths, host: host)
+        if !bottles.hasTemplate(for: runtime) { progress("Setting up Windows for \(runtime.id) (once)…") }
+        let bottle = try await bottles.ensureBottle(for: record.id, runtime: runtime, windows: record.windowsVersion)
+        let lines = summary + [
+            "Windows: \(BottleManager.windowsVersion(of: bottle).displayName)",
+            "Bottle: \(bottle.path(percentEncoded: false))",
+        ]
+        return success(lines.joined(separator: "\n"))
     }
 
     static let rumVersion = Version(version) ?? .zero

@@ -15,10 +15,13 @@ enum ProcessRunner {
     }
 
     /// Combined stdout and stderr, so a failure message has whatever the tool said.
-    static func run(_ executable: String, _ arguments: [String]) async throws -> Output {
+    /// - Parameter environment: replaces the inherited environment entirely when given.
+    static func run(_ executable: String, _ arguments: [String],
+                    environment: [String: String]? = nil) async throws -> Output {
         let process = Process()
         process.executableURL = URL(filePath: executable)
         process.arguments = arguments
+        if let environment { process.environment = environment }
         let pipe = Pipe()
         process.standardOutput = pipe
         process.standardError = pipe
@@ -44,8 +47,9 @@ enum ProcessRunner {
         }
     }
 
-    static func check(_ executable: String, _ arguments: [String]) async throws {
-        let result = try await run(executable, arguments)
+    static func check(_ executable: String, _ arguments: [String],
+                      environment: [String: String]? = nil) async throws {
+        let result = try await run(executable, arguments, environment: environment)
         guard result.status == 0 else {
             throw Failure(tool: URL(filePath: executable).lastPathComponent, status: result.status,
                           output: String(result.output.suffix(2000)))

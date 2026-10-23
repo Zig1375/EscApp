@@ -1,0 +1,24 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "No games yet" : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Игр пока нет" } }
+      }
+    },
+    "Double-click a game's .exe in Finder, or drag it onto Rum. Rum sets everything up by itself." : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Дважды щёлкните .exe игры в Finder или перетащите его на Rum. Всё остальное Rum сделает сам." } }
+      }
+    },
+    "To add a game, double-click its .exe or .msi, or drag the file onto the Rum icon in the Dock." : {
+      "localizations" : {
+        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Чтобы добавить игру, дважды щёлкните её .exe или .msi или перетащите файл на значок Rum в Dock." } }
+      }
+    },
+    "Rum" : {
+      "shouldTranslate" : false
+    }
+  },
+  "version" : "1.0"
+}

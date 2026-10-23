@@ -1,0 +1,68 @@
+/// What Rum knows about a game's executable before the first launch. Filled in by the exe analysis (M3); the
+/// rules below only depend on these facts, so they are tested without real games.
+public struct ExecutableTraits: Sendable, Equatable {
+    public enum Architecture: String, Sendable, Equatable {
+        case x86
+        case x64
+        /// A 16-bit (NE) executable. Wine on macOS can't run these.
+        case win16
+    }
+
+    public enum DirectX: Int, Comparable, Sendable, Equatable {
+        /// `ddraw.dll`, `d3d8.dll` and older.
+        case legacy = 8
+        case d3d9 = 9
+        case d3d11 = 11
+        case d3d12 = 12
+
+        public static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
+    }
+
+    public var architecture: Architecture
+    /// Every Direct3D generation the exe imports. Empty means it imports none (a launcher, or a game that
+    /// loads Direct3D at run time).
+    public var directX: Set<DirectX>
+    /// Chromium-based launchers (Steam, Epic) are known to run well on DXVK.
+    public var isChromiumLauncher: Bool
+
+    public init(architecture: Architecture, directX: Set<DirectX> = [], isChromiumLauncher: Bool = false) {
+        self.architecture = architecture
+        self.directX = directX
+        self.isChromiumLauncher = isChromiumLauncher
+    }
+}
+
+/// The order in which the first launch tries backends, when neither an earlier run nor the game database
+/// says which one works.
+public enum BackendPlan: Sendable, Equatable {
+    case attempts([GraphicsBackend])
+    case unsupported(Reason)
+
+    public enum Reason: Sendable, Equatable {
+        case sixteenBit
+        /// Direct3D 12 needs D3DMetal, which comes in v2.
+        case directX12
+    }
+
+    public static func forTraits(_ traits: ExecutableTraits) -> BackendPlan {
+        if traits.architecture == .win16 { return .unsupported(.sixteenBit) }
+        if traits.isChromiumLauncher { return .attempts([.dxvk, .wined3d]) }
+        // The newest Direct3D an exe imports decides: a game that imports both d3d9 and d3d11 renders with 11
+        // and keeps 9 for a fallback path or its settings tool.
+        switch traits.directX.max() {
+        case .d3d12:
+            return .unsupported(.directX12)
+        case .d3d11:
+            // DXVK-macOS can't create a D3D11 device for a 32-bit process (seen in mapc), so 32-bit games
+            // start with DXMT and never try DXVK.
+            return traits.architecture == .x64 ? .attempts([.dxvk, .dxmt, .wined3d]) : .attempts([.dxmt, .wined3d])
+        case .d3d9:
+            return .attempts([.dxvk, .wined3d])
+        case .legacy:
+            return .attempts([.wined3d])
+        case nil:
+            // Nothing imported statically: the exe probably loads Direct3D itself. DXVK covers 9–11.
+            return .attempts([.dxvk, .wined3d])
+        }
+    }
+}

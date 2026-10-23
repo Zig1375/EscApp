@@ -1,5 +1,5 @@
 # Runtime manifest
 
 The app downloads Wine, DXVK-macOS, DXMT and Wine Mono from the URLs in a JSON manifest published on GitHub Pages.
-Each entry carries its SHA-256, size, and the minimum Rum and macOS versions. The manifest format and the tool that
+Each entry carries its SHA-256, size, and the minimum ExePort and macOS versions. The manifest format and the tool that
 updates it arrive in milestone M1.

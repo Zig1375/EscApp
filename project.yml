@@ -1,5 +1,5 @@
-# Generates Rum.xcodeproj: `xcodegen generate`. The project file isn't committed; this is the source of truth.
-name: Rum
+# Generates ExePort.xcodeproj: `xcodegen generate`. The project file isn't committed; this is the source of truth.
+name: ExePort
 options:
   bundleIdPrefix: com.zig1375
   deploymentTarget:
@@ -15,23 +15,50 @@ settings:
     SWIFT_EMIT_LOC_STRINGS: YES
     LOCALIZATION_PREFERS_STRING_CATALOGS: YES
 packages:
-  Rum:
+  ExePort:
     path: .
 targets:
-  Rum:
+  ExePort:
     type: application
     platform: macOS
     sources:
-      - App/Rum
+      - App/ExePort
+    info:
+      path: App/ExePort/Info.plist
+      properties:
+        # ExePort opens Windows programs and installers. "Default" rank: ExePort becomes their app unless the user
+        # already picked another one; Settings offers to make ExePort the default.
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Windows Program
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Default
+            LSItemContentTypes: [com.microsoft.windows-executable]
+          - CFBundleTypeName: Windows Installer
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Default
+            LSItemContentTypes: [com.microsoft.windows-installer]
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: com.microsoft.windows-executable
+            UTTypeDescription: Windows Program
+            UTTypeConformsTo: [public.data, public.executable]
+            UTTypeTagSpecification:
+              public.filename-extension: [exe]
+          - UTTypeIdentifier: com.microsoft.windows-installer
+            UTTypeDescription: Windows Installer
+            UTTypeConformsTo: [public.data]
+            UTTypeTagSpecification:
+              public.filename-extension: [msi]
     dependencies:
-      - package: Rum
-        product: RumKit
+      - package: ExePort
+        product: ExePortKit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.zig1375.Rum
-        PRODUCT_NAME: Rum
+        PRODUCT_BUNDLE_IDENTIFIER: com.zig1375.ExePort
+        PRODUCT_NAME: ExePort
+        # App/ExePort/AppIcon.icon (Icon Composer): macOS 26 shapes it itself; Xcode renders the older sizes.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Rum
+        INFOPLIST_KEY_CFBundleDisplayName: ExePort
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.games
         INFOPLIST_KEY_NSHumanReadableCopyright: "Apache-2.0"
         # Wine needs to load unsigned code and map executable memory, which the sandbox forbids.

@@ -1,0 +1,23 @@
+// Version, manifest and icon, so the probes also test what ExePort reads from an exe.
+#include <winver.h>
+1 ICON "probe.ico"
+1 24 "probe.manifest"
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 1,0,0,0
+FILETYPE VFT_APP
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904b0"
+    BEGIN
+      VALUE "FileDescription", "ExePort graphics probe"
+      VALUE "ProductName", "ExePort Probe"
+      VALUE "FileVersion", "1.0.0.0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END

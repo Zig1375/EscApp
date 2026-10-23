@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "runtimes": [
+    {
+      "id": "wine-11.0-whisky-3.1.1",
+      "minApp": "0.1.0",
+      "minMacOS": "15.0",
+      "components": [
+        {
+          "kind": "wine",
+          "version": "11.0 (WhiskyWine 3.1.1)",
+          "url": "https://github.com/frankea/Whisky/releases/download/v3.1.1/Libraries.tar.gz",
+          "sha256": "01f3a1b43b98065fe20c529c1023b61dd79a6d2ad93bba6040865f646481ccf3",
+          "size": 332438526,
+          "license": "LGPL-2.1-or-later",
+          "from": "Libraries/Wine",
+          "into": "wine"
+        },
+        {
+          "kind": "dxvk",
+          "version": "1.10.3-20230507-repack",
+          "url": "https://github.com/Gcenx/DXVK-macOS/releases/download/v1.10.3-20230507-repack/dxvk-macOS-async-v1.10.3-20230507-repack-builtin.tar.gz",
+          "sha256": "810b1e5caf8ce975b784fae866a130ad23fa0ea233b0e5609cbc4a45f3ef6f00",
+          "size": 2785833,
+          "license": "Zlib",
+          "from": "dxvk-macOS-async-v1.10.3-20230507-repack-builtin",
+          "into": "dxvk"
+        },
+        {
+          "kind": "dxmt",
+          "version": "0.80",
+          "url": "https://github.com/3Shain/dxmt/releases/download/v0.80/dxmt-v0.80-builtin.tar.gz",
+          "sha256": "8f260e36b5739e68f3bad613381441385c4dc7b85b78ba8de653d5a6a264529d",
+          "size": 18681669,
+          "license": "MIT",
+          "from": "v0.80",
+          "into": "dxmt"
+        }
+      ]
+    }
+  ]
+}

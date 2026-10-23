@@ -68,18 +68,30 @@ public struct BottleManager: Sendable {
             let marker = try JSONEncoder.iso.encode(BottleInfo(runtime: runtime.id, createdAt: Date()))
             try marker.write(to: staging.appending(path: Self.templateMarker))
 
-            // Whichever build finishes first wins; the others' work is thrown away.
-            if hasTemplate(for: runtime) {
-                try? fileManager.removeItem(at: staging)
-                return destination
-            }
-            try? fileManager.removeItem(at: destination)
-            try fileManager.moveItem(at: staging, to: destination)
+            try Self.publish(staging, to: destination)
             return destination
         } catch {
             try? fileManager.removeItem(at: staging)
             if hasTemplate(for: runtime) { return destination }
             throw error
+        }
+    }
+
+    /// Makes a finished staging folder the template. Whichever build finishes first wins; the others' work is
+    /// thrown away. A destination without its marker is an unfinished leftover and is replaced.
+    static func publish(_ staging: URL, to destination: URL) throws {
+        let fileManager = FileManager.default
+        let done = { fileManager.fileExists(atPath: destination.appending(path: templateMarker).path) }
+        if done() {
+            try? fileManager.removeItem(at: staging)
+            return
+        }
+        try? fileManager.removeItem(at: destination)
+        do {
+            try fileManager.moveItem(at: staging, to: destination)
+        } catch {
+            try? fileManager.removeItem(at: staging)
+            if !done() { throw error }
         }
     }
 

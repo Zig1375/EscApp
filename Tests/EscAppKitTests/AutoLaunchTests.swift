@@ -1,0 +1,267 @@
+@testable import EscAppKit
+import Foundation
+import Synchronization
+import Testing
+
+/// The launch loop's decisions with scripted games: no Wine, and timings shrunk to fractions of a second.
+@Suite struct AutoLaunchTests {
+    /// What one attempt does, in seconds after it starts.
+    struct Script: Sendable {
+        var windowAt: TimeInterval?
+        var exitAt: TimeInterval?
+        var exitCode: Int32 = 0
+        var log = ""
+
+        /// Shows its window and plays until the player quits.
+        static let works = Script(windowAt: 0.02, exitAt: 0.3)
+        static func crashes(at seconds: TimeInterval = 0.05) -> Script {
+            Script(exitAt: seconds, exitCode: 5,
+                   log: "wine: Unhandled page fault on write access to 00000000 at address 0040100A")
+        }
+        static let missesAFile = Script(exitAt: 0.02, exitCode: 53, log: #"""
+            err:module:import_dll Library binkw32.dll (which is needed by L"Z:\\g\\game.exe") not found
+            """#)
+        static let showsNothing = Script()
+    }
+
+    final class FakeAttempt: GameAttempt, @unchecked Sendable {
+        let session: GameSession
+        let startedAt = Date()
+        let script: Script
+        let logFile: URL
+        private let state = Mutex<(stoppedAt: TimeInterval?, idleWatched: Bool)>((nil, false))
+
+        init(script: Script, pid: Int32, logFile: URL) {
+            self.script = script
+            self.logFile = logFile
+            session = GameSession(wine: Wine(root: URL(filePath: "/fake")), environment: [:], processID: pid)
+        }
+
+        var elapsed: TimeInterval { Date().timeIntervalSince(startedAt) }
+        var stopped: Bool { state.withLock { $0.stoppedAt != nil } }
+        private var exitTime: TimeInterval? {
+            [script.exitAt, state.withLock { $0.stoppedAt }].compactMap(\.self).min()
+        }
+
+        var hasWindow: Bool {
+            guard let windowAt = script.windowAt, elapsed >= windowAt else { return false }
+            return exitTime.map { elapsed < $0 } ?? true
+        }
+
+        var exitCode: Int32? {
+            guard let exitTime, elapsed >= exitTime else { return nil }
+            return script.exitAt == exitTime ? script.exitCode : 1
+        }
+
+        var isIdle: Bool { exitCode != nil && state.withLock { $0.idleWatched } }
+        func watchForIdle() { state.withLock { $0.idleWatched = true } }
+        func stop() async { state.withLock { $0.stoppedAt = $0.stoppedAt ?? elapsed } }
+
+        func finish() async -> GameLauncher.Outcome {
+            while exitCode == nil { try? await Task.sleep(for: .milliseconds(5)) }
+            try? script.log.write(to: logFile, atomically: true, encoding: .utf8)
+            return GameLauncher.Outcome(exitCode: exitCode ?? -1, duration: elapsed, processDuration: elapsed,
+                                        backend: .dxvk, log: logFile)
+        }
+    }
+
+    final class FakeStarter: AttemptStarter, @unchecked Sendable {
+        let scripts: [GraphicsBackend: Script]
+        let logs: URL
+        private let state = Mutex<[(GraphicsBackend, FakeAttempt)]>([])
+
+        init(_ scripts: [GraphicsBackend: Script], logs: URL) {
+            self.scripts = scripts
+            self.logs = logs
+        }
+
+        var started: [(GraphicsBackend, FakeAttempt)] { state.withLock { $0 } }
+
+        func start(_ game: GameRecord, runtime: RuntimeManifest.Runtime, backend: GraphicsBackend, verboseLog: Bool,
+                   progress: @Sendable (GameLauncher.Step) -> Void) async throws -> any GameAttempt {
+            let pid = Int32(state.withLock { $0.count } + 100)
+            let attempt = FakeAttempt(script: scripts[backend] ?? .showsNothing, pid: pid,
+                                      logFile: logs.appending(path: "\(pid).log"))
+            state.withLock { $0.append((backend, attempt)) }
+            return attempt
+        }
+
+        func windows(_ session: GameSession) -> [Int32] {
+            started.contains { $0.1.session.processID == session.processID && $0.1.hasWindow }
+                ? [session.processID] : []
+        }
+    }
+
+    actor FakeWarmer: WarmBottles {
+        var calls: [String] = []
+        /// When `release` first came.
+        var releasedAt: Date?
+
+        func release(_ id: GameID) {
+            calls.append("release")
+            releasedAt = releasedAt ?? Date()
+        }
+
+        func coolAll(except kept: GameID?) { calls.append("coolAll") }
+    }
+
+    let temp: TempFolder
+    let paths: AppPaths
+    var game: GameRecord
+    let runtime = RuntimeManifest.Runtime(id: "test", minApp: Version("0.1")!, minMacOS: Version("15")!,
+                                          components: [])
+    let timing = AutoLaunch.Timing(poll: .milliseconds(5), windowHolds: 0.1, firstWindowTimeout: 0.2,
+                                   handOverAfter: 0.15)
+
+    init() throws {
+        temp = try TempFolder()
+        paths = AppPaths(root: temp.url.appending(path: "Home"), games: temp.url.appending(path: "Games"))
+        // A D3D11 x64 exe: the rules try DXVK, then DXMT, then WineD3D.
+        let exe = temp.url.appending(path: "Game/game.exe")
+        try FileManager.default.createDirectory(at: exe.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: Probes.url("d3d11-x64"), to: exe)
+        game = try GameIdentifier(paths: paths).identify(executable: exe).record
+    }
+
+    func play(_ starter: FakeStarter, backend: GraphicsBackend? = nil, knownGames: [KnownGame] = [],
+              control: LaunchControl = LaunchControl(), warmer: FakeWarmer? = nil,
+              events: @escaping @Sendable (AutoLaunch.Event) -> Void = { _ in }) async throws -> AutoLaunch.Result {
+        try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, timing: timing)
+            .play(game, runtime: runtime, backend: backend, knownGames: knownGames, control: control,
+                  warmer: warmer, events: events)
+    }
+
+    func logs() throws -> URL {
+        let folder = temp.url.appending(path: "Logs")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }
+
+    func remembered() throws -> GraphicsBackend? { try GameLibrary.load(from: paths.library)[game.id]?.backend }
+
+    @Test func aGameThatWorksNeedsOneAttempt() async throws {
+        let starter = try FakeStarter([.dxvk: .works], logs: logs())
+        let learned = Mutex<Bool?>(nil)
+        let result = try await play(starter) { event in
+            if case let .working(_, wasLearned) = event { learned.withLock { $0 = wasLearned } }
+        }
+        #expect(result.working == .dxvk)
+        #expect(result.attempts.count == 1)
+        #expect(learned.withLock { $0 } == false)
+        #expect(try remembered() == .dxvk)
+        #expect(try GameLibrary.load(from: paths.library)[game.id]?.launches == 1)
+    }
+
+    @Test func aCrashMovesOnToTheNextBackendAndIsLearned() async throws {
+        let starter = try FakeStarter([.dxvk: .crashes(), .dxmt: .works], logs: logs())
+        let retries = Mutex<[GraphicsBackend]>([])
+        let result = try await play(starter) { event in
+            if case let .retrying(_, next, _, _) = event { retries.withLock { $0.append(next) } }
+        }
+        #expect(starter.started.map(\.0) == [.dxvk, .dxmt])
+        #expect(retries.withLock { $0 } == [.dxmt])
+        #expect(result.working == .dxmt)
+        #expect(result.learned)
+        #expect(result.attempts.first?.failure == .closed(exitCode: 5))
+        #expect(result.attempts.first?.diagnosis.problem == .crash)
+        #expect(try remembered() == .dxmt)
+    }
+
+    @Test func aMissingGameFileEndsTheTriesAtOnce() async throws {
+        let starter = try FakeStarter([.dxvk: .missesAFile, .dxmt: .works], logs: logs())
+        let result = try await play(starter)
+        #expect(starter.started.map(\.0) == [.dxvk])
+        #expect(result.working == nil)
+        #expect(result.attempts.first?.diagnosis.problem == .missingFile("binkw32.dll"))
+        #expect(try remembered() == nil)
+    }
+
+    @Test func nothingWorkingTriesEveryBackendAndStopsEach() async throws {
+        let starter = try FakeStarter([:], logs: logs())
+        let result = try await play(starter)
+        #expect(starter.started.map(\.0) == [.dxvk, .dxmt, .wined3d])
+        #expect(result.attempts.allSatisfy { $0.failure == .noWindow })
+        #expect(starter.started.allSatisfy { $0.1.stopped })
+        #expect(result.working == nil)
+    }
+
+    @Test mutating func aRememberedBackendIsNeverKilledForTakingLong() async throws {
+        try GameLibrary.modify(paths.library) { $0[game.id]?.backend = .dxmt }
+        game.backend = .dxmt
+        // No window for longer than a new backend would be given, then a clean exit.
+        let starter = try FakeStarter([.dxmt: Script(exitAt: 0.4)], logs: logs())
+        let result = try await play(starter)
+        #expect(starter.started.map(\.0) == [.dxmt])
+        #expect(starter.started.first?.1.stopped == false)
+        #expect(result.working == .dxmt)
+    }
+
+    @Test func dontRetryLetsTheRunningAttemptGoOnUnjudged() async throws {
+        let starter = try FakeStarter([.dxvk: .crashes(at: 0.1), .dxmt: .works], logs: logs())
+        let control = LaunchControl()
+        let result = try await play(starter, control: control) { event in
+            if case .started = event { control.stopRetrying() }
+        }
+        #expect(starter.started.map(\.0) == [.dxvk])
+        #expect(starter.started.first?.1.stopped == false)
+        #expect(result.attempts.first?.failure == nil)
+        #expect(result.working == nil)
+        #expect(try remembered() == nil)
+    }
+
+    @Test func aChosenBackendIsTheOnlyTry() async throws {
+        let starter = try FakeStarter([.wined3d: .crashes()], logs: logs())
+        let result = try await play(starter, backend: .wined3d)
+        #expect(starter.started.map(\.0) == [.wined3d])
+        #expect(result.working == nil)
+    }
+
+    @Test func cancellingStopsTheGame() async throws {
+        let starter = try FakeStarter([:], logs: logs())
+        let launch = AutoLaunch(paths: paths, starter: starter, windows: starter.windows, timing: timing)
+        let (game, runtime) = (game, runtime)
+        let task = Task { try await launch.play(game, runtime: runtime) }
+        while starter.started.isEmpty { try await Task.sleep(for: .milliseconds(5)) }
+        task.cancel()
+        await #expect(throws: CancellationError.self) { try await task.value }
+        #expect(starter.started.count == 1)
+        #expect(starter.started.first?.1.stopped == true)
+    }
+
+    @Test func theGameDatabaseSetsWindowsForAFirstLaunch() async throws {
+        let starter = try FakeStarter([.dxvk: .works], logs: logs())
+        let known = KnownGame(exe: "game.exe", windows: "winxp")
+        let result = try await play(starter, knownGames: [known])
+        #expect(result.game.windowsVersion == .windowsXP)
+        #expect(try GameLibrary.load(from: paths.library)[game.id]?.windowsVersion == .windowsXP)
+    }
+
+    @Test func theGameDatabaseBackendGoesFirst() async throws {
+        let starter = try FakeStarter([.wined3d: .works], logs: logs())
+        _ = try await play(starter, knownGames: [KnownGame(exe: "GAME.EXE", backend: "wined3d")])
+        #expect(starter.started.map(\.0) == [.wined3d])
+    }
+
+    @Test func aWarmBottleIsHandedOverOnlyOnceTheGameShowsAWindow() async throws {
+        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.08, exitAt: 0.3)], logs: logs())
+        let warmer = FakeWarmer()
+        _ = try await play(starter, warmer: warmer)
+        #expect(await warmer.calls.first == "coolAll")
+        let start = try #require(starter.started.first?.1.startedAt)
+        let after = try #require(await warmer.releasedAt).timeIntervalSince(start)
+        #expect(after >= 0.08)
+    }
+
+    @Test func aWarmBottleIsHandedOverAfterAWhileWithoutAWindow() async throws {
+        try GameLibrary.modify(paths.library) { $0[game.id]?.backend = .dxvk }
+        var game = game
+        game.backend = .dxvk
+        let starter = try FakeStarter([.dxvk: Script(exitAt: 0.4)], logs: logs())
+        let warmer = FakeWarmer()
+        _ = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, timing: timing)
+            .play(game, runtime: runtime, warmer: warmer)
+        let start = try #require(starter.started.first?.1.startedAt)
+        let after = try #require(await warmer.releasedAt).timeIntervalSince(start)
+        #expect(after >= timing.handOverAfter && after < 0.4)
+    }
+}

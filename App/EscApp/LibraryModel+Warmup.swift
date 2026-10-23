@@ -1,9 +1,8 @@
 import AppKit
 import EscAppKit
 
-/// When bottles are warm (`BottleWarmer`): only while EscApp is in front and no game runs, for the last played
-/// game and the card under the pointer. Five seconds after EscApp loses focus they all go, and so do all but
-/// the game's own when a game starts. Macs with less than 16 GB don't warm at all.
+/// Follows `WarmPolicy`: warms while EscApp is in front, cools a few seconds after it loses focus. A game's
+/// launch cools the other bottles itself (`AutoLaunch`).
 extension LibraryModel {
     func watchFocus() {
         let center = NotificationCenter.default
@@ -25,27 +24,26 @@ extension LibraryModel {
         hoverTask?.cancel()
         guard isHovering else { return }
         hoverTask = Task {
-            try? await Task.sleep(for: .milliseconds(400))
+            try? await Task.sleep(for: WarmPolicy.hoverDelay)
             guard !Task.isCancelled else { return }
             warmUp(game)
         }
     }
 
     func warmUp(_ game: GameRecord) {
-        guard BottleWarmer.isAllowed, isReady, NSApp.isActive, states.isEmpty,
+        guard WarmPolicy.mayWarm(ready: isReady, appActive: NSApp.isActive, gamesRunning: !states.isEmpty),
               let (runtime, _) = try? currentRuntime() else { return }
         Task { await warmer.warm(game, runtime: runtime) }
     }
 
     private func warmLastPlayed() {
-        let played = games.compactMap { game in game.lastPlayed.map { (game, $0) } }
-        if let (game, _) = played.max(by: { $0.1 < $1.1 }) { warmUp(game) }
+        if let game = WarmPolicy.lastPlayed(games) { warmUp(game) }
     }
 
     private func coolSoon() {
         coolTask?.cancel()
         coolTask = Task {
-            try? await Task.sleep(for: .seconds(5))
+            try? await Task.sleep(for: WarmPolicy.coolAfterFocusLoss)
             guard !Task.isCancelled, !NSApp.isActive else { return }
             await warmer.coolAll()
         }

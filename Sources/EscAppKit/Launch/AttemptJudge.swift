@@ -27,10 +27,12 @@ public struct AttemptJudge: Sendable, Equatable {
 
     /// Nil: never give up waiting for a window (a backend that already worked for this game).
     let windowTimeout: TimeInterval?
+    let windowHolds: TimeInterval
     private(set) var windowSince: TimeInterval?
 
-    public init(windowTimeout: TimeInterval?) {
+    public init(windowTimeout: TimeInterval?, windowHolds: TimeInterval = Self.windowHolds) {
         self.windowTimeout = windowTimeout
+        self.windowHolds = windowHolds
     }
 
     public var sawWindow: Bool { windowSince != nil }
@@ -44,7 +46,7 @@ public struct AttemptJudge: Sendable, Equatable {
     public mutating func observe(elapsed: TimeInterval, window: Bool, exitCode: Int32?, idle: Bool) -> Verdict? {
         if window, windowSince == nil { windowSince = elapsed }
         if let exitCode, exitCode != 0 { return .failed(.closed(exitCode: exitCode)) }
-        if let windowSince, elapsed - windowSince >= Self.windowHolds { return .working }
+        if let windowSince, elapsed - windowSince >= windowHolds { return .working }
         if idle { return .ended }
         if windowSince == nil, let windowTimeout, elapsed >= windowTimeout { return .failed(.noWindow) }
         return nil

@@ -34,19 +34,21 @@ public struct AutoLaunch: Sendable {
         public var learned: Bool { working != nil && attempts.count > 1 }
     }
 
-    /// A game still showing no window by then has connected to its bottle's Wine anyway.
-    static let handOverAfter: TimeInterval = 10
-
     let paths: AppPaths
-    let host: [String: String]
+    /// Starts each attempt: `GameLauncher`, or a script in tests.
+    let starter: any AttemptStarter
     /// The game's window owners; injectable so the loop doesn't depend on the screen.
     let windows: @Sendable (GameSession) -> [Int32]
+    let timing: Timing
 
     public init(paths: AppPaths, host: [String: String] = ProcessInfo.processInfo.environment,
-                windows: @escaping @Sendable (GameSession) -> [Int32] = GameWindows.owners(of:)) {
+                starter: (any AttemptStarter)? = nil,
+                windows: @escaping @Sendable (GameSession) -> [Int32] = GameWindows.owners(of:),
+                timing: Timing = .standard) {
         self.paths = paths
-        self.host = host
+        self.starter = starter ?? GameLauncher(paths: paths, host: host)
         self.windows = windows
+        self.timing = timing
     }
 
     /// - Parameters:
@@ -55,8 +57,10 @@ public struct AutoLaunch: Sendable {
     ///   - warmer: holds the game's bottle warm, if it does; the game takes it over once it runs.
     public func play(_ game: GameRecord, runtime: RuntimeManifest.Runtime, backend override: GraphicsBackend? = nil,
                      knownGames: [KnownGame] = [], verboseLog: Bool = false, control: LaunchControl = LaunchControl(),
-                     warmer: BottleWarmer? = nil,
+                     warmer: (any WarmBottles)? = nil,
                      events: @escaping @Sendable (Event) -> Void = { _ in }) async throws -> Result {
+        // The other warm bottles go: the game gets the memory. Its own is handed over once it runs.
+        await warmer?.coolAll(except: game.id)
         var game = game
         let exe = URL(filePath: game.executable)
         let info = try? ExecutableInfo.read(exe)
@@ -77,66 +81,94 @@ public struct AutoLaunch: Sendable {
             order = [game.backend ?? .dxvk]
         }
 
-        let launcher = GameLauncher(paths: paths, host: host)
+        let context = Context(runtime: runtime, verboseLog: verboseLog, control: control, warmer: warmer,
+                              events: events)
         var attempts: [LaunchAttempt] = []
         for (index, backend) in order.enumerated() {
-            let prepared = try await launcher.prepare(game, runtime: runtime, backend: backend,
-                                                      verboseLog: verboseLog) { events(.preparing($0)) }
-            try Task.checkCancellation()
-            let running = try launcher.start(prepared)
-            events(.started(running.session, backend: backend, attempt: index + 1, total: order.count))
-
-            // A backend that worked before only fails by closing; one never seen working also by showing nothing.
-            let timeout = backend == game.backend ? nil : AttemptJudge.firstWindowTimeout
-            let verdict = try await watch(running, timeout: timeout, control: control, warmer: warmer,
-                                          events: events)
-            // The bottle only goes idle once the warm-up's helper is gone.
-            await warmer?.release(game.id)
-            if case .failed = verdict { await running.session.stop() }
-            if verdict == .working { events(.working(backend, learned: index > 0)) }
-            let outcome = await running.finish()
-            let diagnosis = LogDiagnosis(log: LogDiagnosis.read(outcome.log) ?? "")
-            let failure: AttemptJudge.Failure? = switch verdict {
-            case let .failed(failure)?: failure
-            case .ended?: diagnosis.problem.map { _ in .closed(exitCode: outcome.exitCode) }
-            case .working?, nil: nil
-            }
-            let attempt = LaunchAttempt(backend: backend, seconds: Int(outcome.processDuration), failure: failure,
-                                        diagnosis: diagnosis, log: outcome.log)
-            attempts.append(attempt)
-
-            let worked = verdict == .working || (verdict == .ended && failure == nil)
-            if worked || verdict == nil || index == order.count - 1 || !diagnosis.retryHelps || !control.retrying {
+            let ran = try await attempt(backend, of: game, number: index + 1, of: order.count, context: context)
+            attempts.append(ran.attempt)
+            let last = index == order.count - 1 || !ran.attempt.diagnosis.retryHelps || !control.retrying
+            if ran.worked || !ran.judged || last {
                 // A run that wasn't judged (the player said not to retry) only teaches its play time.
-                try record(game.id, duration: outcome.duration, working: worked ? backend : nil)
-                return Result(game: game, attempts: attempts, working: worked ? backend : nil, log: outcome.log)
+                try record(game.id, duration: ran.duration, working: ran.worked ? backend : nil)
+                return Result(game: game, attempts: attempts, working: ran.worked ? backend : nil,
+                              log: ran.attempt.log)
             }
-            events(.retrying(attempt, next: order[index + 1], attempt: index + 2, total: order.count))
+            events(.retrying(ran.attempt, next: order[index + 1], attempt: index + 2, total: order.count))
         }
         return Result(game: game, attempts: attempts, working: nil, log: attempts.last?.log)
     }
 
+    /// What one launch keeps the same across its attempts.
+    private struct Context: Sendable {
+        let runtime: RuntimeManifest.Runtime
+        let verboseLog: Bool
+        let control: LaunchControl
+        let warmer: (any WarmBottles)?
+        let events: @Sendable (Event) -> Void
+    }
+
+    /// How one attempt went, to the end of the game.
+    private struct Ran {
+        var attempt: LaunchAttempt
+        var worked: Bool
+        /// False when the player stopped the checking and the game just ran.
+        var judged: Bool
+        /// Until everything in the bottle stopped: the play time.
+        var duration: TimeInterval
+    }
+
+    private func attempt(_ backend: GraphicsBackend, of game: GameRecord, number: Int, of total: Int,
+                         context: Context) async throws -> Ran {
+        let running = try await starter.start(game, runtime: context.runtime, backend: backend,
+                                              verboseLog: context.verboseLog) { context.events(.preparing($0)) }
+        if Task.isCancelled {
+            await running.stop()
+            _ = await running.finish()
+            throw CancellationError()
+        }
+        context.events(.started(running.session, backend: backend, attempt: number, total: total))
+
+        // A backend that worked before only fails by closing; one never seen working also by showing nothing.
+        let timeout = backend == game.backend ? nil : timing.firstWindowTimeout
+        let verdict = try await watch(running, game: game.id, timeout: timeout, context: context)
+        // The bottle only goes idle once the warm-up's helper is gone.
+        await context.warmer?.release(game.id)
+        if case .failed = verdict { await running.stop() }
+        if verdict == .working { context.events(.working(backend, learned: number > 1)) }
+        let outcome = await running.finish()
+        let diagnosis = LogDiagnosis(log: LogDiagnosis.read(outcome.log) ?? "")
+        let failure: AttemptJudge.Failure? = switch verdict {
+        case let .failed(failure)?: failure
+        case .ended?: diagnosis.problem.map { _ in .closed(exitCode: outcome.exitCode) }
+        case .working?, nil: nil
+        }
+        let attempt = LaunchAttempt(backend: backend, seconds: Int(outcome.processDuration), failure: failure,
+                                    diagnosis: diagnosis, log: outcome.log)
+        let worked = verdict == .working || (verdict == .ended && failure == nil)
+        return Ran(attempt: attempt, worked: worked, judged: verdict != nil, duration: outcome.duration)
+    }
+
     /// Watches the attempt until it is decided, or until it ends when the player stopped the checking.
     /// Returns nil for an attempt that ran unjudged.
-    private func watch(_ running: RunningGame, timeout: TimeInterval?, control: LaunchControl,
-                       warmer: BottleWarmer?, events: @Sendable (Event) -> Void) async throws
-        -> AttemptJudge.Verdict? {
-        var judge = AttemptJudge(windowTimeout: timeout)
+    private func watch(_ running: any GameAttempt, game: GameID, timeout: TimeInterval?,
+                       context: Context) async throws -> AttemptJudge.Verdict? {
+        var judge = AttemptJudge(windowTimeout: timeout, windowHolds: timing.windowHolds)
         var announced = false
         while true {
             let owners = windows(running.session)
             if let owner = owners.first, !announced {
                 announced = true
-                events(.windowShown(pid: owner))
+                context.events(.windowShown(pid: owner))
             }
             // A warm bottle's helper goes once the game surely holds the bottle itself: dropping it earlier
             // would shut down the services the game is about to use.
             let elapsed = Date().timeIntervalSince(running.startedAt)
-            if announced || running.exitCode != nil || elapsed > Self.handOverAfter {
-                await warmer?.release(running.prepared.game.id)
+            if announced || running.exitCode != nil || elapsed > timing.handOverAfter {
+                await context.warmer?.release(game)
             }
             if running.exitCode != nil { running.watchForIdle() }
-            if !control.retrying {
+            if !context.control.retrying {
                 // Not judging any more: the game just runs; `finish` waits for its end.
                 return nil
             }
@@ -145,9 +177,9 @@ public struct AutoLaunch: Sendable {
                 return verdict
             }
             do {
-                try await Task.sleep(for: .milliseconds(100))
+                try await Task.sleep(for: timing.poll)
             } catch {
-                await running.session.stop()
+                await running.stop()
                 _ = await running.finish()
                 throw error
             }

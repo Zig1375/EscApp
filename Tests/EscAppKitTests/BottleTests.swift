@@ -104,3 +104,67 @@ import Testing
         #expect(usage.bottles >= 50_000 && usage.bottles < 150_000)
     }
 }
+
+@Suite struct TemplateBuildTests {
+    /// A finished staging folder: its marker plus a file saying which build made it.
+    func staging(_ name: String, in folder: URL) throws -> URL {
+        let staging = folder.appending(path: ".staging-r-\(name)")
+        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+        try Data().write(to: staging.appending(path: BottleManager.templateMarker))
+        try Data(name.utf8).write(to: staging.appending(path: "build"))
+        return staging
+    }
+
+    @Test func buildsFinishingTogetherLeaveOneTemplate() async throws {
+        let temp = try TempFolder()
+        let destination = temp.url.appending(path: "r")
+        let stagings = try (0..<8).map { try staging("\($0)", in: temp.url) }
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for staging in stagings { group.addTask { try BottleManager.publish(staging, to: destination) } }
+            try await group.waitForAll()
+        }
+        #expect(FileManager.default.fileExists(atPath: destination.appending(path: "build").path))
+        #expect(try FileManager.default.contentsOfDirectory(atPath: temp.url.path) == ["r"])
+    }
+
+    @Test func anUnfinishedLeftoverIsReplacedAndAFinishedOneKept() throws {
+        let temp = try TempFolder()
+        let destination = temp.url.appending(path: "r")
+        try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
+        try BottleManager.publish(staging("first", in: temp.url), to: destination)
+        try BottleManager.publish(staging("second", in: temp.url), to: destination)
+        #expect(try String(contentsOf: destination.appending(path: "build"), encoding: .utf8) == "first")
+    }
+
+    @Test func onlyOldStagingFoldersAreRemoved() throws {
+        let temp = try TempFolder()
+        let old = try staging("old", in: temp.url)
+        let fresh = try staging("fresh", in: temp.url)
+        try FileManager.default.setAttributes([.creationDate: Date(timeIntervalSinceNow: -7200)],
+                                              ofItemAtPath: old.path)
+        let template = temp.url.appending(path: "r")
+        try FileManager.default.createDirectory(at: template, withIntermediateDirectories: true)
+        BottleManager.removeStaleStaging(in: temp.url)
+        let left = try Set(FileManager.default.contentsOfDirectory(atPath: temp.url.path))
+        #expect(left == [fresh.lastPathComponent, "r"])
+    }
+}
+
+@Suite struct GameLibraryLockTests {
+    @Test func changesMadeAtTheSameTimeAreAllKept() async throws {
+        let temp = try TempFolder()
+        let file = temp.url.appending(path: "Games.json")
+        let ids = (0..<40).map { _ in GameID.make() }
+        await withTaskGroup(of: Void.self) { group in
+            for id in ids {
+                group.addTask {
+                    try? GameLibrary.modify(file) { library in
+                        library[id] = GameRecord(id: id, name: "G", executable: "/g.exe", folder: "/",
+                                                 hasMarker: true, addedAt: Date())
+                    }
+                }
+            }
+        }
+        #expect(try Set(GameLibrary.load(from: file).games.map(\.id)) == Set(ids))
+    }
+}

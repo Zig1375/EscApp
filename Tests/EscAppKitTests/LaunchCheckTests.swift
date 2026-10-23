@@ -138,3 +138,31 @@ import Testing
         #expect(own["HOME"] == ProcessInfo.processInfo.environment["HOME"])
     }
 }
+
+@Suite struct LaunchReportTests {
+    @Test func listsTheAttemptsWithTheirEvidenceAndHidesTheHomeFolder() {
+        let home = FileManager.default.homeDirectoryForCurrentUser.path(percentEncoded: false)
+        let game = GameRecord(id: GameID.make(), name: "Diablo II", executable: "\(home)Games/D2/Game.exe",
+                              folder: "\(home)Games/D2", hasMarker: true, addedAt: Date())
+        let crash = LogDiagnosis(log: """
+            [EscApp] Executable \(home)Games/D2/Game.exe
+            wine: Unhandled page fault on read access to 00000000 at address 0040100A
+            """)
+        let log = URL(filePath: "/l.log")
+        // The report quotes the last attempt's log.
+        let result = AutoLaunch.Result(game: game, attempts: [
+            LaunchAttempt(backend: .wined3d, seconds: 60, failure: .noWindow, diagnosis: LogDiagnosis(log: ""),
+                          log: log),
+            LaunchAttempt(backend: .dxvk, seconds: 3, failure: .closed(exitCode: 5), diagnosis: crash, log: log),
+        ], working: nil, log: log)
+        let text = LaunchReport.text(result, runtime: "wine-11.0-escapp-2", macOS: "26.1", app: "0.1.0")
+
+        #expect(text.hasPrefix("EscApp 0.1.0, macOS 26.1, runtime wine-11.0-escapp-2\nGame: Diablo II\n"))
+        #expect(text.contains("Executable: Game.exe"))
+        #expect(text.contains("- DXVK: closed after 3 s, exit code 5\n  wine: Unhandled page fault"))
+        #expect(text.contains("- WineD3D: no window after 60 s"))
+        #expect(text.contains("Last log, errors only:"))
+        #expect(!text.contains(home))
+        #expect(text.contains("~/Games/D2/Game.exe"))
+    }
+}

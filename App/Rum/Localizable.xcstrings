@@ -1,24 +1,532 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "No games yet" : {
-      "localizations" : {
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Игр пока нет" } }
+  "sourceLanguage": "en",
+  "strings": {
+    "Rum": {
+      "shouldTranslate": false
+    },
+    "Getting ready to play": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовимся к игре"
+          }
+        }
       }
     },
-    "Double-click a game's .exe in Finder, or drag it onto Rum. Rum sets everything up by itself." : {
-      "localizations" : {
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Дважды щёлкните .exe игры в Finder или перетащите его на Rum. Всё остальное Rum сделает сам." } }
+    "Rum downloads what Windows games need. This happens once and takes a few minutes.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rum скачивает то, что нужно Windows-играм. Это делается один раз и занимает несколько минут."
+          }
+        }
       }
     },
-    "To add a game, double-click its .exe or .msi, or drag the file onto the Rum icon in the Dock." : {
-      "localizations" : {
-        "ru" : { "stringUnit" : { "state" : "translated", "value" : "Чтобы добавить игру, дважды щёлкните её .exe или .msi или перетащите файл на значок Rum в Dock." } }
+    "Windows games are built for Intel processors. Rosetta 2 from Apple lets this Mac run them.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Windows-игры сделаны для процессоров Intel. Rosetta 2 от Apple позволяет этому Mac их запускать."
+          }
+        }
       }
     },
-    "Rum" : {
-      "shouldTranslate" : false
+    "Installing Rosetta means you agree to [Apple's license](https://www.apple.com/legal/sla/).": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устанавливая Rosetta, вы соглашаетесь с [лицензией Apple](https://www.apple.com/legal/sla/)."
+          }
+        }
+      }
+    },
+    "Agree and Install": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Согласиться и установить"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Попробовать снова"
+          }
+        }
+      }
+    },
+    "This Mac needs a newer version of Rum.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для этого Mac нужна более новая версия Rum."
+          }
+        }
+      }
+    },
+    "Apple's translator for Intel apps": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переводчик Apple для программ под Intel"
+          }
+        }
+      }
+    },
+    "Rosetta couldn't be installed: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось установить Rosetta: %@"
+          }
+        }
+      }
+    },
+    "Runs Windows programs": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускает программы Windows"
+          }
+        }
+      }
+    },
+    ".NET for games and installers that need it": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ".NET для игр и установщиков, которым он нужен"
+          }
+        }
+      }
+    },
+    "Graphics for DirectX 10 and 11 games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Графика для игр на DirectX 10 и 11"
+          }
+        }
+      }
+    },
+    "Your games will appear here": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Здесь появятся ваши игры"
+          }
+        }
+      }
+    },
+    "Find the game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найдите игру"
+          }
+        }
+      }
+    },
+    "In any folder or on any disk: Downloads, an external drive, a disc image.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В любой папке или на любом диске: Загрузки, внешний диск, образ диска."
+          }
+        }
+      }
+    },
+    "Double-click its .exe": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дважды щёлкните её .exe"
+          }
+        }
+      }
+    },
+    "Or drag the file onto the Rum icon in the Dock.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Или перетащите файл на значок Rum в Dock."
+          }
+        }
+      }
+    },
+    "Play": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Играйте"
+          }
+        }
+      }
+    },
+    "On the first launch Rum picks the settings that work and remembers them.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "При первом запуске Rum сам подберёт работающие настройки и запомнит их."
+          }
+        }
+      }
+    },
+    "Rum runs Windows games on this Mac. Just open a game, and Rum takes care of the rest.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rum запускает Windows-игры на этом Mac. Просто откройте игру, остальное Rum сделает сам."
+          }
+        }
+      }
+    },
+    "A newer version of Rum is needed.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нужна более новая версия Rum."
+          }
+        }
+      }
+    },
+    "An update is available": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступно обновление"
+          }
+        }
+      }
+    },
+    "Check Now": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить сейчас"
+          }
+        }
+      }
+    },
+    "Check for Component Updates…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить обновления компонентов…"
+          }
+        }
+      }
+    },
+    "Check for updates automatically": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверять обновления автоматически"
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверяем…"
+          }
+        }
+      }
+    },
+    "Component update available": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступно обновление компонентов"
+          }
+        }
+      }
+    },
+    "Components": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Компоненты"
+          }
+        }
+      }
+    },
+    "Components aren't installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Компоненты не установлены"
+          }
+        }
+      }
+    },
+    "Couldn't check for updates. Rum will try again later.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось проверить обновления. Rum попробует позже."
+          }
+        }
+      }
+    },
+    "Details": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробнее"
+          }
+        }
+      }
+    },
+    "Downloading %@…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скачиваем %@…"
+          }
+        }
+      }
+    },
+    "Everything is up to date": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всё актуально"
+          }
+        }
+      }
+    },
+    "Finishing…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Завершаем…"
+          }
+        }
+      }
+    },
+    "Games keep their settings and saves.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки и сохранения игр останутся на месте."
+          }
+        }
+      }
+    },
+    "Installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установлено"
+          }
+        }
+      }
+    },
+    "Installing %@…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устанавливаем %@…"
+          }
+        }
+      }
+    },
+    "Kept until no game uses them any more.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Хранятся, пока ими пользуется хотя бы одна игра."
+          }
+        }
+      }
+    },
+    "Last checked %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Последняя проверка: %@"
+          }
+        }
+      }
+    },
+    "Launching games is coming next": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запуск игр — на следующем этапе"
+          }
+        }
+      }
+    },
+    "No components for this Mac": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет компонентов для этого Mac"
+          }
+        }
+      }
+    },
+    "Not checked yet": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё не проверяли"
+          }
+        }
+      }
+    },
+    "Not installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не установлено"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Хорошо"
+          }
+        }
+      }
+    },
+    "Preparing…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовимся…"
+          }
+        }
+      }
+    },
+    "Previous versions": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предыдущие версии"
+          }
+        }
+      }
+    },
+    "Rum checks once a day and tells you when there's something new.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rum проверяет раз в день и сообщит, когда выйдет что-то новое."
+          }
+        }
+      }
+    },
+    "Rum got “%@”, but this early version can't start games yet. Installing components already works; running games comes in the next milestone.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rum получил «%@», но эта ранняя версия ещё не умеет запускать игры. Установка компонентов уже работает, запуск игр появится на следующем этапе."
+          }
+        }
+      }
+    },
+    "Rum installs them the first time it opens.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rum установит их при первом запуске."
+          }
+        }
+      }
+    },
+    "Space used": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Занято на диске"
+          }
+        }
+      }
+    },
+    "Update": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновить"
+          }
+        }
+      }
+    },
+    "removed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "удалён"
+          }
+        }
+      }
+    },
+    "Rosetta 2": {
+      "shouldTranslate": false
     }
   },
-  "version" : "1.0"
+  "version": "1.0"
 }

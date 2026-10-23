@@ -11,8 +11,9 @@ import Testing
         #expect(plan(.x86, [.legacy]) == .attempts([.wined3d]))
     }
 
-    @Test func d3d9TriesDXVKFirst() {
-        #expect(plan(.x86, [.d3d9]) == .attempts([.dxvk, .wined3d]))
+    @Test func d3d9UsesWineD3D() {
+        // DXVK-macOS ships without a usable d3d9.
+        #expect(plan(.x86, [.d3d9]) == .attempts([.wined3d]))
     }
 
     @Test func d3d11DependsOnBitness() {

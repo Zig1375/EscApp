@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Tools
         run: brew install xcodegen swiftlint
       - name: Lint
@@ -21,4 +21,6 @@ jobs:
         run: |
           xcodegen generate
           xcodebuild -project Rum.xcodeproj -scheme Rum -configuration Debug \
-            -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
+            -destination 'platform=macOS,arch=arm64' -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO build
+      - name: Every UI string has a Russian translation
+        run: scripts/check-translations.py .build/xcode

@@ -1,0 +1,42 @@
+{
+  "format": 1,
+  "runtimes": [
+    {
+      "id": "wine-11.18-1",
+      "minRum": "0.1.0",
+      "minMacOS": "15.0",
+      "components": [
+        {
+          "kind": "wine",
+          "version": "11.18 Staging",
+          "url": "https://github.com/Gcenx/macOS_Wine_builds/releases/download/11.18/wine-staging-11.18-osx64.tar.xz",
+          "sha256": "b63704b91af269bc026a87f12bd297c4a50caaf570c322e600b6621ef918f127",
+          "size": 193105336,
+          "license": "LGPL-2.1-or-later",
+          "from": "Wine Staging.app/Contents/Resources/wine",
+          "into": "wine"
+        },
+        {
+          "kind": "dxvk",
+          "version": "1.10.3-20230507-repack",
+          "url": "https://github.com/Gcenx/DXVK-macOS/releases/download/v1.10.3-20230507-repack/dxvk-macOS-async-v1.10.3-20230507-repack-builtin.tar.gz",
+          "sha256": "810b1e5caf8ce975b784fae866a130ad23fa0ea233b0e5609cbc4a45f3ef6f00",
+          "size": 2785833,
+          "license": "Zlib",
+          "from": "dxvk-macOS-async-v1.10.3-20230507-repack-builtin",
+          "into": "dxvk"
+        },
+        {
+          "kind": "dxmt",
+          "version": "0.80",
+          "url": "https://github.com/3Shain/dxmt/releases/download/v0.80/dxmt-v0.80-builtin.tar.gz",
+          "sha256": "8f260e36b5739e68f3bad613381441385c4dc7b85b78ba8de653d5a6a264529d",
+          "size": 18681669,
+          "license": "MIT",
+          "from": "v0.80",
+          "into": "dxmt"
+        }
+      ]
+    }
+  ]
+}

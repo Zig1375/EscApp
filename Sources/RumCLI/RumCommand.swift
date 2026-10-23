@@ -1,8 +1,9 @@
 import Foundation
 import RumKit
 
-/// `rum`: a debugging tool that shows what the app would do. It never changes the user's games or settings.
-public struct RumCommand {
+/// `rum`: a debugging tool that shows what the app would do. It never touches games or settings;
+/// `runtime install` installs components exactly as the app's setup screen does.
+public struct RumCommand: Sendable {
     public static let version = "0.1.0"
 
     public struct Output: Equatable, Sendable {
@@ -13,13 +14,26 @@ public struct RumCommand {
 
     let paths: RumPaths
     let host: [String: String]
+    let manifest: @Sendable () throws -> RuntimeManifest
+    let rosettaInstalled: @Sendable () -> Bool
+    /// Live progress lines for long commands; the CLI prints them to stderr as they come.
+    let progress: @Sendable (String) -> Void
 
-    public init(paths: RumPaths = .standard(), host: [String: String] = ProcessInfo.processInfo.environment) {
+    public init(
+        paths: RumPaths = .standard(),
+        host: [String: String] = ProcessInfo.processInfo.environment,
+        manifest: @escaping @Sendable () throws -> RuntimeManifest = { try RuntimeManifest.bundled() },
+        rosettaInstalled: @escaping @Sendable () -> Bool = { Rosetta.isInstalled() },
+        progress: @escaping @Sendable (String) -> Void = { _ in }
+    ) {
         self.paths = paths
         self.host = host
+        self.manifest = manifest
+        self.rosettaInstalled = rosettaInstalled
+        self.progress = progress
     }
 
-    public func run(_ arguments: [String]) -> Output {
+    public func run(_ arguments: [String]) async -> Output {
         guard let command = arguments.first else { return failure(Self.usage) }
         let rest = Array(arguments.dropFirst())
         switch command {
@@ -31,6 +45,8 @@ public struct RumCommand {
             return plan(rest)
         case "env":
             return env(rest)
+        case "runtime":
+            return await runtime(rest)
         case "help", "--help", "-h":
             return success(Self.usage)
         default:
@@ -47,6 +63,9 @@ public struct RumCommand {
                                            Show which graphics backends a first launch would try
           env --bottle <path> --backend dxvk|dxmt|wined3d [--verbose]
                                            Print the environment a game would start with
+          runtime status                   Show Rosetta and whether the current runtime is installed
+          runtime install [--accept-rosetta-license]
+                                           Download, check and install Wine, DXVK and DXMT
         """
 
     private func pathsReport() -> String {
@@ -98,6 +117,71 @@ public struct RumCommand {
         return success(environment.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: "\n"))
     }
 
+    private func runtime(_ arguments: [String]) async -> Output {
+        var options = Options(arguments)
+        guard let action = options.positional() else { return failure("runtime needs status or install") }
+        let acceptRosetta = options.flag("--accept-rosetta-license")
+        if let unknown = options.leftover { return failure("Unknown option: \(unknown)") }
+
+        let selected: RuntimeManifest.Runtime
+        do {
+            guard let runtime = try manifest().newest(forRum: Self.rumVersion, macOS: Self.macOSVersion) else {
+                return failure("No runtime in the component list supports this Mac and this version of Rum.")
+            }
+            selected = runtime
+        } catch {
+            return failure("\(error)")
+        }
+        switch action {
+        case "status": return runtimeStatus(selected)
+        case "install": return await runtimeInstall(selected, acceptRosetta: acceptRosetta)
+        default: return failure("Unknown runtime action: \(action). Use status or install.")
+        }
+    }
+
+    private func runtimeStatus(_ selected: RuntimeManifest.Runtime) -> Output {
+        let installer = RuntimeInstaller(paths: paths)
+        var lines = ["Rosetta: \(rosettaInstalled() ? "installed" : "not installed")"]
+        if let folder = installer.installed(selected) {
+            lines.append("Runtime \(selected.id): installed in \(folder.path(percentEncoded: false))")
+        } else {
+            let total = selected.components.reduce(0) { $0 + $1.size }
+            lines.append("Runtime \(selected.id): not installed (\(Self.megabytes(total)) to download)")
+        }
+        lines += selected.components.map { "  \($0.kind.rawValue) \($0.version) (\($0.license))" }
+        return success(lines.joined(separator: "\n"))
+    }
+
+    private func runtimeInstall(_ selected: RuntimeManifest.Runtime, acceptRosetta: Bool) async -> Output {
+        if !rosettaInstalled() {
+            guard acceptRosetta else {
+                return failure("""
+                    Wine needs Rosetta 2. Installing it means accepting Apple's license \
+                    (https://www.apple.com/legal/sla/). Run again with --accept-rosetta-license to do that.
+                    """)
+            }
+            progress("Installing Rosetta…")
+            do { try await Rosetta.installAcceptingLicense() } catch { return failure("\(error)") }
+        }
+        let reporter = ProgressReporter(sink: progress)
+        do {
+            let folder = try await RuntimeInstaller(paths: paths).install(selected) { reporter.report($0) }
+            return success("Runtime \(selected.id) installed in \(folder.path(percentEncoded: false))")
+        } catch {
+            return failure("\(error)")
+        }
+    }
+
+    static let rumVersion = Version(version) ?? .zero
+    static var macOSVersion: Version {
+        let system = ProcessInfo.processInfo.operatingSystemVersion
+        return Version("\(system.majorVersion).\(system.minorVersion).\(system.patchVersion)") ?? .zero
+    }
+
+    static func megabytes(_ bytes: Int64) -> String {
+        "\(Int((Double(bytes) / 1_000_000).rounded())) MB"
+    }
+
     private static func directX(_ number: Int) -> ExecutableTraits.DirectX? {
         switch number {
         case 1...8: .legacy
@@ -132,5 +216,37 @@ private struct Options {
         return true
     }
 
+    /// Removes and returns the first argument that isn't an option.
+    mutating func positional() -> String? {
+        guard let index = arguments.firstIndex(where: { !$0.hasPrefix("-") }) else { return nil }
+        return arguments.remove(at: index)
+    }
+
     var leftover: String? { arguments.first }
+}
+
+/// Turns installer steps into a line per component phase and every 10% of a download, not one per chunk.
+private final class ProgressReporter: @unchecked Sendable {
+    private let sink: @Sendable (String) -> Void
+    private let lock = NSLock()
+    private var lastLine = ""
+
+    init(sink: @escaping @Sendable (String) -> Void) { self.sink = sink }
+
+    func report(_ step: RuntimeInstaller.Step) {
+        let line: String
+        switch step {
+        case let .downloading(kind, received, total):
+            let percent = total > 0 ? received * 10 / total * 10 : 0
+            line = "Downloading \(kind.rawValue): \(percent)% of \(RumCommand.megabytes(total))"
+        case let .unpacking(kind): line = "Unpacking \(kind.rawValue)…"
+        case .finishing: line = "Finishing…"
+        }
+        let changed = lock.withLock {
+            guard line != lastLine else { return false }
+            lastLine = line
+            return true
+        }
+        if changed { sink(line) }
+    }
 }

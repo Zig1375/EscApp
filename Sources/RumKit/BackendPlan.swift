@@ -56,12 +56,12 @@ public enum BackendPlan: Sendable, Equatable {
             // DXVK-macOS can't create a D3D11 device for a 32-bit process (seen in mapc), so 32-bit games
             // start with DXMT and never try DXVK.
             return traits.architecture == .x64 ? .attempts([.dxvk, .dxmt, .wined3d]) : .attempts([.dxmt, .wined3d])
-        case .d3d9:
-            return .attempts([.dxvk, .wined3d])
-        case .legacy:
+        case .d3d9, .legacy:
+            // DXVK-macOS has no working Direct3D 9, and DXMT is 10/11 only.
             return .attempts([.wined3d])
         case nil:
-            // Nothing imported statically: the exe probably loads Direct3D itself. DXVK covers 9–11.
+            // Nothing imported statically: the exe probably loads Direct3D itself. Modern games that do
+            // this are mostly 10/11; WineD3D catches the rest.
             return .attempts([.dxvk, .wined3d])
         }
     }

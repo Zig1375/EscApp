@@ -11,7 +11,7 @@ let package = Package(
         .executable(name: "rum", targets: ["rum"]),
     ],
     targets: [
-        .target(name: "RumKit"),
+        .target(name: "RumKit", resources: [.copy("Resources/runtime-manifest.json")]),
         // The CLI logic is a library so tests can drive it; `rum` is only the entry point.
         .target(name: "RumCLI", dependencies: ["RumKit"]),
         .executableTarget(name: "rum", dependencies: ["RumCLI"]),

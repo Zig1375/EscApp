@@ -15,6 +15,7 @@ swift test                              # all tests (Swift Testing), no Wine nee
 swift test --filter BackendPlanTests    # one suite or test
 swift run rum help                      # debugging CLI; RUM_HOME=<dir> keeps it out of the real data
 swiftlint lint --strict                 # CI fails on any warning
+scripts/check-translations.py .build/xcode   # after an app build: every UI string needs a Russian translation
 xcodegen generate                       # Rum.xcodeproj from project.yml (the project file is not committed)
 xcodebuild -project Rum.xcodeproj -scheme Rum -destination 'platform=macOS,arch=arm64' build
 ```
@@ -24,7 +25,12 @@ xcodebuild -project Rum.xcodeproj -scheme Rum -destination 'platform=macOS,arch=
 - `Package.swift` at the root: `RumKit` (all logic, no UI), `RumCLI` (the `rum` command as a testable library),
   `rum` (entry point only).
 - `App/Rum`: the SwiftUI app. It depends on RumKit through the local package. Strings go in
-  `Localizable.xcstrings` with English and Russian from the start.
+  `Localizable.xcstrings` with English and Russian from the start; CI fails on an untranslated string.
+  Use `Color.rum` for the brand colour (`Color.accentColor` follows the user's system accent).
+- Components: `RuntimeManifest` (bundled `Sources/RumKit/Resources/runtime-manifest.json`, every download pinned
+  by SHA-256), `ManifestUpdater` (daily fetch of the same file from `main`), `RuntimeInstaller` (staging folder,
+  `RUNTIME.json` marker written last), `RuntimeCatalog` (installed vs. newest). `rum runtime status|install`
+  does the same as the app.
 - `RumPaths` is the only place that builds paths under `~/Library/Application Support/Rum` (`RUM_HOME` overrides).
 
 ## Rules

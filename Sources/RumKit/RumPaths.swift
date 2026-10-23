@@ -39,6 +39,8 @@ public struct RumPaths: Sendable, Equatable {
     /// AppData and Saved Games shared by every bottle, so saves survive a new bottle or runtime.
     public var profile: URL { folder("Profile") }
     public var logs: URL { folder("Logs") }
+    /// Partial downloads, named by SHA-256 so an interrupted download resumes even if the URL changed.
+    public var downloads: URL { folder("Downloads") }
     public var screenshots: URL { folder("Screenshots") }
     public var library: URL { root.appending(path: "Games.json", directoryHint: .notDirectory) }
 

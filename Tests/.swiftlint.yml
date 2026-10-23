@@ -1,0 +1,4 @@
+# Tests may force-unwrap literals and use tuples for canned responses.
+disabled_rules:
+  - force_unwrapping
+  - large_tuple

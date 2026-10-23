@@ -1,0 +1,3 @@
+LIBRARY exeport_missing.dll
+EXPORTS
+exeport_missing_function

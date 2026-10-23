@@ -11,5 +11,12 @@ for arch in i686:x86 x86_64:x64; do
     "$triple-gcc" -O2 -s -static -o "d3d9-$name.exe" d3d9probe.c "probe-$name.res" -ld3d9
     rm "probe-$name.res"
 done
+for arch in x86_64:x64; do
+    triple="${arch%%:*}-w64-mingw32"; name="${arch##*:}"
+    "$triple-gcc" -O2 -s -static -o "crash-$name.exe" crashprobe.c -ld3d11
+    "$triple-dlltool" -d missing.def -l libmissing.a
+    "$triple-gcc" -O2 -s -static -o "missing-$name.exe" missingprobe.c libmissing.a
+    rm libmissing.a
+done
 rm probe.ico
 ls -l *.exe

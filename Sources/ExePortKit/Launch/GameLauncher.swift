@@ -30,8 +30,8 @@ public struct GameLauncher: Sendable {
 
     /// How many logs to keep per game.
     static let keptLogs = 20
-    /// A program that ran at least this long, or exited cleanly, works with its backend. The first-run check in
-    /// M4 refines this with a window check.
+    /// For past runs, where nothing but the log is left: a program that ran at least this long, or exited
+    /// cleanly, worked with its backend. A launch itself decides with `AttemptJudge`, which also sees windows.
     public static let workingAfter: TimeInterval = 15
 
     let paths: AppPaths
@@ -92,6 +92,13 @@ public struct GameLauncher: Sendable {
     /// - Parameter started: called once the process is running, with something that can stop it.
     public func run(_ prepared: Prepared, started: @Sendable (GameSession) -> Void = { _ in }) async throws
         -> Outcome {
+        let running = try start(prepared)
+        started(running.session)
+        return await running.finish()
+    }
+
+    /// Starts the prepared game and returns at once; `RunningGame.finish` waits for the end.
+    public func start(_ prepared: Prepared) throws -> RunningGame {
         let fileManager = FileManager.default
         try fileManager.createDirectory(at: prepared.log.deletingLastPathComponent(), withIntermediateDirectories: true)
         fileManager.createFile(atPath: prepared.log.path, contents: nil)
@@ -121,28 +128,14 @@ public struct GameLauncher: Sendable {
         process.standardError = log
         process.standardInput = FileHandle.nullDevice
 
-        let exitCode: Int32 = try await withCheckedThrowingContinuation { continuation in
-            process.terminationHandler = { continuation.resume(returning: $0.terminationStatus) }
-            do {
-                try process.run()
-            } catch {
-                process.terminationHandler = nil
-                continuation.resume(throwing: error)
-                return
-            }
-            started(GameSession(wine: prepared.wine, environment: prepared.environment,
-                                processID: process.processIdentifier))
+        let exit = ProcessExit()
+        process.terminationHandler = { exit.exited($0.terminationStatus) }
+        try process.run()
+        let session = GameSession(wine: prepared.wine, environment: prepared.environment,
+                                  processID: process.processIdentifier)
+        return RunningGame(prepared: prepared, session: session, startedAt: startedAt, process: exit) { [self] in
+            pruneLogs(for: $0)
         }
-        let processDuration = Date().timeIntervalSince(startedAt)
-        // The game may live on after `wine` returns (launchers); it's over when the bottle's server is.
-        _ = try? await ProcessRunner.run(prepared.wine.wineserver.path, ["-w"], environment: prepared.environment)
-
-        let duration = Date().timeIntervalSince(startedAt)
-        let footer = "[ExePort] Exit \(exitCode) after \(Int(processDuration)) s, bottle idle after \(Int(duration)) s"
-        log.write(Data((footer + "\n").utf8))
-        pruneLogs(for: prepared.game.id)
-        return Outcome(exitCode: exitCode, duration: duration, processDuration: processDuration,
-                       backend: prepared.backend, log: prepared.log)
     }
 
     public func logsFolder(for game: GameID) -> URL { paths.logs(forGame: game) }
@@ -154,7 +147,7 @@ public struct GameLauncher: Sendable {
         return paths.logs(forGame: game).appending(path: "\(formatter.string(from: Date())).log")
     }
 
-    private func pruneLogs(for game: GameID) {
+    func pruneLogs(for game: GameID) {
         let folder = paths.logs(forGame: game)
         let logs = ((try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? [])
             .filter { $0.hasSuffix(".log") }

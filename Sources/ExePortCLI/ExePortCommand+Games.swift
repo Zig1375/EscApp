@@ -59,6 +59,7 @@ extension ExePortCommand {
         var options = Options(arguments)
         let backendValue = options.value("--backend")
         let verbose = options.flag("--verbose")
+        let noRetry = options.flag("--no-retry")
         guard let path = options.positional() else { return failure("run needs the path to an .exe") }
         if let unknown = options.leftover { return failure("Unknown option: \(unknown)") }
         let backend = backendValue.flatMap(GraphicsBackend.init(rawValue:))
@@ -68,18 +69,48 @@ extension ExePortCommand {
             guard let runtime = try manifest().newest(forApp: Self.appVersion, macOS: Self.macOSVersion) else {
                 return failure("No runtime suits this Mac.")
             }
+            let manifest = try manifest()
             let game = try GameIdentifier(paths: paths).identify(executable: URL(filePath: path)).record
-            let launcher = GameLauncher(paths: paths, host: host)
-            let prepared = try await launcher.prepare(game, runtime: runtime, backend: backend, verboseLog: verbose)
-            progress("Starting \(game.name) with \(prepared.backend.displayName)… (log: \(prepared.log.path))")
-            let outcome = try await launcher.run(prepared)
-            var library = try GameLibrary.load(from: paths.library)
-            library.recordPlay(of: game.id, outcome: outcome)
-            try library.save(to: paths.library)
-            return success("Exit \(outcome.exitCode) after \(Int(outcome.duration)) s. Log: \(outcome.log.path)")
+            let progress = progress
+            let result = try await AutoLaunch(paths: paths, host: host).play(
+                game, runtime: runtime, backend: backend, knownGames: manifest.games ?? [], verboseLog: verbose,
+                control: control(noRetry: noRetry)) { event in
+                switch event {
+                case let .started(_, backend, attempt, total):
+                    progress("Starting \(game.name) with \(backend.displayName) (attempt \(attempt) of \(total))…")
+                case let .retrying(failed, next, _, _):
+                    progress("\(Self.describe(failed)). Trying \(next.displayName).")
+                case let .working(backend, _):
+                    progress("\(backend.displayName) works; the game keeps running.")
+                case .preparing, .windowShown:
+                    break
+                }
+            }
+            let lines = result.attempts.map { Self.describe($0) } + [
+                result.working.map { "Works with \($0.displayName)." } ?? "Didn't start with any backend.",
+                "Log: \(result.log?.path ?? "-")",
+            ]
+            return result.working == nil ? failure(lines.joined(separator: "\n"))
+                : success(lines.joined(separator: "\n"))
         } catch {
             return failure("\(error)")
         }
+    }
+
+    private func control(noRetry: Bool) -> LaunchControl {
+        let control = LaunchControl()
+        if noRetry { control.stopRetrying() }
+        return control
+    }
+
+    static func describe(_ attempt: LaunchAttempt) -> String {
+        let result: String = switch attempt.failure {
+        case nil: "worked"
+        case let .closed(code)?: "closed after \(attempt.seconds) s (exit \(code))"
+        case .noWindow?: "showed no window in \(attempt.seconds) s"
+        }
+        let problem = attempt.diagnosis.problem.map { " — \($0)" } ?? ""
+        return "\(attempt.backend.displayName): \(result)\(attempt.failure == nil ? "" : problem)"
     }
 
     func gameList() -> Output {

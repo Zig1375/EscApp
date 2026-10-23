@@ -17,9 +17,10 @@ public enum WineEnvironment {
     ) -> [String: String] {
         var env = host.filter { hostAllowlist.contains($0.key) }
         env["WINEPREFIX"] = bottle
-        // Silent by default so a long session doesn't write gigabytes of fixme lines. The verbose log adds
+        // Without fixme lines, so a long session doesn't write gigabytes of them, but with errors: they are what
+        // `LogDiagnosis` reads to tell a missing game file from a graphics failure. The verbose log adds
         // exceptions and DLL loads, which is what diagnosing a crash at start needs.
-        env["WINEDEBUG"] = verboseLog ? "+seh,+loaddll" : "-all"
+        env["WINEDEBUG"] = verboseLog ? "+seh,+loaddll" : "fixme-all"
         env["WINEDLLOVERRIDES"] = dllOverrides
         env.merge(extra) { _, user in user }
         return env

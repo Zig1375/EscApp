@@ -12,6 +12,9 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
     public var format: Int
     /// Oldest first. New runtimes are appended, so the last usable one is the newest.
     public var runtimes: [Runtime]
+    /// The game database: settings known to work for particular games. Optional, so manifests without it and
+    /// older apps reading one with it both still work.
+    public var games: [KnownGame]?
 
     public struct Runtime: Codable, Sendable, Equatable, Identifiable {
         /// Names the runtime folder and template bottle, so it must be a plain path component.

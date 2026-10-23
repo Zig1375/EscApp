@@ -28,6 +28,12 @@ extension Color {
     static let diskTemplate = Color("DiskTemplate")
     static let diskGames = Color("DiskGames")
     static let track = Color("Track")
+    /// Launching.dc.html: the "trying again" box and the "nothing helped" box.
+    static let warnBackground = Color("WarnBackground")
+    static let warnBorder = Color("WarnBorder")
+    static let warnText = Color("WarnText")
+    static let errorBackground = Color("ErrorBackground")
+    static let errorBorder = Color("ErrorBorder")
 }
 
 /// The design's two button looks: white with a thin border, and the amber primary.

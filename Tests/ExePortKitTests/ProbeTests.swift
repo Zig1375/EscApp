@@ -90,3 +90,40 @@ struct ProbeLaunchTests {
         #expect(log.contains("PROBE \(name.hasPrefix("d3d11") ? "d3d11" : "d3d9") OK"))
     }
 }
+
+/// The retry loop on real Wine (same opt-in as `ProbeLaunchTests`).
+@Suite(.enabled(if: ProcessInfo.processInfo.environment["EXEPORT_INTEGRATION"] == "1"), .serialized)
+struct AutoLaunchProbeTests {
+    func play(_ name: String) async throws -> AutoLaunch.Result {
+        let paths = AppPaths.standard()
+        let runtime = try #require(RuntimeCatalog(
+            installed: RuntimeInstaller(paths: paths).installedRuntimes(), manifest: RuntimeManifest.bundled(),
+            app: Version("0.1")!, macOS: Version("15")!).current, "No runtime installed in EXEPORT_HOME")
+        let temp = try TempFolder()
+        let exe = temp.url.appending(path: "\(name).exe")
+        try FileManager.default.copyItem(at: Probes.url(name), to: exe)
+        let game = try GameIdentifier(paths: paths).identify(executable: exe).record
+        defer { try? GameRemover.removeFromApp(game.id, paths: paths) }
+        return try await AutoLaunch(paths: paths).play(game, runtime: runtime)
+    }
+
+    @Test func aWorkingGameNeedsOneAttempt() async throws {
+        let result = try await play("d3d9-x64")
+        #expect(result.working == .wined3d)
+        #expect(result.attempts.count == 1)
+    }
+
+    @Test func aCrashingGameTriesEveryBackend() async throws {
+        let result = try await play("crash-x64")
+        #expect(result.working == nil)
+        #expect(result.attempts.map(\.backend) == [.dxvk, .dxmt, .wined3d])
+        #expect(result.attempts.allSatisfy { $0.failure != nil && $0.diagnosis.problem == .crash })
+    }
+
+    @Test func aMissingFileStopsAtOnce() async throws {
+        let result = try await play("missing-x64")
+        #expect(result.working == nil)
+        #expect(result.attempts.count == 1)
+        #expect(result.attempts.first?.diagnosis.problem == .missingFile("exeport_missing.dll"))
+    }
+}

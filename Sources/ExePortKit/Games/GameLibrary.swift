@@ -61,14 +61,15 @@ public struct GameLibrary: Codable, Sendable, Equatable {
         }
     }
 
-    /// Notes a finished session: when, for how long, and the backend, which is kept only if the game ran
-    /// long enough to count as working (a crash at start shouldn't become the remembered choice).
-    public mutating func recordPlay(of id: GameID, outcome: GameLauncher.Outcome, endedAt: Date = Date()) {
+    /// Notes a finished session: when, for how long, and the backend that worked, if one did. A failed run keeps
+    /// the backend remembered before (a crash at start shouldn't become the remembered choice).
+    public mutating func recordPlay(of id: GameID, duration: TimeInterval, working: GraphicsBackend?,
+                                    endedAt: Date = Date()) {
         guard var game = self[id] else { return }
         game.lastPlayed = endedAt
-        game.playTime = (game.playTime ?? 0) + outcome.duration
+        game.playTime = (game.playTime ?? 0) + duration
         game.launches = (game.launches ?? 0) + 1
-        if outcome.worked { game.backend = outcome.backend }
+        if let working { game.backend = working }
         self[id] = game
     }
 

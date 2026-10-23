@@ -337,16 +337,6 @@
         }
       }
     },
-    "%@ closed right after starting": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ закрылась сразу после запуска"
-          }
-        }
-      }
-    },
     "Couldn't remove %@": {
       "localizations": {
         "ru": {
@@ -413,16 +403,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "ExePort пока не умеет запускать установщики .msi. Установка игр появится в одной из следующих версий."
-          }
-        }
-      }
-    },
-    "ExePort will learn to try other settings by itself soon. For now the log may show what went wrong.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Скоро ExePort научится сам пробовать другие настройки. Пока что причину может подсказать лог."
           }
         }
       }
@@ -1591,6 +1571,236 @@
     },
     "%@ · %@": {
       "shouldTranslate": false
+    },
+    "%@ doesn't seem to suit this game. Starting with %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Похоже, %1$@ этой игре не подходит. Запускаем с %2$@"
+          }
+        }
+      }
+    },
+    "%@ started with %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ запущена с %2$@"
+          }
+        }
+      }
+    },
+    "(attempt %lld of %lld)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(попытка %1$lld из %2$lld)"
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрыть"
+          }
+        }
+      }
+    },
+    "Closed %lld s after starting": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закрылась через %lld с после старта"
+          }
+        }
+      }
+    },
+    "Copy Report": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скопировать отчёт"
+          }
+        }
+      }
+    },
+    "Didn't start": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не запустилась"
+          }
+        }
+      }
+    },
+    "Don't Retry": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не повторять"
+          }
+        }
+      }
+    },
+    "It closes right after starting (code %@).": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Она закрывается сразу после старта (код %@)."
+          }
+        }
+      }
+    },
+    "It crashes while starting.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Она падает при запуске."
+          }
+        }
+      }
+    },
+    "It needs DirectX 12, which ExePort doesn't support yet.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ей нужен DirectX 12, а ExePort его пока не поддерживает."
+          }
+        }
+      }
+    },
+    "It uses %@ anti-cheat, which doesn't run on a Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Она использует античит %@, а он не работает на Mac."
+          }
+        }
+      }
+    },
+    "Its graphics can't start on this Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Её графика не запускается на этом Mac."
+          }
+        }
+      }
+    },
+    "Its window never appeared.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окно игры так и не появилось."
+          }
+        }
+      }
+    },
+    "Next time it starts this way right away": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В следующий раз сразу так"
+          }
+        }
+      }
+    },
+    "No window after %lld s": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окно не появилось за %lld с"
+          }
+        }
+      }
+    },
+    "Open Log": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть лог"
+          }
+        }
+      }
+    },
+    "Show Game Folder": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать папку игры"
+          }
+        }
+      }
+    },
+    "The game didn't start with any graphics option.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра не запустилась ни с одним вариантом графики."
+          }
+        }
+      }
+    },
+    "The game didn't start.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра не запустилась."
+          }
+        }
+      }
+    },
+    "The game failed — ExePort is trying again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра упала — ExePort пробует ещё раз сам"
+          }
+        }
+      }
+    },
+    "The log says **%@** is missing — the game isn't fully installed.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В логе: не найден файл **%@** — игра установлена не полностью."
+          }
+        }
+      }
+    },
+    "Tried: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пробовали: %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

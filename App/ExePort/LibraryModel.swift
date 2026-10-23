@@ -14,27 +14,6 @@ final class LibraryModel {
         case running(since: Date)
     }
 
-    /// The "getting the game ready" sheet (Launching.dc.html, first panel).
-    struct Launch: Identifiable, Equatable {
-        enum StepState: Equatable { case waiting, active, done }
-
-        let id: GameID
-        let name: String
-        let firstTime: Bool
-        var windows: (version: WindowsVersion, firstTime: Bool)?
-        var windowsState: StepState = .active
-        var graphics: String?
-        var startState: StepState = .waiting
-        /// Set after a while without a game window, to say that this can take a minute.
-        var slow = false
-
-        static func == (lhs: Launch, rhs: Launch) -> Bool {
-            lhs.id == rhs.id && lhs.windows?.version == rhs.windows?.version
-                && lhs.windows?.firstTime == rhs.windows?.firstTime && lhs.windowsState == rhs.windowsState
-                && lhs.graphics == rhs.graphics && lhs.startState == rhs.startState && lhs.slow == rhs.slow
-        }
-    }
-
     /// Something to tell the user, with the log when there is one.
     struct Notice: Identifiable, Equatable {
         let id = UUID()
@@ -47,17 +26,21 @@ final class LibraryModel {
     private(set) var icons: [GameID: NSImage] = [:]
     private(set) var tints: [GameID: Color] = [:]
     private(set) var infos: [GameID: ExecutableInfo] = [:]
-    private(set) var states: [GameID: PlayState] = [:]
+    var states: [GameID: PlayState] = [:]
     var notice: Notice?
     var launch: Launch?
+    /// "Diablo II started with WineD3D": shown after retries found a backend (Launching.dc.html, last panel).
+    var learned: Learned?
     /// Ticks once a minute so "12 min" in the menu bar and cards stays current.
     private(set) var now = Date()
     /// Whether double-clicking an .exe in Finder opens ExePort.
     private(set) var isDefaultForExe = true
 
     let paths: AppPaths
-    private var sessions: [GameID: GameSession] = [:]
-    private var launchTasks: [GameID: Task<Void, Never>] = [:]
+    var sessions: [GameID: GameSession] = [:]
+    var launchTasks: [GameID: Task<Void, Never>] = [:]
+    /// The checking of the launch that's showing; "Don't Retry" stops it.
+    var launchControl: LaunchControl?
     /// Files opened before the components were installed; played once setup finishes.
     private var pending: [URL] = []
     private var isReady = false
@@ -107,65 +90,6 @@ final class LibraryModel {
         }
     }
 
-    func play(_ game: GameRecord) {
-        guard states[game.id] == nil else { return }
-        states[game.id] = .starting
-        launch = Launch(id: game.id, name: game.name, firstTime: (game.launches ?? 0) == 0)
-        let paths = paths
-        launchTasks[game.id] = Task {
-            defer {
-                states[game.id] = nil
-                sessions[game.id] = nil
-                launchTasks[game.id] = nil
-                if launch?.id == game.id { launch = nil }
-                reload()
-            }
-            do {
-                guard let runtime = try currentRuntime() else {
-                    notice = Notice(title: String(localized: "Components aren't installed"),
-                                    message: String(localized: "Open Settings → Components to install them."))
-                    return
-                }
-                let launcher = GameLauncher(paths: paths)
-                let prepared = try await launcher.prepare(game, runtime: runtime) { step in
-                    Task { @MainActor in self.apply(step, to: game.id) }
-                }
-                try Task.checkCancellation()
-                let outcome = try await launcher.run(prepared) { session in
-                    Task { @MainActor in
-                        self.sessions[game.id] = session
-                        self.watchForWindow(of: game.id, session: session)
-                    }
-                }
-                var library = try GameLibrary.load(from: paths.library)
-                library.recordPlay(of: game.id, outcome: outcome)
-                try library.save(to: paths.library)
-                if !outcome.worked {
-                    notice = Notice(
-                        title: String(localized: "\(game.name) closed right after starting"),
-                        message: String(localized: """
-                            ExePort will learn to try other settings by itself soon. \
-                            For now the log may show what went wrong.
-                            """),
-                        log: outcome.log)
-                }
-            } catch is CancellationError {
-                // The player pressed Cancel.
-            } catch {
-                notice = Notice(title: String(localized: "\(game.name) can't start"),
-                                message: String(describing: error))
-            }
-        }
-    }
-
-    /// "Cancel" in the launch sheet: stop whatever has started and forget the launch.
-    func cancelLaunch() {
-        guard let id = launch?.id else { return }
-        launch = nil
-        launchTasks[id]?.cancel()
-        if let session = sessions[id] { Task { await session.stop() } }
-    }
-
     func stop(_ game: GameRecord) {
         guard let session = sessions[game.id] else { return }
         Task { await session.stop() }
@@ -182,48 +106,6 @@ final class LibraryModel {
     var runningGames: [(game: GameRecord, since: Date)] {
         games.compactMap { game in
             if case let .running(since)? = states[game.id] { (game, since) } else { nil }
-        }
-    }
-
-    private func apply(_ step: GameLauncher.Step, to id: GameID) {
-        guard var current = launch, current.id == id else { return }
-        switch step {
-        case let .windows(version, firstTime):
-            current.windows = (version, firstTime)
-            current.windowsState = .active
-        case let .graphics(backend, directX):
-            current.windowsState = .done
-            let api: String? = switch directX {
-            case .legacy?: "DirectDraw"
-            case .d3d9?: "DirectX 9"
-            case .d3d11?: "DirectX 11"
-            case .d3d12?: "DirectX 12"
-            case nil: nil
-            }
-            current.graphics = api.map { "\(backend.displayName) (\($0))" } ?? backend.displayName
-        case .starting:
-            current.startState = .active
-        }
-        launch = current
-    }
-
-    /// Waits for the game's first window, then brings it forward and marks the game as running. Says so when
-    /// it takes long: Wine's first start under Rosetta can need most of a minute.
-    private func watchForWindow(of id: GameID, session: GameSession) {
-        Task {
-            let started = Date()
-            while sessions[id] != nil, states[id] == .starting {
-                if let owner = GameWindows.owners(under: session.wineRoot).first {
-                    states[id] = .running(since: Date())
-                    if launch?.id == id { launch = nil }
-                    GameWindows.bringForward(owner)
-                    return
-                }
-                if Date().timeIntervalSince(started) > 15, launch?.id == id, launch?.slow == false {
-                    launch?.slow = true
-                }
-                try? await Task.sleep(for: .milliseconds(400))
-            }
         }
     }
 
@@ -281,10 +163,11 @@ final class LibraryModel {
         isDefaultForExe = handler.standardizedFileURL == Bundle.main.bundleURL.standardizedFileURL
     }
 
-    private func currentRuntime() throws -> RuntimeManifest.Runtime? {
+    func currentRuntime() throws -> (RuntimeManifest.Runtime, [KnownGame])? {
         let manifest = try ManifestUpdater(paths: paths).current()
         let installed = RuntimeInstaller(paths: paths).installedRuntimes()
-        return RuntimeCatalog(installed: installed, manifest: manifest, app: .thisApp, macOS: .thisMac).current
+        let runtime = RuntimeCatalog(installed: installed, manifest: manifest, app: .thisApp, macOS: .thisMac).current
+        return runtime.map { ($0, manifest.games ?? []) }
     }
 
     private func loadIcon(for game: GameRecord) {

@@ -76,8 +76,9 @@ public struct ExePortCommand: Sendable {
                                            Identify the game and make its bottle (needs the runtime)
           game list                        List known games
           inspect <exe>                    Show what ExePort reads from an .exe: format, DirectX, name, icon
-          run <exe> [--backend dxvk|dxmt|wined3d] [--verbose]
-                                           Launch a game like the app does and wait until it closes
+          run <exe> [--backend dxvk|dxmt|wined3d] [--no-retry] [--verbose]
+                                           Launch a game like the app does, trying the next backend when it
+                                           fails at start, and wait until it closes
         """
 
     private func pathsReport() -> String {

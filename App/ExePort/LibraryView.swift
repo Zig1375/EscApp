@@ -49,6 +49,14 @@ struct LibraryView: View {
             }
             return !providers.isEmpty
         }
+        .overlay(alignment: .bottom) {
+            if let learned = library.learned {
+                LearnedToast(learned: learned) { library.learned = nil }
+                    .padding(.bottom, 24)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.easeOut(duration: 0.2), value: library.learned)
         .sheet(item: Binding(get: { library.launch }, set: { if $0 == nil { library.cancelLaunch() } })) { launch in
             LaunchSheet(launch: launch, library: library)
         }

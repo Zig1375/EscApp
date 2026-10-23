@@ -169,23 +169,19 @@ import Testing
 }
 
 @Suite struct PlayRecordTests {
-    func outcome(exit: Int32, process: TimeInterval, total: TimeInterval) -> GameLauncher.Outcome {
-        GameLauncher.Outcome(exitCode: exit, duration: total, processDuration: process, backend: .dxmt,
-                             log: URL(filePath: "/tmp/x.log"))
-    }
-
-    @Test func aCrashAtStartIsNotRemembered() {
+    @Test func aFailedRunKeepsTheRememberedBackend() {
         let id = GameID.make()
         var library = GameLibrary(games: [GameRecord(id: id, name: "G", executable: "/g.exe", folder: "/",
                                                      hasMarker: true, addedAt: Date())])
-        // Wine's server lingers ~10 s, so the whole session looks long even when the game died at once.
-        library.recordPlay(of: id, outcome: outcome(exit: 53, process: 3, total: 19))
+        library.recordPlay(of: id, duration: 19, working: nil)
         #expect(library[id]?.backend == nil)
         #expect(library[id]?.playTime == 19)
 
-        library.recordPlay(of: id, outcome: outcome(exit: 0, process: 5, total: 15))
+        library.recordPlay(of: id, duration: 15, working: .dxmt)
+        library.recordPlay(of: id, duration: 4, working: nil)
         #expect(library[id]?.backend == .dxmt)
-        #expect(library[id]?.playTime == 34)
+        #expect(library[id]?.playTime == 38)
+        #expect(library[id]?.launches == 3)
     }
 }
 

@@ -1,5 +1,6 @@
 @testable import EscAppKit
 import Foundation
+import Synchronization
 import Testing
 
 /// The probe executables in `Tests/Fixtures/probes` (built by its `build.sh`, checked in) are real PE files with
@@ -125,5 +126,56 @@ struct AutoLaunchProbeTests {
         #expect(result.working == nil)
         #expect(result.attempts.count == 1)
         #expect(result.attempts.first?.diagnosis.problem == .missingFile("escapp_missing.dll"))
+    }
+}
+
+/// Warm bottles on real Wine (same opt-in as `ProbeLaunchTests`).
+@Suite(.enabled(if: ProcessInfo.processInfo.environment["ESCAPP_INTEGRATION"] == "1"), .serialized)
+struct BottleWarmerProbeTests {
+    /// Seconds from the start of `play` until the game's window is on screen.
+    func timeToWindow(_ game: GameRecord, runtime: RuntimeManifest.Runtime, paths: AppPaths,
+                      warmer: BottleWarmer? = nil) async throws -> TimeInterval {
+        let shown = Mutex<Date?>(nil)
+        let start = Date()
+        let result = try await AutoLaunch(paths: paths).play(game, runtime: runtime, warmer: warmer) { event in
+            if case .windowShown = event { shown.withLock { $0 = $0 ?? Date() } }
+        }
+        #expect(result.working != nil)
+        return try #require(shown.withLock { $0 }).timeIntervalSince(start)
+    }
+
+    @Test func aWarmBottleStartsTheGameSooner() async throws {
+        let paths = AppPaths.standard()
+        let runtime = try #require(RuntimeCatalog(
+            installed: RuntimeInstaller(paths: paths).installedRuntimes(), manifest: RuntimeManifest.bundled(),
+            app: Version("0.1")!, macOS: Version("15")!).current, "No runtime installed in ESCAPP_HOME")
+        let temp = try TempFolder()
+        let exe = temp.url.appending(path: "d3d11-x64.exe")
+        try FileManager.default.copyItem(at: Probes.url("d3d11-x64"), to: exe)
+        var game = try GameIdentifier(paths: paths).identify(executable: exe).record
+        defer { try? GameRemover.removeFromApp(game.id, paths: paths) }
+
+        // The first run makes the bottle; the second is cold.
+        _ = try await timeToWindow(game, runtime: runtime, paths: paths)
+        game = try #require(try GameLibrary.load(from: paths.library)[game.id])
+        let cold = try await timeToWindow(game, runtime: runtime, paths: paths)
+
+        let warmer = BottleWarmer(paths: paths)
+        await warmer.warm(game, runtime: runtime)
+        #expect(await warmer.warmGames == [game.id])
+        let warm = try await timeToWindow(game, runtime: runtime, paths: paths, warmer: warmer)
+        #expect(warm < cold - 0.5, "warm \(warm) s, cold \(cold) s")
+        // The game took the bottle over: the warm-up is gone, and the launch ended when the game did.
+        #expect(await warmer.warmGames.isEmpty)
+
+        // Cooling stops Wine at once: nothing waits on the bottle afterwards.
+        await warmer.warm(game, runtime: runtime)
+        await warmer.cool(game.id)
+        let idle = Date()
+        let wine = try BackendTree.wine(for: game.backend ?? .dxvk,
+                                        runtimeFolder: #require(RuntimeInstaller(paths: paths).installed(runtime)))
+        _ = try await ProcessRunner.run(wine.wineserver.path, ["-w"], environment: WineEnvironment.make(
+            host: ProcessInfo.processInfo.environment, bottle: paths.bottle(forGame: game.id).path))
+        #expect(Date().timeIntervalSince(idle) < 2)
     }
 }

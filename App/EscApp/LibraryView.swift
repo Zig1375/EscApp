@@ -260,7 +260,10 @@ struct GameCard: View {
                 .strokeBorder(isHovered ? Color.cardBorderHover : .cardBorder, lineWidth: 1)
         }
         .shadow(color: .black.opacity(isHovered ? 0.10 : 0.04), radius: isHovered ? 12 : 1, y: isHovered ? 10 : 1)
-        .onHover { isHovered = $0 }
+        .onHover {
+            isHovered = $0
+            library.hovering(game, $0)
+        }
         .animation(.easeOut(duration: 0.15), value: isHovered)
         .contextMenu {
             Button("About", action: showDetails)

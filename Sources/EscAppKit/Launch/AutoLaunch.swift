@@ -34,6 +34,9 @@ public struct AutoLaunch: Sendable {
         public var learned: Bool { working != nil && attempts.count > 1 }
     }
 
+    /// A game still showing no window by then has connected to its bottle's Wine anyway.
+    static let handOverAfter: TimeInterval = 10
+
     let paths: AppPaths
     let host: [String: String]
     /// The game's window owners under a Wine folder; injectable so the loop doesn't depend on the screen.
@@ -49,8 +52,10 @@ public struct AutoLaunch: Sendable {
     /// - Parameters:
     ///   - backend: plays with exactly this backend, without retrying (`escapp run --backend`).
     ///   - knownGames: the manifest's game database.
+    ///   - warmer: holds the game's bottle warm, if it does; the game takes it over once it runs.
     public func play(_ game: GameRecord, runtime: RuntimeManifest.Runtime, backend override: GraphicsBackend? = nil,
                      knownGames: [KnownGame] = [], verboseLog: Bool = false, control: LaunchControl = LaunchControl(),
+                     warmer: BottleWarmer? = nil,
                      events: @escaping @Sendable (Event) -> Void = { _ in }) async throws -> Result {
         var game = game
         let exe = URL(filePath: game.executable)
@@ -83,7 +88,10 @@ public struct AutoLaunch: Sendable {
 
             // A backend that worked before only fails by closing; one never seen working also by showing nothing.
             let timeout = backend == game.backend ? nil : AttemptJudge.firstWindowTimeout
-            let verdict = try await watch(running, timeout: timeout, control: control, events: events)
+            let verdict = try await watch(running, timeout: timeout, control: control, warmer: warmer,
+                                          events: events)
+            // The bottle only goes idle once the warm-up's helper is gone.
+            await warmer?.release(game.id)
             if case .failed = verdict { await running.session.stop() }
             if verdict == .working { events(.working(backend, learned: index > 0)) }
             let outcome = await running.finish()
@@ -111,7 +119,8 @@ public struct AutoLaunch: Sendable {
     /// Watches the attempt until it is decided, or until it ends when the player stopped the checking.
     /// Returns nil for an attempt that ran unjudged.
     private func watch(_ running: RunningGame, timeout: TimeInterval?, control: LaunchControl,
-                       events: @Sendable (Event) -> Void) async throws -> AttemptJudge.Verdict? {
+                       warmer: BottleWarmer?, events: @Sendable (Event) -> Void) async throws
+        -> AttemptJudge.Verdict? {
         var judge = AttemptJudge(windowTimeout: timeout)
         var announced = false
         while true {
@@ -120,12 +129,17 @@ public struct AutoLaunch: Sendable {
                 announced = true
                 events(.windowShown(pid: owner))
             }
+            // A warm bottle's helper goes once the game surely holds the bottle itself: dropping it earlier
+            // would shut down the services the game is about to use.
+            let elapsed = Date().timeIntervalSince(running.startedAt)
+            if announced || running.exitCode != nil || elapsed > Self.handOverAfter {
+                await warmer?.release(running.prepared.game.id)
+            }
             if running.exitCode != nil { running.watchForIdle() }
             if !control.retrying {
                 // Not judging any more: the game just runs; `finish` waits for its end.
                 return nil
             }
-            let elapsed = Date().timeIntervalSince(running.startedAt)
             if let verdict = judge.observe(elapsed: elapsed, window: !owners.isEmpty, exitCode: running.exitCode,
                                            idle: running.isIdle) {
                 return verdict

@@ -71,6 +71,8 @@ extension LibraryModel {
                 if launch?.id == game.id, launch?.isFailed == false { launch = nil }
                 reload()
             }
+            // The other warm bottles go: the game gets the memory. Its own warm Wine is handed to it.
+            await warmer.coolAll(except: game.id)
             do {
                 guard let (runtime, knownGames) = try currentRuntime() else {
                     notice = Notice(title: String(localized: "Components aren't installed"),
@@ -78,7 +80,7 @@ extension LibraryModel {
                     return
                 }
                 let result = try await AutoLaunch(paths: paths).play(
-                    game, runtime: runtime, knownGames: knownGames, control: control) { event in
+                    game, runtime: runtime, knownGames: knownGames, control: control, warmer: warmer) { event in
                     Task { @MainActor in self.handle(event, for: game.id) }
                 }
                 if result.working == nil, let last = result.attempts.last, last.failure != nil {

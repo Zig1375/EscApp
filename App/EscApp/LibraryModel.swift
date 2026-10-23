@@ -43,10 +43,17 @@ final class LibraryModel {
     var launchControl: LaunchControl?
     /// Files opened before the components were installed; played once setup finishes.
     private var pending: [URL] = []
-    private var isReady = false
+    private(set) var isReady = false
+    /// Keeps the next game's Wine running so it starts at once (`BottleWarmer`).
+    let warmer: BottleWarmer
+    /// Cools the warm bottles a few seconds after EscApp loses focus.
+    var coolTask: Task<Void, Never>?
+    /// Warms a hovered card once the pointer has rested on it.
+    var hoverTask: Task<Void, Never>?
 
     init(paths: AppPaths = .standard()) {
         self.paths = paths
+        warmer = BottleWarmer(paths: paths)
     }
 
     func reload() {
@@ -62,6 +69,7 @@ final class LibraryModel {
         isReady = true
         startClock()
         reload()
+        watchFocus()
         let waiting = pending
         pending = []
         for url in waiting { open(url) }
@@ -120,13 +128,17 @@ final class LibraryModel {
     }
 
     func removeFromApp(_ game: GameRecord) {
-        do {
-            try GameRemover.removeFromApp(game.id, paths: paths)
-            icons[game.id] = nil
-            reload()
-        } catch {
-            notice = Notice(title: String(localized: "Couldn't remove \(game.name)"),
-                            message: String(describing: error))
+        Task {
+            // Its bottle is about to be deleted; Wine mustn't be running in it.
+            await warmer.cool(game.id)
+            do {
+                try GameRemover.removeFromApp(game.id, paths: paths)
+                icons[game.id] = nil
+                reload()
+            } catch {
+                notice = Notice(title: String(localized: "Couldn't remove \(game.name)"),
+                                message: String(describing: error))
+            }
         }
     }
 
@@ -139,6 +151,7 @@ final class LibraryModel {
         panel.allowedContentTypes = [UTType("com.microsoft.windows-executable")].compactMap { $0 }
         panel.message = String(localized: "Choose which program starts \(game.name)")
         guard panel.runModal() == .OK, let url = panel.url else { return }
+        Task { await warmer.cool(game.id) }
         update(game.id) { $0.executable = url.path(percentEncoded: false) }
         icons[game.id] = nil
         reload()

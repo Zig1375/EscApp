@@ -15,6 +15,7 @@ struct GamePage: View {
         Group {
             if let game = library.game(id) {
                 content(game)
+                    .onAppear { library.warmUp(game) }
                     .sheet(isPresented: $isDeleting) {
                         DeleteGameSheet(game: game, folderSize: size, library: library) { removed in
                             isDeleting = false

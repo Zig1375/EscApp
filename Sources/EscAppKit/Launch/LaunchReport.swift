@@ -24,7 +24,29 @@ public enum LaunchReport {
         if let last = result.attempts.last, !last.diagnosis.excerpt.isEmpty {
             lines += ["", "Last log, errors only:"] + last.diagnosis.excerpt
         }
-        // Paths name the user's home folder; the report doesn't need them.
+        return withoutHome(lines)
+    }
+
+    /// Advanced → "Copy Report": the same, from the game's last log instead of a launch that just happened.
+    public static func text(game: GameRecord, log: URL, runtime: String, macOS: String, app: String) -> String {
+        let run = LaunchHistory.runs(in: log.deletingLastPathComponent()).first { $0.log == log }
+        let diagnosis = LogDiagnosis(log: LogDiagnosis.read(log) ?? "")
+        var lines = [
+            "EscApp \(app), macOS \(macOS), runtime \(runtime)",
+            "Game: \(game.name)",
+            "Executable: \(URL(filePath: game.executable).lastPathComponent)",
+            "Windows: \(game.windowsVersion.displayName)",
+            "",
+            "Last run: \(run?.backend?.displayName ?? "?"), "
+                + (run?.exitCode.map { "exit code \($0) after \(run?.processSeconds ?? 0) s" } ?? "didn't end"),
+        ]
+        if let evidence = diagnosis.evidence { lines.append(evidence) }
+        if !diagnosis.excerpt.isEmpty { lines += ["", "Log, errors only:"] + diagnosis.excerpt }
+        return withoutHome(lines)
+    }
+
+    /// Paths name the user's home folder; the report doesn't need them.
+    private static func withoutHome(_ lines: [String]) -> String {
         var home = FileManager.default.homeDirectoryForCurrentUser.path(percentEncoded: false)
         if home.hasSuffix("/") { home.removeLast() }
         return lines.joined(separator: "\n").replacingOccurrences(of: home, with: "~")

@@ -2111,6 +2111,476 @@
           }
         }
       }
+    },
+    "A reset makes a clean Windows for the game. Saves and the game itself stay.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сброс создаёт чистую Windows для игры. Сохранения и сама игра не удаляются."
+          }
+        }
+      }
+    },
+    "Advanced": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дополнительно"
+          }
+        }
+      }
+    },
+    "Auto now: off — the game can't use a high-resolution screen; with Retina its interface would be tiny": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас: выключено — игра не умеет высокое разрешение экрана, с Retina интерфейс был бы крошечным"
+          }
+        }
+      }
+    },
+    "Auto now: off — the game draws for Retina itself": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас: выключено — игра сама рисует для Retina"
+          }
+        }
+      }
+    },
+    "Auto now: off — the game's window, %lld×%lld, is large enough": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас: выключено — окно игры, %1$lld×%2$lld, и так достаточно большое"
+          }
+        }
+      }
+    },
+    "Auto now: on — the game draws for high-resolution screens itself": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас: включено — игра сама умеет высокое разрешение экрана"
+          }
+        }
+      }
+    },
+    "Auto now: on — the game's window is %lld×%lld, EscApp enlarges it %@× and leaves the Mac's display alone": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас: включено — окно игры %1$lld×%2$lld, EscApp увеличивает его в %3$@ раза и не трогает экран Mac"
+          }
+        }
+      }
+    },
+    "Auto now: the game runs full screen; it fills the screen and the Mac's display isn't switched": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас: игра полноэкранная — она растянута на весь экран, а экран Mac не переключается"
+          }
+        }
+      }
+    },
+    "Auto picks the graphics from what the game uses.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто выбирает графику по тому, что использует игра."
+          }
+        }
+      }
+    },
+    "Auto would turn it off": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В режиме «Авто» было бы выключено"
+          }
+        }
+      }
+    },
+    "Auto would turn it on": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В режиме «Авто» было бы включено"
+          }
+        }
+      }
+    },
+    "Auto: decided after the first launch, from the size of the game's window": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто: решится после первого запуска, по размеру окна игры"
+          }
+        }
+      }
+    },
+    "Controls and launch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Управление и запуск"
+          }
+        }
+      }
+    },
+    "Couldn't reset the Windows of %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сбросить среду Windows игры %@"
+          }
+        }
+      }
+    },
+    "Ctrl+S, Ctrl+C and other shortcuts with ⌘": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ctrl+S, Ctrl+C и другие сочетания через ⌘"
+          }
+        }
+      }
+    },
+    "Enlarge low resolutions": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Масштабировать низкое разрешение"
+          }
+        }
+      }
+    },
+    "Environment variables": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переменные окружения"
+          }
+        }
+      }
+    },
+    "For diagnosing problems; the game may run slower": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для разбора проблем, игра может работать медленнее"
+          }
+        }
+      }
+    },
+    "Frame counter": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Счётчик кадров"
+          }
+        }
+      }
+    },
+    "Launch parameters": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Параметры запуска"
+          }
+        }
+      }
+    },
+    "Made at the game's next launch.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Создаётся при следующем запуске игры."
+          }
+        }
+      }
+    },
+    "Metal HUD over the game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metal HUD поверх игры"
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выкл"
+          }
+        }
+      }
+    },
+    "On": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вкл"
+          }
+        }
+      }
+    },
+    "Open Last Log": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть последний лог"
+          }
+        }
+      }
+    },
+    "Real size on disk. Finder shows about %@: most of it is shared with other games.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Реальный размер на диске. Finder покажет около %@: большая часть общая с другими играми."
+          }
+        }
+      }
+    },
+    "Reset": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить"
+          }
+        }
+      }
+    },
+    "Reset Windows…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить среду…"
+          }
+        }
+      }
+    },
+    "Reset the Windows of %@?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сбросить среду Windows игры %@?"
+          }
+        }
+      }
+    },
+    "Sharp screen (Retina)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чёткий экран (Retina)"
+          }
+        }
+      }
+    },
+    "Small game windows are enlarged as much as fits on the screen": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Маленькие окна игры увеличиваются, насколько помещается на экране"
+          }
+        }
+      }
+    },
+    "The game always starts with %@; it isn't retried with others if it fails.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра всегда запускается с %@; автоповтор с другой графикой при сбое отключён."
+          }
+        }
+      }
+    },
+    "The game gets a clean Windows at its next launch. What was set up inside it (registry, installed components) goes; saves and the game itself stay.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "При следующем запуске у игры будет чистая Windows. Всё, что настраивалось внутри неё (реестр, установленные компоненты), пропадёт; сохранения и сама игра останутся."
+          }
+        }
+      }
+    },
+    "The game's window keeps its own size. Full-screen games still fill the screen.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окно игры остаётся своего размера. Полноэкранные игры всё равно растянуты на весь экран."
+          }
+        }
+      }
+    },
+    "This game is installed inside its own Windows: a reset would delete it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта игра установлена внутри своей Windows: сброс удалил бы её."
+          }
+        }
+      }
+    },
+    "This game's Windows: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Среда Windows этой игры: %@"
+          }
+        }
+      }
+    },
+    "Usually nothing here needs changing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обычно здесь ничего менять не нужно"
+          }
+        }
+      }
+    },
+    "Verbose log": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробный лог"
+          }
+        }
+      }
+    },
+    "one variable per line: NAME=value": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "одна переменная в строке: ИМЯ=значение"
+          }
+        }
+      }
+    },
+    "⌘ works as Ctrl": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⌘ работает как Ctrl"
+          }
+        }
+      }
+    },
+    "Auto now picks %@: it worked for this game last time. %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас выбирает %1$@: с ним игра уже работала. %2$@"
+          }
+        }
+      }
+    },
+    "Auto now picks %@: the game draws without DirectX. %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас выбирает %1$@: игра рисует без DirectX. %2$@"
+          }
+        }
+      }
+    },
+    "Auto now picks %@: the game uses DirectDraw. %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас выбирает %1$@: игра использует DirectDraw. %2$@"
+          }
+        }
+      }
+    },
+    "Auto now picks %@: the game uses DirectX 11. %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас выбирает %1$@: игра использует DirectX 11. %2$@"
+          }
+        }
+      }
+    },
+    "Auto now picks %@: the game uses DirectX 12. %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас выбирает %1$@: игра использует DirectX 12. %2$@"
+          }
+        }
+      }
+    },
+    "Auto now picks %@: the game uses DirectX 9. %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас выбирает %1$@: игра использует DirectX 9. %2$@"
+          }
+        }
+      }
+    },
+    "If you pick one yourself, retrying after a failure is turned off.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если выбрать вручную, автоповтор при сбое отключится."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

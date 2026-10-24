@@ -30,6 +30,20 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     /// The game's window as seen on its last run, which sets how much it is enlarged.
     public var window: GameScaling.LearnedWindow?
 
+    // Advanced settings (`GameSettings`). Nil is Auto, or off.
+    /// Graphics picked by hand: the game always starts with it and isn't retried with others.
+    public var chosenBackend: GraphicsBackend?
+    public var retina: GameScaling.Setting?
+    /// Metal's frame counter over the game.
+    public var fpsCounter: Bool?
+    /// ⌘ works as Ctrl, so Ctrl+S, Ctrl+C and the rest can be pressed the Mac way.
+    public var commandAsControl: Bool?
+    /// Launch parameters, as typed.
+    public var arguments: String?
+    /// Environment variables, as typed: one `NAME=value` per line.
+    public var environment: String?
+    public var verboseLog: Bool?
+
     public init(id: GameID, name: String, executable: String, folder: String, hasMarker: Bool,
                 fingerprint: String? = nil, windowsVersion: WindowsVersion = .default, addedAt: Date,
                 lastPlayed: Date? = nil, backend: GraphicsBackend? = nil, playTime: TimeInterval? = nil) {

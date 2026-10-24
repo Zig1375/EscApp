@@ -93,7 +93,8 @@ public struct AutoLaunch: Sendable {
         }
 
         let order: [GraphicsBackend]
-        if let override {
+        // Graphics picked in Advanced works like `--backend`: that one only, no retries.
+        if let override = override ?? game.chosenBackend {
             order = [override]
             control.stopRetrying()
         } else if case let .attempts(plan)? = info.map({ BackendPlan.forTraits($0.traits) }) {

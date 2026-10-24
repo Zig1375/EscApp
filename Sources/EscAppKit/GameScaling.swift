@@ -87,6 +87,12 @@ public enum GameScaling {
                              fullScreen: fullScreen)
     }
 
+    /// Pixels per point of the main display: 2 on Retina. With Retina on, the game's pixels are these.
+    public static func backingScale() -> Double {
+        guard let mode = CGDisplayCopyDisplayMode(CGMainDisplayID()), mode.width > 0 else { return 1 }
+        return Double(mode.pixelWidth) / Double(mode.width)
+    }
+
     /// The room a game window has on the main display, in points: less the menu bar and the window's title bar.
     public static func availableScreen(display: CGRect = CGDisplayBounds(CGMainDisplayID())) -> Size {
         Size(width: Int(display.width), height: max(Int(display.height) - 33 - 28, 1))

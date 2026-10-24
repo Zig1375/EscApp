@@ -173,6 +173,17 @@ import Testing
         #expect(try remembered() == .dxmt)
     }
 
+    @Test func graphicsPickedByHandIsTheOnlyOneTried() async throws {
+        var picked = game
+        picked.chosenBackend = .wined3d
+        let starter = try FakeStarter([.wined3d: .crashes(), .dxvk: .works], logs: logs())
+        let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
+                                          measure: { _ in nil }, timing: timing)
+            .play(picked, runtime: runtime)
+        #expect(starter.started.map(\.0) == [.wined3d])
+        #expect(result.attempts.count == 1)
+    }
+
     @Test func aMissingGameFileEndsTheTriesAtOnce() async throws {
         let starter = try FakeStarter([.dxvk: .missesAFile, .dxmt: .works], logs: logs())
         let result = try await play(starter)

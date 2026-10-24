@@ -1,6 +1,7 @@
 import AppKit
 import EscAppKit
 import Foundation
+import UniformTypeIdentifiers
 
 extension LibraryModel {
     /// The install sheet (Installer.dc.html): the disc's contents, where to install, then which program is the game.
@@ -43,6 +44,17 @@ extension LibraryModel {
             WindowsPath.windowsPath(of: folder, under: folder.deletingLastPathComponent(),
                                     drive: GameInstaller.gamesDrive) ?? #"G:\"#
         }
+    }
+
+    /// "Open Game…": an exe, an installer or a disc image.
+    func chooseGameFile() {
+        let panel = NSOpenPanel()
+        panel.message = String(localized: "Choose the game's .exe, its installer or its disc image")
+        panel.allowedContentTypes = [UTType("com.microsoft.windows-executable"), UTType(filenameExtension: "msi")]
+            .compactMap { $0 } + DiscImage.extensions.compactMap { UTType(filenameExtension: $0) }
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        open(url)
     }
 
     /// Opening a disc image: it goes into drive D: and its contents show.

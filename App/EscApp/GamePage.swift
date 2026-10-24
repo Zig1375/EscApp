@@ -2,12 +2,13 @@ import EscAppKit
 import SwiftUI
 
 /// A game's own page, as in the design (Game.dc.html): the game and its actions, recent runs, and the details
-/// column. Parts EscApp can't fill yet (screenshots, saves, Launchpad shortcut, Advanced) are left out rather than
+/// column. Parts EscApp can't fill yet (screenshots, saves, Launchpad shortcut) are left out rather than
 /// shown empty.
 struct GamePage: View {
     let id: GameID
     let library: LibraryModel
     let back: () -> Void
+    let advanced: () -> Void
     @State private var size: Int64?
     @State private var isDeleting = false
 
@@ -40,8 +41,17 @@ struct GamePage: View {
                     RunsSection(runs: library.runs(for: game), library: library)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                DetailsColumn(game: game, size: size, library: library)
-                    .frame(width: 380)
+                VStack(alignment: .leading, spacing: 12) {
+                    DetailsColumn(game: game, size: size, library: library)
+                    Button(action: advanced) {
+                        HStack(spacing: 8) {
+                            Text("Advanced")
+                            Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold))
+                        }
+                    }
+                    .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
+                }
+                .frame(width: 380)
             }
             .padding(.horizontal, 32)
             .padding(.vertical, 24)

@@ -6,9 +6,11 @@ import UniformTypeIdentifiers
 /// The main window, laid out as in the design (Main.dc.html): toolbar with search, "Open Game…" and settings;
 /// an update strip; "Games" with source filters and order; two columns of wide cards; a hint at the bottom.
 struct LibraryView: View {
+    enum Page: Hashable { case game(GameID), advanced(GameID) }
+
     let components: ComponentsModel
     let library: LibraryModel
-    @State private var page: GameID?
+    @State private var page: Page?
     @State private var search = ""
     @State private var isTargeted = false
     @Environment(\.openSettings) private var openSettings
@@ -16,14 +18,16 @@ struct LibraryView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            if let page {
-                GamePage(id: page, library: library) { self.page = nil }
+            if case let .game(id)? = page {
+                GamePage(id: id, library: library, back: { page = nil }, advanced: { page = .advanced(id) })
+            } else if case let .advanced(id)? = page {
+                AdvancedPage(id: id, library: library)
             } else {
                 if components.catalog?.updateAvailable == true { UpdateStrip(components: components) }
                 if library.games.isEmpty {
                     EmptyLibraryView()
                 } else {
-                    LibraryScreen(library: library, search: search) { page = $0 }
+                    LibraryScreen(library: library, search: search) { page = .game($0) }
                 }
             }
         }
@@ -78,7 +82,9 @@ struct LibraryView: View {
     /// Game.dc.html: a single "‹ All Games" button.
     @ViewBuilder private var header: some View {
         HeaderBar {
-            if page != nil {
+            if case let .advanced(id)? = page {
+                AdvancedHeader(name: library.game(id)?.name ?? "") { page = .game(id) }
+            } else if page != nil {
                 Button { page = nil } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "chevron.left").font(.system(size: 11, weight: .semibold))
@@ -91,7 +97,7 @@ struct LibraryView: View {
                     .font(.system(size: 15, weight: .bold))
                 Spacer(minLength: 0)
                 SearchField(text: $search)
-                Button { chooseGame() } label: {
+                Button { library.chooseGameFile() } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "plus").font(.system(size: 12, weight: .bold))
                         Text("Open Game…")
@@ -110,15 +116,6 @@ struct LibraryView: View {
         }
     }
 
-    private func chooseGame() {
-        let panel = NSOpenPanel()
-        panel.message = String(localized: "Choose the game's .exe, its installer or its disc image")
-        panel.allowedContentTypes = [UTType("com.microsoft.windows-executable"), UTType(filenameExtension: "msi")]
-            .compactMap { $0 } + DiscImage.extensions.compactMap { UTType(filenameExtension: $0) }
-        panel.allowsMultipleSelection = false
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        library.open(url)
-    }
 }
 
 /// "Games", the filters and order, the cards, and the hint line.

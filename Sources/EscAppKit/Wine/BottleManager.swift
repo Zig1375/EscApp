@@ -139,6 +139,14 @@ public struct BottleManager: Sendable {
         return folder
     }
 
+    /// Advanced → "Reset Windows": the game's next launch makes a clean bottle from the template. Saves live in
+    /// the shared profile and the game in its own folder, so neither goes. The bottle's Wine must be down.
+    public func reset(_ game: GameID) throws {
+        let folder = bottleFolder(for: game)
+        guard FileManager.default.fileExists(atPath: folder.path) else { return }
+        try FileManager.default.removeItem(at: folder)
+    }
+
     /// Moves a bottle made by another runtime onto this one (see `BottleMigration`). The new bottle is built
     /// next to the old one and swapped in at once, so a crash halfway leaves the old bottle as it was.
     private func move(_ game: GameID, from old: String, to runtime: RuntimeManifest.Runtime) async throws {

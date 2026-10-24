@@ -53,6 +53,14 @@ public struct DiskUsage: Sendable, Equatable {
                          bottleCount: bottleFolders.count)
     }
 
+    /// One game's Windows: what it really takes on disk (`unique`, beyond its template) and what Finder shows for
+    /// the folder (`apparent`), which counts the blocks the clone shares with the template.
+    public static func bottle(of game: GameID, paths: AppPaths) -> (unique: Int64, apparent: Int64)? {
+        let bottle = paths.bottle(forGame: game)
+        guard let info = BottleManager(paths: paths).bottleInfo(for: game) else { return nil }
+        return (uniqueSize(of: bottle, against: paths.template(forRuntime: info.runtime)), allocatedSize(of: bottle))
+    }
+
     static func allocatedSize(of folder: URL) -> Int64 {
         var total: Int64 = 0
         walk(folder) { _, size, _ in total += size }

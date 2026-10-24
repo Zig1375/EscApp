@@ -80,13 +80,21 @@ public struct GameLauncher: Sendable {
         // crashes itself, from the log.
         try BottleManager.disableCrashDialog(bottle: bottle)
         // Retina only for games that say they handle high DPI; others would draw a tiny interface.
-        try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\Mac Driver"#, name: "RetinaMode",
-                                            value: info.dpiAware ? "y" : "n")
-        let scale = try applyScaling(for: game, dpiAware: info.dpiAware, bottle: bottle)
+        let retina = GameSettings.retina(game.retina, dpiAware: info.dpiAware)
+        let macDriver = #"Software\Wine\Mac Driver"#
+        try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: "RetinaMode",
+                                            value: retina ? "y" : "n")
+        let command = game.commandAsControl == true ? "y" : "n"
+        for side in ["LeftCommandIsCtrl", "RightCommandIsCtrl"] {
+            try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: side, value: command)
+        }
+        let scale = try applyScaling(for: game, dpiAware: retina, bottle: bottle)
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
         try BackendTree.prepareBottle(bottle, for: backend, wine: wine)
         try await insertDisc(of: game, into: bottle)
-        let environment = WineEnvironment.make(host: host, bottle: bottle.path, verboseLog: verboseLog)
+        let environment = WineEnvironment.make(host: host, bottle: bottle.path,
+                                               extra: GameSettings.environment(of: game),
+                                               verboseLog: verboseLog || game.verboseLog == true)
         progress(.starting)
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
                         environment: environment, log: newLogFile(for: game.id), scale: scale)
@@ -134,23 +142,26 @@ public struct GameLauncher: Sendable {
         defer { try? log.close() }
 
         let startedAt = Date()
+        let retina = GameSettings.retina(prepared.game.retina, dpiAware: prepared.info.dpiAware)
         let header = [
             "[EscApp] Launch \(ISO8601DateFormatter().string(from: startedAt))",
             "[EscApp] Game \(prepared.game.name) (\(prepared.game.id))",
             "[EscApp] Executable \(prepared.game.executable)",
             "[EscApp] Backend \(prepared.backend.rawValue)",
             "[EscApp] Windows \(prepared.game.windowsVersion.wineValue)",
-            "[EscApp] Retina \(prepared.info.dpiAware ? "on" : "off")",
+            "[EscApp] Retina \(retina ? "on" : "off")",
             "[EscApp] Scale \(prepared.scale.formatted(.number.precision(.fractionLength(0...2))))x",
             "[EscApp] Wine \(prepared.wine.root.path(percentEncoded: false))",
             "[EscApp] WINEDEBUG=\(prepared.environment["WINEDEBUG"] ?? "")",
         ]
-        log.write(Data((header.joined(separator: "\n") + "\n").utf8))
+        let arguments = GameSettings.arguments(prepared.game.arguments ?? "")
+        let extra = arguments.isEmpty ? [] : ["[EscApp] Arguments \(arguments.joined(separator: " "))"]
+        log.write(Data(((header + extra).joined(separator: "\n") + "\n").utf8))
 
         let exe = URL(filePath: prepared.game.executable)
         let process = Process()
         process.executableURL = prepared.wine.wine
-        process.arguments = [exe.path(percentEncoded: false)]
+        process.arguments = [exe.path(percentEncoded: false)] + arguments
         process.currentDirectoryURL = exe.deletingLastPathComponent()
         process.environment = prepared.environment
         process.standardOutput = log
@@ -160,8 +171,10 @@ public struct GameLauncher: Sendable {
         let exit = ProcessExit()
         process.terminationHandler = { exit.exited($0.terminationStatus) }
         try process.run()
+        // Points on the Mac per pixel of the game: the DPI enlarging, or with Retina on, half a point per pixel.
+        let pointsPerPixel = retina ? 1 / GameScaling.backingScale() : prepared.scale
         let session = GameSession(wine: prepared.wine, environment: prepared.environment,
-                                  processID: process.processIdentifier, scale: prepared.scale)
+                                  processID: process.processIdentifier, scale: pointsPerPixel)
         return RunningGame(prepared: prepared, session: session, startedAt: startedAt, process: exit) { [self] in
             pruneLogs(for: $0)
         }
@@ -199,7 +212,8 @@ public struct GameSession: Sendable {
     /// The `wine` process started for the game. The game's own windows may belong to it or to processes it
     /// starts, all running Wine's binaries.
     public let processID: Int32
-    /// How many times larger Wine draws the game, to tell its own size from its window on the Mac.
+    /// Points on the Mac per pixel of the game, to tell the game's own size from its window: the enlarging, or
+    /// below 1 with Retina on.
     public var scale: Double = 1
 
     /// Wine's folder: any process running from inside it belongs to this game's session.

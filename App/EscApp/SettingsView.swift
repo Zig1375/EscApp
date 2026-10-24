@@ -312,21 +312,10 @@ private struct SavesCard: View {
 }
 
 private struct GeneralCard: View {
-    enum Language: String, CaseIterable {
-        case system, russian = "ru", english = "en"
-
-        var title: String {
-            switch self {
-            case .system: String(localized: "As in macOS")
-            case .russian: "Русский"
-            case .english: "English"
-            }
-        }
-    }
-
     let components: ComponentsModel
     let library: LibraryModel
-    @State private var language = Language.current
+    @State private var language = AppLanguage.current
+    @AppStorage(AppAppearance.key) private var appearance = AppAppearance.system
     @State private var languageChanged = false
 
     var body: some View {
@@ -342,11 +331,16 @@ private struct GeneralCard: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                DesignSelect(selection: $language, options: Language.allCases, title: \.title)
+                DesignSelect(selection: $language, options: AppLanguage.allCases, title: \.title)
                     .onChange(of: language) {
                         language.apply()
                         languageChanged = true
                     }
+            }
+            HStack(spacing: 12) {
+                Text("Appearance").frame(maxWidth: .infinity, alignment: .leading)
+                DesignSelect(selection: $appearance, options: AppAppearance.allCases, title: \.title)
+                    .onChange(of: appearance) { appearance.apply() }
             }
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -363,6 +357,8 @@ private struct GeneralCard: View {
                     .tint(.brand)
                     .labelsHidden()
                     .disabled(library.isDefaultForExe)
+                    // Another app may have taken .exe since EscApp started (chosen in Finder).
+                    .onAppear { library.refreshDefaultHandler() }
             }
             HStack(spacing: 12) {
                 Text("Update components automatically").frame(maxWidth: .infinity, alignment: .leading)
@@ -371,24 +367,6 @@ private struct GeneralCard: View {
                     .tint(.brand)
                     .labelsHidden()
             }
-        }
-    }
-}
-
-fileprivate extension GeneralCard.Language {
-    static var current: Self {
-        let chosen = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String]
-        guard let first = chosen?.first, UserDefaults.standard.persistentDomain(
-            forName: Bundle.main.bundleIdentifier ?? "")?["AppleLanguages"] != nil else { return .system }
-        return first.hasPrefix("ru") ? .russian : first.hasPrefix("en") ? .english : .system
-    }
-
-    /// The app's own language, like System Settings → Language & Region → Applications.
-    func apply() {
-        if self == .system {
-            UserDefaults.standard.removeObject(forKey: "AppleLanguages")
-        } else {
-            UserDefaults.standard.set([rawValue], forKey: "AppleLanguages")
         }
     }
 }

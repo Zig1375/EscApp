@@ -199,17 +199,23 @@ final class LibraryModel {
             for type in types {
                 try? await NSWorkspace.shared.setDefaultApplication(at: Bundle.main.bundleURL, toOpen: type)
             }
-            refreshDefaultHandler()
+            // Launch Services takes a moment to answer with the new handler after the player approves.
+            for _ in 0..<10 where !isDefaultForExe {
+                refreshDefaultHandler()
+                try? await Task.sleep(for: .milliseconds(300))
+            }
         }
     }
 
-    private func refreshDefaultHandler() {
+    /// By bundle id, not path: with two copies of EscApp on the Mac (a development build in DerivedData and one
+    /// elsewhere) Launch Services names the other copy, and the switch in Settings stayed off after it was approved.
+    func refreshDefaultHandler() {
         guard let type = UTType("com.microsoft.windows-executable"),
               let handler = NSWorkspace.shared.urlForApplication(toOpen: type) else {
             isDefaultForExe = false
             return
         }
-        isDefaultForExe = handler.standardizedFileURL == Bundle.main.bundleURL.standardizedFileURL
+        isDefaultForExe = Bundle(url: handler)?.bundleIdentifier == Bundle.main.bundleIdentifier
     }
 
     func currentRuntime() throws -> (RuntimeManifest.Runtime, [KnownGame])? {

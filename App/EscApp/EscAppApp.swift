@@ -59,6 +59,10 @@ struct EscAppApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let library = LibraryModel()
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        AppAppearance.saved.apply()
+    }
+
     func application(_ application: NSApplication, open urls: [URL]) {
         for url in urls { library.open(url) }
     }

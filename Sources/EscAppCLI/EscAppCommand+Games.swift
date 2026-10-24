@@ -84,7 +84,9 @@ extension EscAppCommand {
             let ran = result.working != nil || (backend != nil || noRetry) && result.attempts.last?.failure == nil
             let verdict = result.working.map { "Works with \($0.displayName)." }
                 ?? (ran ? "Ran without checking." : "Didn't start with any backend.")
-            let lines = result.attempts.map { Self.describe($0) } + [verdict, "Log: \(result.log?.path ?? "-")"]
+            let judged = result.working != nil
+            let lines = result.attempts.map { Self.describe($0, judged: judged) }
+                + [verdict, "Log: \(result.log?.path ?? "-")"]
             return ran ? success(lines.joined(separator: "\n")) : failure(lines.joined(separator: "\n"))
         } catch {
             return failure("\(error)")
@@ -136,9 +138,11 @@ extension EscAppCommand {
         return control
     }
 
-    static func describe(_ attempt: LaunchAttempt) -> String {
+    /// - Parameter judged: whether the run checked the game's window. A store game's single attempt and one with
+    ///   `--backend` aren't checked; "worked" for those read as if the game had been seen working.
+    static func describe(_ attempt: LaunchAttempt, judged: Bool = true) -> String {
         let result: String = switch attempt.failure {
-        case nil: "worked"
+        case nil: judged ? "worked" : "ran, not checked"
         case let .closed(code)?: "closed after \(attempt.seconds) s (exit \(code))"
         case .noWindow?: "showed no window in \(attempt.seconds) s"
         case .blankPicture?: "its window stayed blank"

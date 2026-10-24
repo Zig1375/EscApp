@@ -41,13 +41,12 @@ struct StoreGameWatch: Sendable {
             var seen = false
             var missing = 0
             var steam = SteamGameLog.State()
-            var stoppedQuiet = 0
             while true {
                 steamLog?.read(into: &steam)
-                if let since = Self.stoppedSince(bottle: bottle, folder: folder) {
-                    if endStopped(since: since, quiet: &stoppedQuiet) { return game.exited(steam.lastExit ?? 0) }
-                    try? await Task.sleep(for: .seconds(1))
-                    continue
+                if Self.stoppedSince(bottle: bottle, folder: folder) != nil {
+                    // Stopped or cancelled: the launch ends now, and the game goes whenever it appears.
+                    endStoppedGame()
+                    return game.exited(steam.lastExit ?? 0)
                 }
                 let running = !WineProcesses.game(in: bottle, folder: folder).isEmpty
                 if running || steam.running {
@@ -73,22 +72,24 @@ struct StoreGameWatch: Sendable {
         }
     }
 
-    /// One look at a stopped game: its processes are ended, also when the client starts it only now. True once
-    /// it has stayed gone (and Steam has nothing launching) for a moment, or after `stoppedFor`.
-    private func endStopped(since: Date, quiet: inout Int) -> Bool {
-        let pids = WineProcesses.game(in: bottle, folder: folder)
-        for pid in pids { kill(pid, SIGKILL) }
-        let launching = steamApp != nil && SteamLaunches.inProgress(in: bottle)
-        quiet = pids.isEmpty && !launching ? quiet + 1 : 0
-        guard quiet >= Self.goneFor || Date().timeIntervalSince(since) > Self.stoppedFor else { return false }
-        Self.forgetStop(bottle: bottle, folder: folder)
-        return true
+    /// Ends a stopped game's processes, and keeps ending them for `stoppedFor` in the background: Steam may start
+    /// the game only now (a cold Steam asked for it before Cancel, and started it 30 s later). Ends early when a
+    /// new launch forgets the stop, or nothing runs in the bottle any more.
+    private func endStoppedGame() {
+        let bottle = bottle, folder = folder
+        Task.detached {
+            while let since = Self.stoppedSince(bottle: bottle, folder: folder),
+                  Date().timeIntervalSince(since) < Self.stoppedFor,
+                  !WineProcesses.running(in: bottle).isEmpty {
+                for pid in WineProcesses.game(in: bottle, folder: folder) { kill(pid, SIGKILL) }
+                try? await Task.sleep(for: .seconds(1))
+            }
+        }
     }
 
     /// Games stopped or whose launch was cancelled, by bottle and folder, with when. Cancelling a Steam game
     /// before it appeared ended nothing: Steam had the launch already and started Banished a few seconds after its
-    /// launch window had gone. The watch ends such a game whenever it appears, for up to `stoppedFor`, and until
-    /// then a game the client is still starting (`SteamLaunches`) counts as coming.
+    /// launch window had gone. Such a game is ended whenever it appears, for up to `stoppedFor`.
     private static let stopped = Mutex<[String: Date]>([:])
     static let stoppedFor: TimeInterval = 120
 

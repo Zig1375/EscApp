@@ -41,6 +41,7 @@ extension LibraryModel {
         Task {
             while !Task.isCancelled {
                 runningStores = await keeper.check(installedStores, busy: busyStores)
+                openingStores.subtract(runningStores)
                 try? await Task.sleep(for: .seconds(3))
             }
         }
@@ -99,20 +100,27 @@ extension LibraryModel {
     }
 
     func openStore(_ store: Store, uninstalling storeID: String? = nil) {
+        if !runningStores.contains(store) { openingStores.insert(store) }
         Task {
             do {
                 guard let (runtime, _) = try currentRuntime() else { throw BottleError.runtimeMissing("") }
                 try await StoreClient(paths: paths).open(store, runtime: runtime, uninstalling: storeID)
             } catch {
+                openingStores.remove(store)
                 notice = Notice(title: String(localized: "Couldn't open \(store.name)"),
                                 message: String(describing: error))
             }
+            // A client that never comes up (it quit at once) stops showing as starting after a while.
+            try? await Task.sleep(for: .seconds(60))
+            openingStores.remove(store)
         }
     }
 
-    /// "Remove…", once confirmed.
+    /// "Delete…" in the store's menu, once confirmed: the client and every game installed through it.
     func removeStore(_ store: Store) {
+        guard removingStores.insert(store).inserted else { return }
         Task {
+            defer { removingStores.remove(store) }
             do {
                 try await StoreClient(paths: paths).uninstall(store)
             } catch {

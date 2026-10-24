@@ -27,6 +27,9 @@ final class LibraryModel {
     private(set) var tints: [GameID: Color] = [:]
     /// Icons drawn edge to edge (opaque corners), shown filling their tile rather than inset in it.
     private(set) var fullBleedIcons: Set<GameID> = []
+    /// Steam games' portrait covers from Steam's own cache (`SteamCovers`). Other games have none: a game the
+    /// player installed from a disc only has its icon, which the card shows instead.
+    private(set) var covers: [GameID: NSImage] = [:]
     private(set) var infos: [GameID: ExecutableInfo] = [:]
     var states: [GameID: PlayState] = [:]
     var notice: Notice?
@@ -60,6 +63,11 @@ final class LibraryModel {
     var restartingStores: Set<Store> = []
     /// Stores whose client "Stop" is closing; Steam may take up to 20 s to save and quit.
     var stoppingStores: Set<Store> = []
+    /// Stores opened from the store row whose client isn't up yet: Steam takes a while to show its window, and
+    /// without a sign the player clicked again.
+    var openingStores: Set<Store> = []
+    /// Stores being removed with their games.
+    var removingStores: Set<Store> = []
     /// The screenshot shown over the whole window (`ScreenshotViewer`).
     var viewing: Viewing?
 
@@ -96,6 +104,8 @@ final class LibraryModel {
         games = ((try? GameLibrary.load(from: paths.library))?.games ?? [])
             .sorted { ($0.lastPlayed ?? $0.addedAt) > ($1.lastPlayed ?? $1.addedAt) }
         for game in games where icons[game.id] == nil { loadIcon(for: game) }
+        // Asked again on each reload: Steam downloads a new game's cover some time after the game appears.
+        for game in games where game.store == .steam && covers[game.id] == nil { loadCover(for: game) }
         refreshDefaultHandler()
     }
 
@@ -223,6 +233,16 @@ final class LibraryModel {
         let installed = RuntimeInstaller(paths: paths).installedRuntimes()
         let runtime = RuntimeCatalog(installed: installed, manifest: manifest, app: .thisApp, macOS: .thisMac).current
         return runtime.map { ($0, manifest.games ?? []) }
+    }
+
+    private func loadCover(for game: GameRecord) {
+        guard let appID = game.storeID else { return }
+        let steam = SteamCovers.steamFolder(bottle: StoreClient(paths: paths).bottle(for: .steam))
+        Task.detached(priority: .utility) {
+            guard let file = SteamCovers.cover(appID: appID, steamFolder: steam),
+                  let image = NSImage(contentsOf: file) else { return }
+            await MainActor.run { self.covers[game.id] = image }
+        }
     }
 
     private func loadIcon(for game: GameRecord) {

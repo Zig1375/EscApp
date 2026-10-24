@@ -44,7 +44,8 @@ extension Color {
 
 /// The design's two button looks: white with a thin border, and the amber primary.
 struct BrandButtonStyle: ButtonStyle {
-    enum Kind { case plain, primary, danger }
+    /// `destructive` is filled red: the confirm button of a delete that takes games with it.
+    enum Kind { case plain, primary, danger, destructive }
 
     var kind: Kind = .plain
     var height: CGFloat = 34
@@ -77,18 +78,25 @@ struct BrandButtonStyle: ButtonStyle {
     private var foreground: Color {
         switch kind {
         case .plain: .primary
-        case .primary: .white
+        case .primary, .destructive: .white
         case .danger: .danger
         }
     }
 
-    private var background: Color { kind == .primary ? .brandButton : .cardBackground }
+    private var background: Color {
+        switch kind {
+        case .primary: .brandButton
+        case .destructive: .danger
+        case .plain, .danger: .cardBackground
+        }
+    }
 
     private var border: Color {
         switch kind {
         case .plain: .buttonBorder
         case .primary: .brandButton
         case .danger: .dangerBorder
+        case .destructive: .danger
         }
     }
 }

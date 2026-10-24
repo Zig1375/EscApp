@@ -457,16 +457,6 @@
         }
       }
     },
-    "%@ · %@ in total · from disk": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ · всего %@ · с диска"
-          }
-        }
-      }
-    },
     "%@ · closed after %lld s (code %d)": {
       "localizations": {
         "ru": {
@@ -797,16 +787,6 @@
         }
       }
     },
-    "Not launched yet · from disk": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ещё не запускалась · с диска"
-          }
-        }
-      }
-    },
     "Not supported": {
       "localizations": {
         "ru": {
@@ -1013,16 +993,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Чтобы добавить игру, дважды щёлкните по .exe или .msi в Finder или перетащите файл или образ диска на значок EscApp в Dock."
-          }
-        }
-      }
-    },
-    "Today": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Сегодня"
           }
         }
       }
@@ -2742,16 +2712,6 @@
         }
       }
     },
-    "%@ and the games installed through it are removed from this Mac. Saves stay.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ и установленные через него игры будут удалены с этого Mac. Сохранения останутся."
-          }
-        }
-      }
-    },
     "%@ checks that Steam is running and closes without it. EscApp can install Steam: it lives on its own and won't get in the way of other games.": {
       "localizations": {
         "ru": {
@@ -2782,16 +2742,6 @@
         }
       }
     },
-    "Downloading %@ · %@ of %@": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Скачиваем %1$@ · %2$@ из %3$@"
-          }
-        }
-      }
-    },
     "Each store lives in its own Windows and doesn't affect other games.": {
       "localizations": {
         "ru": {
@@ -2812,16 +2762,6 @@
         }
       }
     },
-    "Games from your %@ library appear in EscApp by themselves": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Игры из библиотеки %@ появятся в EscApp сами"
-          }
-        }
-      }
-    },
     "Games from your Steam library appear in EscApp by themselves": {
       "localizations": {
         "ru": {
@@ -2838,16 +2778,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Установить Steam"
-          }
-        }
-      }
-    },
-    "Installing · %@ of %@": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Устанавливается · %1$@ из %2$@"
           }
         }
       }
@@ -2902,62 +2832,12 @@
         }
       }
     },
-    "Not launched yet": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ещё не запускалась"
-          }
-        }
-      }
-    },
     "Open %@": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Открыть %@"
-          }
-        }
-      }
-    },
-    "Optional. Many games from Steam, Epic and other stores need their client. Games from discs, archives and GOG installers work without a store.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Необязательно. Многим играм из Steam, Epic и других магазинов нужен их клиент. Игры с дисков, из архивов и GOG-установщиков работают и без магазина."
-          }
-        }
-      }
-    },
-    "Remove": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Удалить"
-          }
-        }
-      }
-    },
-    "Remove %@?": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Удалить %@?"
-          }
-        }
-      }
-    },
-    "Remove…": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Удалить…"
           }
         }
       }
@@ -3578,26 +3458,6 @@
         }
       }
     },
-    "Store · its games appear here by themselves": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Магазин · его игры появятся здесь сами"
-          }
-        }
-      }
-    },
-    "Stores…": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Магазины…"
-          }
-        }
-      }
-    },
     "The first launch can take up to a minute.": {
       "localizations": {
         "ru": {
@@ -3634,16 +3494,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Папка игры отправится в Корзину, и в %@ игра будет числиться неустановленной (если он открыт, он перезапустится). Её можно снова установить из магазина. Сохранения останутся."
-          }
-        }
-      }
-    },
-    "Quit": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выйти"
           }
         }
       }
@@ -3828,6 +3678,240 @@
           "stringUnit": {
             "state": "translated",
             "value": "Оформление"
+          }
+        }
+      }
+    },
+    "%@ and the games installed through it are removed from this Mac:": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ и установленные через него игры будут удалены с этого Mac:"
+          }
+        }
+      }
+    },
+    "%@ is removed from this Mac. No games were installed through it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ будет удалён с этого Mac. Игр через него не установлено."
+          }
+        }
+      }
+    },
+    "%@ is running; EscApp closes it first.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ сейчас запущен, EscApp сначала закроет его."
+          }
+        }
+      }
+    },
+    "%lld games": {
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld game"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld games"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld игра"
+                }
+              },
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld игры"
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld игр"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld игры"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Add Steam, Epic or another store, and its games appear here.\nGames from discs and installers work without a store.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавьте Steam, Epic или другой магазин, и его игры появятся здесь.\nИгры с дисков и из установщиков работают и без магазина."
+          }
+        }
+      }
+    },
+    "Add a Store": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Добавить магазин"
+          }
+        }
+      }
+    },
+    "Cancel Installation": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отменить установку"
+          }
+        }
+      }
+    },
+    "Delete %@ and All Its Games…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить %@ и все его игры…"
+          }
+        }
+      }
+    },
+    "Delete %@ and all its games?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалить %@ и все его игры?"
+          }
+        }
+      }
+    },
+    "Will be deleted": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удалится"
+          }
+        }
+      }
+    },
+    "Games you install in a store appear here by themselves.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игры, которые вы установите в магазине, появятся здесь сами."
+          }
+        }
+      }
+    },
+    "Installing · %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устанавливается · %@"
+          }
+        }
+      }
+    },
+    "Refresh Game List": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновить список игр"
+          }
+        }
+      }
+    },
+    "Saves stay: if you install %@ again, its games pick them up.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сохранения останутся: если поставите %@ снова, игры их подхватят."
+          }
+        }
+      }
+    },
+    "Show %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать окно %@"
+          }
+        }
+      }
+    },
+    "Show Only Its Games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Показать только его игры"
+          }
+        }
+      }
+    },
+    "store.removing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleting…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удаляется…"
+          }
+        }
+      }
+    },
+    "store.starting": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starting…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускается…"
           }
         }
       }

@@ -206,28 +206,8 @@ struct Pill: View {
     }
 }
 
-/// Wording shared by the card and the game page.
+/// Wording shared by the card, the game page and the menu bar.
 enum GameText {
-    /// "Yesterday · 14 h 20 min in total · from disk", or "Not launched yet · from disk". A store game has the
-    /// store's label in front instead (Main.dc.html: "Steam  Today · 35 min").
-    static func summary(_ game: GameRecord) -> String {
-        if game.store != nil {
-            guard let last = game.lastPlayed else { return String(localized: "Not launched yet") }
-            return String(localized: "\(day(last)) · \(duration(game.playTime ?? 0))")
-        }
-        guard let last = game.lastPlayed else { return String(localized: "Not launched yet · from disk") }
-        return String(localized: "\(day(last)) · \(duration(game.playTime ?? 0)) in total · from disk")
-    }
-
-    /// "Today", "Yesterday", "3 days ago", "Last week".
-    static func day(_ date: Date) -> String {
-        if Calendar.current.isDateInToday(date) { return String(localized: "Today") }
-        var style = Date.RelativeFormatStyle(presentation: .named, unitsStyle: .wide)
-        style.allowedFields = [.year, .month, .week, .day]
-        let text = date.formatted(style)
-        return text.prefix(1).capitalized + text.dropFirst()
-    }
-
     static func duration(_ seconds: TimeInterval) -> String {
         if seconds < 60 { return String(localized: "under a minute") }
         return Duration.seconds(seconds).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated))
@@ -241,6 +221,8 @@ struct GameIconTile: View {
     let size: CGFloat
     let iconSize: CGFloat
     let radius: CGFloat
+    /// Without the square: the library card already paints the tint across the whole cover.
+    var plain = false
 
     var body: some View {
         if let image = library.icons[game.id], library.fullBleedIcons.contains(game.id) {
@@ -258,7 +240,7 @@ struct GameIconTile: View {
 
     private var inset: some View {
         RoundedRectangle(cornerRadius: radius, style: .continuous)
-            .fill((library.tints[game.id] ?? .brand).opacity(0.2))
+            .fill((library.tints[game.id] ?? .brand).opacity(plain ? 0 : 0.2))
             .frame(width: size, height: size)
             .overlay {
                 if let image = library.icons[game.id] {

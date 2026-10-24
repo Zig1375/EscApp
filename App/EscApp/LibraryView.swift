@@ -3,9 +3,11 @@ import EscAppKit
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The main window, laid out as in the design (Main.dc.html): toolbar with search, "Open Game…" and settings;
-/// an update strip; "Games" with source filters and order; two columns of wide cards; a hint at the bottom.
+/// The main window, laid out as in the design (Main.dc.html in the main-screen canvas): toolbar with search,
+/// "Open Game…" and settings; an update strip; the row of stores; "Games" with source filters and order; cover
+/// cards; a hint at the bottom.
 struct LibraryView: View {
+    /// `stores` opens the "Add a Store" window over the library (from Settings, or a "needs Steam" message).
     enum Page: Hashable { case game(GameID), advanced(GameID), stores }
 
     let components: ComponentsModel
@@ -13,6 +15,8 @@ struct LibraryView: View {
     @State private var page: Page?
     @State private var search = ""
     @State private var isTargeted = false
+    @State private var addingStore = false
+    @State private var deletingStore: Store?
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
@@ -22,14 +26,13 @@ struct LibraryView: View {
                 GamePage(id: id, library: library, back: { page = nil }, advanced: { page = .advanced(id) })
             } else if case let .advanced(id)? = page {
                 AdvancedPage(id: id, library: library)
-            } else if page == .stores {
-                StoresPage(library: library)
             } else {
                 if components.catalog?.updateAvailable == true { UpdateStrip(components: components) }
-                if library.games.isEmpty && library.installedStores.isEmpty {
-                    EmptyLibraryView { page = .stores }
+                if library.games.isEmpty && library.installedStores.isEmpty && library.storeInstalls.isEmpty {
+                    EmptyLibraryView { addingStore = true }
                 } else {
-                    LibraryScreen(library: library, search: search) { page = .game($0) }
+                    LibraryScreen(library: library, search: search, open: { page = .game($0) },
+                                  addStore: { addingStore = true }, deleteStore: { deletingStore = $0 })
                 }
             }
         }
@@ -90,12 +93,19 @@ struct LibraryView: View {
                 (if it's open, it restarts). You can install it again from the store. Saves stay.
                 """)
         }
+        .sheet(isPresented: $addingStore) { AddStoreSheet(library: library) }
+        .sheet(item: $deletingStore) { store in DeleteStoreSheet(store: store, library: library) }
         .installSheet(library)
         .problemSheet(library)
         .onChange(of: library.shownPage, initial: true) {
             guard let shown = library.shownPage else { return }
             library.shownPage = nil
-            page = shown
+            if shown == .stores {
+                page = nil
+                addingStore = true
+            } else {
+                page = shown
+            }
         }
         .alert(library.notice?.title ?? "", isPresented: Binding(get: { library.notice != nil },
                                                                  set: { if !$0 { library.notice = nil } }),
@@ -113,7 +123,8 @@ struct LibraryView: View {
     /// Main.dc.html: "EscApp", then search, "Open Game…" and settings on the right.
     /// Game.dc.html: a single "‹ All Games" button.
     @ViewBuilder private var header: some View {
-        HeaderBar {
+        // The library's store row shares the toolbar's background, without a line between them.
+        HeaderBar(divider: page != nil) {
             if case let .advanced(id)? = page {
                 AdvancedHeader(name: library.game(id)?.name ?? "") { page = .game(id) }
             } else if page != nil {
@@ -129,14 +140,6 @@ struct LibraryView: View {
                     .font(.system(size: 15, weight: .bold))
                 Spacer(minLength: 0)
                 SearchField(text: $search)
-                // Stores used to be reachable only from Settings, where players didn't look for them.
-                Button { page = .stores } label: {
-                    HStack(spacing: 8) {
-                        StoreStack()
-                        Text("Stores")
-                    }
-                }
-                .buttonStyle(BrandButtonStyle(height: 32))
                 Button { library.chooseGameFile() } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "plus").font(.system(size: 12, weight: .bold))
@@ -177,36 +180,47 @@ private struct LibraryScreen: View {
     let library: LibraryModel
     let search: String
     let open: (GameID) -> Void
+    let addStore: () -> Void
+    let deleteStore: (Store) -> Void
     @AppStorage("LibraryOrder") private var order: Order = .recent
     @State private var filter: Filter = .all
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                header
-                LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)],
-                          spacing: 14) {
-                    // An installed store is started from here like a game: before, it was only on the Stores
-                    // screen, and players looked for it in the list.
-                    ForEach(shownStores) { store in
-                        StoreCard(store: store, library: library)
+        VStack(spacing: 0) {
+            StoreBar(library: library, showGames: { filter = .store($0) }, add: addStore, remove: deleteStore)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    header
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 140, maximum: 200), spacing: 16)], spacing: 20) {
+                        ForEach(shown) { game in
+                            GameCard(game: game, library: library) { open(game.id) }
+                        }
                     }
-                    ForEach(shown) { game in
-                        GameCard(game: game, library: library) { open(game.id) }
-                    }
+                    if shown.isEmpty { emptyText }
                 }
-                if shown.isEmpty && shownStores.isEmpty {
-                    Text("No games match “\(search)”.")
-                        .foregroundStyle(Color.secondaryText)
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 40)
-                }
+                .padding(.horizontal, 24)
+                .padding(.top, 20)
+                .padding(.bottom, 14)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
-            .padding(.bottom, 14)
+            .safeAreaInset(edge: .bottom, spacing: 0) { HintLine(library: library) }
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) { HintLine(library: library) }
+        .onChange(of: library.installedStores) {
+            // The chosen store was deleted.
+            if case let .store(store) = filter, !showsChip(store) { filter = .all }
+        }
+    }
+
+    private var emptyText: some View {
+        Group {
+            if !search.isEmpty {
+                Text("No games match “\(search)”.")
+            } else {
+                Text("Games you install in a store appear here by themselves.")
+            }
+        }
+        .foregroundStyle(Color.secondaryText)
+        .frame(maxWidth: .infinity)
+        .padding(.top, 40)
     }
 
     private var header: some View {
@@ -234,18 +248,6 @@ private struct LibraryScreen: View {
 
     private func showsChip(_ store: Store) -> Bool {
         library.installedStores.contains(store) || !library.games(from: store).isEmpty
-    }
-
-    private var shownStores: [Store] {
-        Store.allCases.filter { store in
-            guard library.installedStores.contains(store),
-                  search.isEmpty || store.name.localizedCaseInsensitiveContains(search) else { return false }
-            switch filter {
-            case .all: return true
-            case .disk: return false
-            case let .store(chosen): return chosen == store
-            }
-        }
     }
 
     private var shown: [GameRecord] {

@@ -78,6 +78,8 @@ struct WindowChrome: NSViewRepresentable {
 /// The design's header bar: 56 pt, #FBFAF8, a 1-pt #E4E0D8 line under it, 16-pt gaps, room for the traffic
 /// lights. Dragging its empty parts moves the window, like a title bar.
 struct HeaderBar<Content: View>: View {
+    /// Off over the library's store row, which shares the bar's background (Main.dc.html in the main-screen canvas).
+    var divider = true
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -90,7 +92,9 @@ struct HeaderBar<Content: View>: View {
         .frame(height: WindowChrome.headerHeight)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.toolbarBackground)
-        .overlay(alignment: .bottom) { Rectangle().fill(Color.cardBorder).frame(height: 1) }
+        .overlay(alignment: .bottom) {
+            if divider { Rectangle().fill(Color.cardBorder).frame(height: 1) }
+        }
         .gesture(WindowDragGesture())
     }
 }

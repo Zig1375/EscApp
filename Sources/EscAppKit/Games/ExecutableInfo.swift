@@ -20,6 +20,10 @@ public struct ExecutableInfo: Sendable, Equatable {
     public var icon: Data?
     /// The manifest declares high-DPI support, so the game draws its UI for Retina itself.
     public var dpiAware: Bool
+    /// Every string of the version resource (`CompanyName`, `FileDescription`, `Comments`…).
+    public var versionStrings: [String: String] = [:]
+    /// The embedded application manifest.
+    public var manifest: String?
 
     public var directX: Set<ExecutableTraits.DirectX> {
         var result = Set<ExecutableTraits.DirectX>()
@@ -103,9 +107,11 @@ struct PEReader {
                                   productName: nil, icon: nil, dpiAware: false)
         if let root = directory(.resources, layout) {
             let resources = Resources(reader: self, root: root) { Self.offset(of: $0, in: layout.sections) }
-            info.productName = resources.first(.version).flatMap(versionName)
+            info.versionStrings = resources.first(.version).map(versionStrings) ?? [:]
+            info.productName = Self.versionName(info.versionStrings)
             info.icon = iconFile(resources)
             if let manifest = resources.first(.manifest), let text = String(data: manifest, encoding: .utf8) {
+                info.manifest = text
                 info.dpiAware = Self.declaresDPIAwareness(text)
             }
         }
@@ -245,9 +251,13 @@ struct PEReader {
     }
 
     /// ProductName (or FileDescription) from a VS_VERSIONINFO block.
-    private func versionName(_ block: Data) -> String? {
+    private func versionStrings(_ block: Data) -> [String: String] {
         var strings: [String: String] = [:]
         Self.walkVersionBlock(block, offset: 0, path: [], into: &strings)
+        return strings
+    }
+
+    private static func versionName(_ strings: [String: String]) -> String? {
         for key in ["ProductName", "FileDescription"] {
             if let value = strings[key]?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty {
                 return value

@@ -22,6 +22,9 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     /// Total seconds played.
     public var playTime: TimeInterval?
     public var launches: Int?
+    /// The disc image the game was installed from, put in drive `D:` on every launch because the game checks
+    /// for its CD.
+    public var disc: String?
 
     public init(id: GameID, name: String, executable: String, folder: String, hasMarker: Bool,
                 fingerprint: String? = nil, windowsVersion: WindowsVersion = .default, addedAt: Date,

@@ -51,8 +51,8 @@ public struct EscAppCommand: Sendable {
             return await game(rest)
         case "inspect":
             return inspect(rest)
-        case "run":
-            return await runGame(rest)
+        case "run", "install":
+            return command == "run" ? await runGame(rest) : await install(rest)
         default:
             let isHelp = ["help", "--help", "-h"].contains(command)
             return isHelp ? success(Self.usage) : failure("Unknown command: \(command)\n\n\(Self.usage)")
@@ -79,6 +79,9 @@ public struct EscAppCommand: Sendable {
           run <exe> [--backend dxvk|dxmt|wined3d] [--no-retry] [--verbose]
                                            Launch a game like the app does, trying the next backend when it
                                            fails at start, and wait until it closes
+          install <setup.exe|.msi|.iso> [--folder <path>] [--name <name>] [--program <exe>] [--eject]
+                                           Install a game like the app does: from a disc image, its installer
+                                           runs from drive D: and the disc stays in for the game (--eject: not)
         """
 
     private func pathsReport() -> String {

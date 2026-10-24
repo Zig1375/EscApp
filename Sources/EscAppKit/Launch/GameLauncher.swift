@@ -82,10 +82,23 @@ public struct GameLauncher: Sendable {
                                             value: info.dpiAware ? "y" : "n")
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
         try BackendTree.prepareBottle(bottle, for: backend, wine: wine)
+        try await insertDisc(of: game, into: bottle)
         let environment = WineEnvironment.make(host: host, bottle: bottle.path, verboseLog: verboseLog)
         progress(.starting)
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
                         environment: environment, log: newLogFile(for: game.id))
+    }
+
+    /// A game installed from a CD that checks for it gets its disc image in drive `D:`; any other game an empty
+    /// drive. The image stays attached until the game ends (`AutoLaunch` detaches it).
+    private func insertDisc(of game: GameRecord, into bottle: URL) async throws {
+        guard let path = game.disc else {
+            DiscDrive.eject(from: bottle)
+            return
+        }
+        let image = URL(filePath: path)
+        guard FileManager.default.fileExists(atPath: image.path) else { throw DiscError.missing(path) }
+        try DiscDrive.insert(try await DiscImage.attach(image, paths: paths), into: bottle)
     }
 
     /// Runs the prepared game until everything in its bottle has exited.
@@ -210,9 +223,11 @@ extension BottleManager {
             .write(to: userReg, atomically: true, encoding: .utf8)
     }
 
-    /// Sets a string in the bottle's `user.reg`, writing only if it changes. Only while the bottle is idle.
-    static func setRegistryString(bottle: URL, key: String, name: String, value: String) throws {
-        let userReg = bottle.appending(path: "user.reg")
+    /// Sets a string in the bottle's `user.reg` (or `system.reg`, for keys under HKLM), writing only if it
+    /// changes. Only while the bottle is idle.
+    static func setRegistryString(bottle: URL, key: String, name: String, value: String,
+                                  file: String = "user.reg") throws {
+        let userReg = bottle.appending(path: file)
         let text = try String(contentsOf: userReg, encoding: .utf8)
         guard WineRegistry.string(in: text, key: key, name: name) != value else { return }
         try WineRegistry.setString(in: text, key: key, name: name, value: value)

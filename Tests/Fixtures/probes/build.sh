@@ -18,5 +18,9 @@ for arch in x86_64:x64; do
     "$triple-gcc" -O2 -s -static -o "missing-$name.exe" missingprobe.c libmissing.a
     rm libmissing.a
 done
+i686-w64-mingw32-windres setup.rc -O coff -o setup.res
+i686-w64-mingw32-gcc -municode -O2 -s -static -o setup-x86.exe setupprobe.c setup.res -lole32 -luuid -lshell32
+i686-w64-mingw32-gcc -municode -DNSIS_STYLE -O2 -s -static -o nsis-x86.exe setupprobe.c -lole32 -luuid -lshell32
+rm setup.res
 rm probe.ico
 ls -l *.exe

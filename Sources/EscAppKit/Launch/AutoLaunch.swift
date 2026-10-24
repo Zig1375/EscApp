@@ -61,6 +61,24 @@ public struct AutoLaunch: Sendable {
                      events: @escaping @Sendable (Event) -> Void = { _ in }) async throws -> Result {
         // The other warm bottles go: the game gets the memory. Its own is handed over once it runs.
         await warmer?.coolAll(except: game.id)
+        // The CD goes back out once the game is over, or didn't start.
+        let disc = game.disc.map { URL(filePath: $0) }
+        do {
+            let result = try await attempts(game, runtime: runtime, backend: override, knownGames: knownGames,
+                                            context: Context(runtime: runtime, verboseLog: verboseLog,
+                                                             control: control, warmer: warmer, events: events))
+            if let disc { await DiscImage.detach(image: disc, paths: paths) }
+            return result
+        } catch {
+            if let disc { await DiscImage.detach(image: disc, paths: paths) }
+            throw error
+        }
+    }
+
+    private func attempts(_ game: GameRecord, runtime: RuntimeManifest.Runtime, backend override: GraphicsBackend?,
+                          knownGames: [KnownGame], context: Context) async throws -> Result {
+        let control = context.control
+        let events = context.events
         var game = game
         let exe = URL(filePath: game.executable)
         let info = try? ExecutableInfo.read(exe)
@@ -81,8 +99,6 @@ public struct AutoLaunch: Sendable {
             order = [game.backend ?? .dxvk]
         }
 
-        let context = Context(runtime: runtime, verboseLog: verboseLog, control: control, warmer: warmer,
-                              events: events)
         var attempts: [LaunchAttempt] = []
         for (index, backend) in order.enumerated() {
             let ran = try await attempt(backend, of: game, number: index + 1, of: order.count, context: context)

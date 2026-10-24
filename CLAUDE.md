@@ -56,6 +56,11 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 - Host environment reaches Wine only through `WineEnvironment.hostAllowlist`; per-game user settings apply last.
 - Doc comments explain *why*, naming the game or failure that motivated the code.
 - User-facing text is plain, without Wine jargon ("bottle", "prefix", "DLL override" never appear in the UI).
+- Clean up after every task. Test homes (`ESCAPP_HOME`), bottles, unpacked runtimes, downloaded installers and
+  apps, worktrees and build caches add up to tens of gigabytes (once 140 GB in `/private/tmp`, leaving the disk
+  full). When a task is done, delete everything it created for testing, stop the Wine processes it started
+  (`wineserver -k` for each test bottle), and keep only what the next step really needs, saying what and why.
+  Never touch the user's own `~/Library/Application Support/EscApp`.
 
 ## Sibling projects (reference only)
 

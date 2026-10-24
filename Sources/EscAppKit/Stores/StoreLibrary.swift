@@ -214,12 +214,14 @@ extension StoreLibrary {
     }
 
     /// The pure part of `sync`.
-    static func merge(_ found: [Store: [Game]], into library: inout GameLibrary, now: Date) -> Bool {
+    /// - Parameter stillThere: a game the scan missed that is still installed all the same; it stays.
+    static func merge(_ found: [Store: [Game]], into library: inout GameLibrary, now: Date,
+                      stillThere: (GameRecord) -> Bool = stillInstalled) -> Bool {
         var changed = false
         let before = library.games
         library.games.removeAll { record in
             guard let store = record.store else { return false }
-            return !(found[store] ?? []).contains { $0.id == record.storeID }
+            return !(found[store] ?? []).contains { $0.id == record.storeID } && !stillThere(record)
         }
         changed = library.games.count != before.count
         for (store, games) in found {
@@ -252,6 +254,20 @@ extension StoreLibrary {
             }
         }
         return changed
+    }
+
+    /// A Steam game whose `appmanifest_<id>.acf` and folder are both there is installed, even when the scan
+    /// couldn't read the manifest: Steam rewrites it while it updates the game, and a read meanwhile dropped
+    /// Banished from the list and added it again under a new id, without its play time and settings.
+    /// A game Steam (or "Delete") uninstalled loses its manifest. A store whose client was removed takes its
+    /// games with it.
+    static func stillInstalled(_ record: GameRecord) -> Bool {
+        guard record.store == .steam, let id = record.storeID else { return false }
+        let folder = URL(filePath: record.folder, directoryHint: .isDirectory)
+        let steamapps = folder.deletingLastPathComponent().deletingLastPathComponent()
+        let fileManager = FileManager.default
+        return fileManager.fileExists(atPath: folder.path)
+            && fileManager.fileExists(atPath: steamapps.appending(path: "appmanifest_\(id).acf").path)
     }
 
     /// The program that starts the game, picked like after an install: named like the game, else the biggest.

@@ -127,6 +127,8 @@ struct LaunchSheet: View {
             Text("It uses \(name) anti-cheat, which doesn't run on a Mac.")
         case .crash?:
             Text("It crashes while starting.")
+        case .needsDisc?:
+            Text("It asks for its disc.")
         case nil:
             if case let .closed(code)? = failure.reason {
                 Text("It closes right after starting (code \(String(code))).")

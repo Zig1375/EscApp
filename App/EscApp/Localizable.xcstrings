@@ -2581,6 +2581,176 @@
           }
         }
       }
+    },
+    "A program for DOS": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Программа для DOS"
+          }
+        }
+      }
+    },
+    "A program for Windows 3.x": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Программа для Windows 3.x"
+          }
+        }
+      }
+    },
+    "Choose Disc Image…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать образ диска…"
+          }
+        }
+      }
+    },
+    "Choose the game's disc image": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите образ диска игры"
+          }
+        }
+      }
+    },
+    "File format: MZ (DOS)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Формат файла: MZ (DOS)"
+          }
+        }
+      }
+    },
+    "File format: NE (16-bit)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Формат файла: NE (16 бит)"
+          }
+        }
+      }
+    },
+    "From a disc (%@)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "С диска (%@)"
+          }
+        }
+      }
+    },
+    "Got It": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Понятно"
+          }
+        }
+      }
+    },
+    "It asks for its disc.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Она просит вставить диск."
+          }
+        }
+      }
+    },
+    "Many old games check for their disc when they start. Choose its disc image (.iso, or .cue with its .bin), and EscApp shows it to the game as drive D:.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Многие старые игры при запуске проверяют диск. Подключите образ диска (.iso или .cue вместе с .bin), и EscApp покажет его игре как диск D:."
+          }
+        }
+      }
+    },
+    "No PE header": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет заголовка PE"
+          }
+        }
+      }
+    },
+    "The file is called .exe, but there's no Windows program inside. It may be damaged or not fully downloaded.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файл называется .exe, но внутри не программа Windows. Возможно, он повреждён или скачан не до конца."
+          }
+        }
+      }
+    },
+    "The game asks for its disc": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра просит вставить диск"
+          }
+        }
+      }
+    },
+    "The game said: “%@”": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра написала: «%@»"
+          }
+        }
+      }
+    },
+    "This game was made for DOS, before Windows. Wine doesn't run DOS programs; DOSBox does, and many such games are sold with it included.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта игра сделана для DOS, ещё до Windows. Wine программы для DOS не запускает — это делает DOSBox, и многие такие игры продаются уже вместе с ним."
+          }
+        }
+      }
+    },
+    "This is a 16-bit program from the early 90s. Today's Wine on a Mac doesn't run such programs. Games like this often have a DOS version or a re-release.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это 16-битная программа из начала 90-х. Современный Wine на Mac такие программы не запускает. Часто у таких игр есть версия для DOS или переиздание."
+          }
+        }
+      }
+    },
+    "This isn't a Windows program": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это не программа для Windows"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

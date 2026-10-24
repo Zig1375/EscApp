@@ -22,6 +22,11 @@ import Testing
             err:module:import_dll Library binkw32.dll (which is needed by L"Z:\\g\\game.exe") not found
             """#)
         static let showsNothing = Script()
+        /// An old game without its CD: a message box asking for it (a window), then it quits when it's closed.
+        static let asksForDisc = Script(windowAt: 0.02, exitAt: 0.3, exitCode: 1, log: #"""
+            0024:trace:msgbox:MSGBOX_OnInit L"Please insert the Probe Game CD into your CD-ROM drive."
+
+            """#)
     }
 
     final class FakeAttempt: GameAttempt, @unchecked Sendable {
@@ -29,12 +34,15 @@ import Testing
         let startedAt = Date()
         let script: Script
         let logFile: URL
+        var log: URL { logFile }
         private let state = Mutex<(stoppedAt: TimeInterval?, idleWatched: Bool)>((nil, false))
 
         init(script: Script, pid: Int32, logFile: URL) {
             self.script = script
             self.logFile = logFile
             session = GameSession(wine: Wine(root: URL(filePath: "/fake")), environment: [:], processID: pid)
+            // Written as the game runs, as Wine's output is.
+            try? script.log.write(to: logFile, atomically: true, encoding: .utf8)
         }
 
         var elapsed: TimeInterval { Date().timeIntervalSince(startedAt) }
@@ -280,5 +288,26 @@ import Testing
         let start = try #require(starter.started.first?.1.startedAt)
         let after = try #require(await warmer.releasedAt).timeIntervalSince(start)
         #expect(after >= timing.handOverAfter && after < 0.4)
+    }
+}
+
+extension AutoLaunchTests {
+    @Test func aRequestForTheCDIsReportedAtOnceAndNotRetried() async throws {
+        let starter = try FakeStarter([.dxvk: .asksForDisc, .dxmt: .works], logs: logs())
+        let asked = Mutex<Date?>(nil)
+        let text = Mutex<String?>(nil)
+        let started = Date()
+        let result = try await play(starter) { event in
+            if case let .asksForDisc(message) = event {
+                asked.withLock { $0 = $0 ?? Date() }
+                text.withLock { $0 = message }
+            }
+        }
+        // While the box is still up, not once the game has quit.
+        #expect(try #require(asked.withLock { $0 }).timeIntervalSince(started) < 0.25)
+        #expect(text.withLock { $0 } == "Please insert the Probe Game CD into your CD-ROM drive.")
+        #expect(starter.started.map(\.0) == [.dxvk])
+        #expect(result.attempts.last?.diagnosis.problem == .needsDisc)
+        #expect(result.working == nil)
     }
 }

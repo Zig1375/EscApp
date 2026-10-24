@@ -13,6 +13,8 @@ public struct LogDiagnosis: Sendable, Equatable {
         case antiCheat(String)
         /// Windows reported a crash (a page fault or an unhandled exception).
         case crash
+        /// The game asked for its CD in a message box ("Please insert the CD").
+        case needsDisc
     }
 
     public var problem: Problem?
@@ -26,7 +28,7 @@ public struct LogDiagnosis: Sendable, Equatable {
 
     public static func retryHelps(_ problem: Problem?) -> Bool {
         switch problem {
-        case .missingFile, .antiCheat, .directX12: false
+        case .missingFile, .antiCheat, .directX12, .needsDisc: false
         case .graphics, .crash, nil: true
         }
     }
@@ -46,7 +48,9 @@ public struct LogDiagnosis: Sendable, Equatable {
         }
 
         var found: (Problem, String)?
-        if let line = last("Support for DirectX 12 is required", "D3D12CreateDevice failed") {
+        if let line = lines.last(where: Self.asksForDisc) {
+            found = (.needsDisc, line)
+        } else if let line = last("Support for DirectX 12 is required", "D3D12CreateDevice failed") {
             found = (.directX12, line)
         } else if let name = Self.antiCheats.first(where: { last($0) != nil }), let line = last(name) {
             found = (.antiCheat(name), line)
@@ -71,9 +75,35 @@ public struct LogDiagnosis: Sendable, Equatable {
         var seen = Set<String>()
         excerpt = lines.filter { line in
             let interesting = line.hasPrefix("[EscApp]") || line.contains("err:") || line.contains("Unhandled")
+                || line.contains(":msgbox:")
                 || line.contains("mvk-error") || line.localizedCaseInsensitiveContains("fail")
             return interesting && !line.hasPrefix("\t") && seen.insert(Self.trim(line)).inserted
         }.suffix(40).map(Self.trim)
+    }
+
+    /// `0024:trace:msgbox:MSGBOX_OnInit L"Please insert the Fallout 2 CD"`: a message box naming a disc and asking
+    /// for it, in the languages old games came in.
+    static func asksForDisc(_ line: String) -> Bool {
+        guard line.contains(":msgbox:") else { return false }
+        let text = line.lowercased()
+        let disc = ["cd", "disc", "disk", "dvd", "disque", "disco"].contains { word in
+            text.range(of: #"\b\#(word)\b"#, options: .regularExpression) != nil
+        } || text.contains("cd-rom") || text.contains("cdrom")
+        // English, German ("legen Sie die CD ein"), French, Italian, Spanish. Wine writes letters beyond ASCII as
+        // `\xe9`, so French "insérez" is matched by "veuillez".
+        let asks = ["insert", "einleg", "legen sie", "veuillez", "inser", "introduzca", "place the", "original"]
+            .contains { text.contains($0) }
+        return disc && asks
+    }
+
+    /// The text of a message box line, as the game wrote it: `L"Please insert\nthe CD"` → `Please insert the CD`.
+    public static func messageText(_ line: String) -> String {
+        guard let open = line.range(of: "L\""), let close = line.range(of: "\"", options: .backwards),
+              open.upperBound <= close.lowerBound else { return trim(line) }
+        let text = line[open.upperBound..<close.lowerBound]
+            .replacingOccurrences(of: "\\n", with: " ").replacingOccurrences(of: "\\r", with: "")
+            .replacingOccurrences(of: "\\\"", with: "\"").replacingOccurrences(of: "\\\\", with: "\\")
+        return trim(text.split(separator: " ", omittingEmptySubsequences: true).joined(separator: " "))
     }
 
     /// `err:module:import_dll Library binkw32.dll (which is needed by L"Z:\\…\\game.exe") not found`

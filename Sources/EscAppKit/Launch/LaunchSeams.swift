@@ -5,6 +5,8 @@ import Foundation
 public protocol GameAttempt: AnyObject, Sendable {
     var session: GameSession { get }
     var startedAt: Date { get }
+    /// The attempt's log, read while the game runs.
+    var log: URL { get }
     /// The game's process's exit code, once it exited.
     var exitCode: Int32? { get }
     /// Whether everything in the bottle has stopped. Known only after `watchForIdle`.
@@ -41,6 +43,7 @@ extension GameLauncher: AttemptStarter {
 }
 
 extension RunningGame: GameAttempt {
+    public var log: URL { prepared.log }
     public func stop() async { await session.stop() }
 }
 

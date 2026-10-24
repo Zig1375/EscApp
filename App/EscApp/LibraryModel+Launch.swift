@@ -82,7 +82,8 @@ extension LibraryModel {
                     Task { @MainActor in self.handle(event, for: game.id) }
                 }
                 if result.working == nil, let last = result.attempts.last, last.failure != nil {
-                    showFailure(result, runtime: runtime)
+                    // A game that asked for its disc has already said so.
+                    if last.diagnosis.problem != .needsDisc { showFailure(result, runtime: runtime) }
                 }
             } catch is CancellationError {
                 // The player pressed Cancel.
@@ -133,16 +134,25 @@ extension LibraryModel {
         case let .working(backend, learned):
             if learned, let game = game(id) { self.learned = Learned(id: id, name: game.name, backend: backend) }
         case let .retrying(failed, next, attempt, total):
-            states[id] = .starting
-            guard let game = game(id) else { return }
-            var current = launch?.id == id ? launch : nil
-            current = current ?? Launch(id: id, name: game.name, firstTime: false)
-            current?.phase = .retrying(.init(failed: failed.backend, next: next, attempt: attempt, total: total,
-                                              seconds: failed.seconds, reason: failed.failure, log: failed.log))
-            launch = current
-            // The game's window had the front; the retry is shown in EscApp's.
+            showRetry(failed, next: next, attempt: attempt, total: total, for: id)
+        case let .asksForDisc(message):
+            // Its "insert the CD" box is up and it waits: EscApp offers the disc image right away.
+            if launch?.id == id { launch = nil }
+            problem = Problem(kind: .needsDisc(id, message: message))
             NSApp.activate()
         }
+    }
+
+    private func showRetry(_ failed: LaunchAttempt, next: GraphicsBackend, attempt: Int, total: Int, for id: GameID) {
+        states[id] = .starting
+        guard let game = game(id) else { return }
+        var current = launch?.id == id ? launch : nil
+        current = current ?? Launch(id: id, name: game.name, firstTime: false)
+        current?.phase = .retrying(.init(failed: failed.backend, next: next, attempt: attempt, total: total,
+                                          seconds: failed.seconds, reason: failed.failure, log: failed.log))
+        launch = current
+        // The game's window had the front; the retry is shown in EscApp's.
+        NSApp.activate()
     }
 
     private func showFailure(_ result: AutoLaunch.Result, runtime: RuntimeManifest.Runtime) {

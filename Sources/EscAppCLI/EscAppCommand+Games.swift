@@ -61,6 +61,7 @@ extension EscAppCommand {
         let verbose = options.flag("--verbose")
         let noRetry = options.flag("--no-retry")
         let scaleValue = options.value("--scale")
+        let discValue = options.value("--disc")
         guard let path = options.positional() else { return failure("run needs the path to an .exe") }
         if let unknown = options.leftover { return failure("Unknown option: \(unknown)") }
 
@@ -71,7 +72,7 @@ extension EscAppCommand {
                 return failure("No runtime suits this Mac.")
             }
             let manifest = try manifest()
-            let game = try identified(path, scaling: scaling)
+            let game = try identified(path, scaling: scaling, disc: discValue)
             let progress = progress
             let result = try await AutoLaunch(paths: paths, host: host).play(
                 game, runtime: runtime, backend: backend, knownGames: manifest.games ?? [], verboseLog: verbose,
@@ -85,6 +86,8 @@ extension EscAppCommand {
                     progress("\(backend.displayName) works; the game keeps running.")
                 case .windowShown:
                     progress("The game's window is up.")
+                case let .asksForDisc(text):
+                    progress("The game asks for its CD (\"\(text)\"). Give it one with --disc <image>.")
                 case .preparing:
                     break
                 }
@@ -108,11 +111,12 @@ extension EscAppCommand {
         return choice
     }
 
-    /// The game the exe belongs to, with `--scale` kept for it like the app's setting.
-    private func identified(_ path: String, scaling: GameScaling.Setting?) throws -> GameRecord {
+    /// The game the exe belongs to, with `--scale` and `--disc` kept for it like the app's settings.
+    private func identified(_ path: String, scaling: GameScaling.Setting?, disc: String?) throws -> GameRecord {
         var game = try GameIdentifier(paths: paths).identify(executable: URL(filePath: path)).record
-        guard let scaling else { return game }
-        game.scaling = scaling == .auto ? nil : scaling
+        guard scaling != nil || disc != nil else { return game }
+        if let scaling { game.scaling = scaling == .auto ? nil : scaling }
+        if let disc { game.disc = URL(filePath: disc).standardizedFileURL.path(percentEncoded: false) }
         let record = game
         try GameLibrary.modify(paths.library) { $0[record.id] = record }
         return record

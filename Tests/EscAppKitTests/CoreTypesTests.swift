@@ -79,8 +79,8 @@ import Testing
     }
 
     @Test func verboseLogKeepsWineOutput() {
-        #expect(WineEnvironment.make(host: [:], bottle: "/b")["WINEDEBUG"] == "fixme-all")
+        #expect(WineEnvironment.make(host: [:], bottle: "/b")["WINEDEBUG"] == "fixme-all,trace+msgbox")
         #expect(WineEnvironment.make(host: [:], bottle: "/b", verboseLog: true)["WINEDEBUG"]
-            != "fixme-all")
+            != "fixme-all,trace+msgbox")
     }
 }

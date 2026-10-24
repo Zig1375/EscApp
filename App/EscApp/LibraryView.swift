@@ -65,6 +65,7 @@ struct LibraryView: View {
             LaunchSheet(launch: launch, library: library)
         }
         .installSheet(library)
+        .problemSheet(library)
         .alert(library.notice?.title ?? "", isPresented: Binding(get: { library.notice != nil },
                                                                  set: { if !$0 { library.notice = nil } }),
                presenting: library.notice) { notice in

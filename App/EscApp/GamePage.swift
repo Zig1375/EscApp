@@ -226,7 +226,13 @@ private struct DetailsColumn: View {
 
     var body: some View {
         RowsCard {
-            DetailRow(label: "Source") { Text("From disk") }
+            DetailRow(label: "Source") {
+                if let disc = game.disc {
+                    Text("From a disc (\(URL(filePath: disc).lastPathComponent))")
+                } else {
+                    Text("From disk")
+                }
+            }
             DetailRow(label: "Folder") {
                 Mono(text: (game.folder as NSString).abbreviatingWithTildeInPath)
             } action: {

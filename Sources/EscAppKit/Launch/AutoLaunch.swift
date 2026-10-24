@@ -18,6 +18,9 @@ public struct AutoLaunch: Sendable {
         /// The attempt works; the game plays on. `learned` when earlier attempts failed, so the player should hear
         /// what EscApp settled on.
         case working(GraphicsBackend, learned: Bool)
+        /// The game asked for its CD in a message box and waits for it (`LogDiagnosis.asksForDisc`), with the box's
+        /// text.
+        case asksForDisc(String)
         /// An attempt failed and the next one starts with `next`.
         case retrying(LaunchAttempt, next: GraphicsBackend, attempt: Int, total: Int)
     }
@@ -160,14 +163,17 @@ public struct AutoLaunch: Sendable {
         if verdict == .working { context.events(.working(backend, learned: number > 1)) }
         let outcome = await running.finish()
         let diagnosis = LogDiagnosis(log: LogDiagnosis.read(outcome.log) ?? "")
-        let failure: AttemptJudge.Failure? = switch verdict {
+        var failure: AttemptJudge.Failure? = switch verdict {
         case let .failed(failure)?: failure
         case .ended?: diagnosis.problem.map { _ in .closed(exitCode: outcome.exitCode) }
         case .working?, nil: nil
         }
+        // Its "Please insert the CD" box stays up as long as the player leaves it: that window isn't the game.
+        let askedForDisc = diagnosis.problem == .needsDisc
+        if askedForDisc { failure = failure ?? .closed(exitCode: outcome.exitCode) }
         let attempt = LaunchAttempt(backend: backend, seconds: Int(outcome.processDuration), failure: failure,
                                     diagnosis: diagnosis, log: outcome.log)
-        let worked = verdict == .working || (verdict == .ended && failure == nil)
+        let worked = !askedForDisc && (verdict == .working || (verdict == .ended && failure == nil))
         // The window it last had sets how much the game is enlarged next time.
         if worked || verdict == nil, let seen { try? update(game.id) { $0.window = seen } }
         return Ran(attempt: attempt, worked: worked, judged: verdict != nil, duration: outcome.duration)
@@ -180,7 +186,15 @@ public struct AutoLaunch: Sendable {
                        seen: inout GameScaling.LearnedWindow?) async throws -> AttemptJudge.Verdict? {
         var judge = AttemptJudge(windowTimeout: timeout, windowHolds: timing.windowHolds)
         var announced = false
+        // An old game asking for its CD shows a message box and waits: its window counts as the game's, so the
+        // request is caught from the log as it is written, not after the game ends.
+        let tail = LogTail(running.log)
+        var askedForDisc = false
         while true {
+            if !askedForDisc, let line = tail.newLines().first(where: LogDiagnosis.asksForDisc) {
+                askedForDisc = true
+                context.events(.asksForDisc(LogDiagnosis.messageText(line)))
+            }
             let owners = windows(running.session)
             if !owners.isEmpty, let window = measure(running.session) { seen = window }
             if let owner = owners.first, !announced {
@@ -247,5 +261,28 @@ public final class LaunchControl: Sendable {
 
     public func stopRetrying() {
         state.withLock { $0 = false }
+    }
+}
+
+/// The lines a log gained since the last look.
+final class LogTail {
+    private let url: URL
+    private var offset: UInt64 = 0
+    private var partial = ""
+
+    init(_ url: URL) { self.url = url }
+
+    func newLines() -> [String] {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return [] }
+        defer { try? handle.close() }
+        guard (try? handle.seek(toOffset: offset)) != nil, let data = try? handle.readToEnd(), !data.isEmpty else {
+            return []
+        }
+        offset += UInt64(data.count)
+        let text = partial + (String(bytes: data, encoding: .utf8) ?? String(bytes: data, encoding: .isoLatin1) ?? "")
+        var lines = text.components(separatedBy: "\n")
+        // The last piece may be a line still being written.
+        partial = lines.removeLast()
+        return lines
     }
 }

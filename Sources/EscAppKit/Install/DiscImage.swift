@@ -15,19 +15,26 @@ public struct MountedDisc: Sendable, Equatable {
 }
 
 public enum DiscImage {
-    /// Images `hdiutil` attaches. BIN/CUE isn't one of them: it needs converting first.
-    public static let extensions: Set<String> = ["iso", "img", "cdr", "toast", "dmg"]
+    /// Images EscApp opens: what `hdiutil` attaches, and raw CD images it converts first (`RawDisc`).
+    public static let extensions = Set(["iso", "img", "cdr", "toast", "dmg"]).union(RawDisc.extensions)
 
     public static func isImage(_ url: URL) -> Bool { extensions.contains(url.pathExtension.lowercased()) }
 
     /// Attaches `image` under `EscApp/Discs`, or returns where it is already attached.
     public static func attach(_ image: URL, paths: AppPaths) async throws -> MountedDisc {
-        if let attached = try await attached().first(where: { same($0.image, image) }) { return attached }
+        // A BIN/CUE is attached as the ISO made from it; the game keeps the image it came on.
+        let source = RawDisc.isRaw(image)
+            ? try await Task.detached(priority: .userInitiated) { try RawDisc.iso(for: image, paths: paths) }.value
+            : image
+        if var attached = try await attached().first(where: { same($0.image, source) }) {
+            attached.image = image
+            return attached
+        }
         let mountPoint = paths.root.appending(path: "Discs/\(UUID().uuidString)", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: mountPoint, withIntermediateDirectories: true)
         let result = try await ProcessRunner.run("/usr/bin/hdiutil", [
             "attach", "-readonly", "-nobrowse", "-noautoopen", "-noverify", "-plist",
-            "-mountpoint", mountPoint.path(percentEncoded: false), image.path(percentEncoded: false),
+            "-mountpoint", mountPoint.path(percentEncoded: false), source.path(percentEncoded: false),
         ])
         guard result.status == 0, let device = parseAttach(plist(in: result.output)) else {
             try? FileManager.default.removeItem(at: mountPoint)
@@ -46,7 +53,8 @@ public enum DiscImage {
     /// Detaches `image` if EscApp attached it (under `EscApp/Discs`), once its game has ended.
     public static func detach(image: URL, paths: AppPaths) async {
         let ours = paths.root.appending(path: "Discs").standardizedFileURL.path(percentEncoded: false)
-        for disc in (try? await attached()) ?? [] where same(disc.image, image)
+        let source = RawDisc.isRaw(image) ? RawDisc.cachedISO(for: image, paths: paths) : image
+        for disc in (try? await attached()) ?? [] where same(disc.image, source)
             && disc.mountPoint.standardizedFileURL.path(percentEncoded: false).hasPrefix(ours) {
             await detach(MountedDisc(image: disc.image, mountPoint: disc.mountPoint, device: disc.device,
                                      attachedByEscApp: true))

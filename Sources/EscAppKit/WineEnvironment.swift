@@ -19,8 +19,9 @@ public enum WineEnvironment {
         env["WINEPREFIX"] = bottle
         // Without fixme lines, so a long session doesn't write gigabytes of them, but with errors: they are what
         // `LogDiagnosis` reads to tell a missing game file from a graphics failure. The verbose log adds
-        // exceptions and DLL loads, which is what diagnosing a crash at start needs.
-        env["WINEDEBUG"] = verboseLog ? "+seh,+loaddll" : "fixme-all"
+        // exceptions and DLL loads, which is what diagnosing a crash at start needs. Both keep the text of the
+        // game's message boxes: an old game asking for its CD says so in one, and nothing else in the log does.
+        env["WINEDEBUG"] = verboseLog ? "+seh,+loaddll,+msgbox" : "fixme-all,trace+msgbox"
         env["WINEDLLOVERRIDES"] = dllOverrides
         env.merge(extra) { _, user in user }
         return env

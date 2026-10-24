@@ -31,6 +31,8 @@ final class LibraryModel {
     var launch: Launch?
     /// The install sheet, while a game is being installed from its installer or disc.
     var install: Install?
+    /// An honest message about what won't run, or what a game needs (Problems.dc.html).
+    var problem: Problem?
     /// "Diablo II started with WineD3D": shown after retries found a backend (Launching.dc.html, last panel).
     var learned: Learned?
     /// Ticks once a minute so "12 min" in the menu bar and cards stays current.
@@ -87,6 +89,7 @@ final class LibraryModel {
         }
         if DiscImage.isImage(url) { return openDisc(url) }
         if let kind = InstallerKind.detect(url) { return openInstaller(url, kind: kind) }
+        if let kind = Self.problem(with: url) { return problem = Problem(kind: kind) }
         do {
             let game = try GameIdentifier(paths: paths).identify(executable: url).record
             reload()

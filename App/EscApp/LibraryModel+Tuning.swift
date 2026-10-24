@@ -84,16 +84,6 @@ extension LibraryModel {
         return true
     }
 
-    /// The first launch looks at a Chromium program's window to tell a lost picture from a working game
-    /// (`WindowPicture`), which needs Screen Recording. macOS asks once, at the first game's first launch;
-    /// without it that check is skipped and everything else works as before.
-    static func askForWindowPictures(firstLaunchOf game: GameRecord) {
-        let key = "AskedScreenRecording"
-        guard game.backend == nil, !WindowPicture.allowed, !UserDefaults.standard.bool(forKey: key) else { return }
-        UserDefaults.standard.set(true, forKey: key)
-        _ = CGRequestScreenCaptureAccess()
-    }
-
     /// Whether the player chose the detailed first-launch screen (`TuningScreen`).
     static var tuningDetails: Bool { UserDefaults.standard.bool(forKey: "TuningDetails") }
 

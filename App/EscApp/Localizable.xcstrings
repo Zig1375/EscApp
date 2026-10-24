@@ -3497,6 +3497,16 @@
           }
         }
       }
+    },
+    "Trying setting %lld of %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пробуем вариант %1$lld из %2$lld"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

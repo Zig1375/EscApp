@@ -36,7 +36,7 @@ enum Probes {
     @Test func plansMatchTheRules() throws {
         let plan = { (name: String) in BackendPlan.forTraits(try ExecutableInfo.read(Probes.url(name)).traits) }
         #expect(try plan("d3d11-x64") == .attempts([.dxvk, .dxmt, .wined3d]))
-        #expect(try plan("d3d11-x86") == .attempts([.dxmt, .dxvk, .wined3d]))
+        #expect(try plan("d3d11-x86") == .attempts([.dxvk, .dxmt, .wined3d]))
         #expect(try plan("d3d9-x86") == .attempts([.wined3d]))
     }
 

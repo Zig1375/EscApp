@@ -11,7 +11,7 @@ struct SimpleTuningCard: View {
 
     var body: some View {
         VStack(spacing: 22) {
-            TuningIllustration(game: library.game(launch.id), library: library)
+            TuningIllustration(tuning: tuning, game: library.game(launch.id), library: library)
                 .padding(.top, 6)
             VStack(spacing: 8) {
                 Text("Getting \(launch.name) ready for its first launch")
@@ -115,40 +115,33 @@ private struct TimeBar: View {
     }
 }
 
-/// Three little screens, the game tried on each in turn: the first two don't work, the settings change, the third
-/// one does. Plays over and over while EscApp searches; still with Reduce Motion.
+/// One little screen per setting EscApp may try, as the search really goes: the ones that didn't work crossed
+/// out, the one being tried with a beam sweeping it, the rest waiting. The search screen shows only what is true.
 private struct TuningIllustration: View {
+    let tuning: LibraryModel.Launch.Tuning
     let game: GameRecord?
     let library: LibraryModel
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    /// Seconds per screen.
-    static let step: TimeInterval = 1.8
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 0.1, paused: reduceMotion)) { context in
-            let time = reduceMotion ? Self.step * 3.5
-                : context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: Self.step * 4.5)
-            HStack(spacing: 10) {
-                ForEach(0..<3) { index in
-                    if index > 0 {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundStyle(time >= Self.step * Double(index) ? Color.brand : Color.track)
-                    }
-                    MiniScreen(state: state(of: index, at: time), game: game, library: library)
+        HStack(spacing: 10) {
+            ForEach(tuning.order.indices, id: \.self) { index in
+                if index > 0 {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(index <= tuning.current ? Color.brand : Color.track)
                 }
+                MiniScreen(state: state(of: index), game: game, library: library)
             }
-            .animation(.spring(response: 0.35, dampingFraction: 0.6), value: Int(time / (Self.step / 2)))
         }
-        .accessibilityHidden(true)
+        .animation(.spring(response: 0.35, dampingFraction: 0.6), value: tuning.current)
+        .animation(.spring(response: 0.35, dampingFraction: 0.6), value: tuning.failed.count)
+        .accessibilityElement()
+        .accessibilityLabel(Text("Trying setting \(tuning.current + 1) of \(tuning.order.count)"))
     }
 
-    private func state(of index: Int, at time: TimeInterval) -> MiniScreen.State {
-        let start = Self.step * Double(index)
-        if time < start { return .waiting }
-        if time < start + Self.step * 0.55 { return .trying }
-        return index == 2 ? .works : .failed
+    private func state(of index: Int) -> MiniScreen.State {
+        if index < tuning.failed.count { return .failed }
+        return index == tuning.current ? .trying : .waiting
     }
 }
 

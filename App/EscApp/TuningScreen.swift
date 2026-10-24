@@ -6,8 +6,7 @@ import SwiftUI
 /// windows open under it, so a failing attempt doesn't flash them in the player's face; once an attempt works the
 /// cover goes and the game comes to the front.
 ///
-/// Above every app window, Wine's "always on top" ones included, but under a display a game captured: Wine only
-/// captures one when told to, which EscApp doesn't do.
+/// An ordinary window rather than one above everything: a search can take minutes, and the Mac stays usable.
 @MainActor
 final class TuningCover {
     private var windows: [NSWindow] = []
@@ -24,8 +23,10 @@ final class TuningCover {
             let window = CoverWindow(contentRect: screen.frame, styleMask: [.borderless], backing: .buffered,
                                      defer: false)
             window.isReleasedWhenClosed = false
-            window.level = .screenSaver
-            window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+            // An ordinary window: the player can switch to other apps meanwhile (⌘-Tab, the Dock), and EscApp,
+            // brought forward again whenever an attempt's window appears, keeps it over the game.
+            window.level = .normal
+            window.collectionBehavior = [.fullScreenAuxiliary]
             window.backgroundColor = NSColor(named: "WindowBackground") ?? .windowBackgroundColor
             window.isOpaque = true
             window.hasShadow = false

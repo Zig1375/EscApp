@@ -19,7 +19,7 @@ import Testing
     @Test func d3d11DependsOnBitness() {
         #expect(plan(.x64, [.d3d11]) == .attempts([.dxvk, .dxmt, .wined3d]))
         // DXVK-macOS creates no 32-bit D3D11 device on some Wine builds, so DXMT goes first.
-        #expect(plan(.x86, [.d3d11]) == .attempts([.dxmt, .dxvk, .wined3d]))
+        #expect(plan(.x86, [.d3d11]) == .attempts([.dxvk, .dxmt, .wined3d]))
     }
 
     @Test func newestImportedDirectXDecides() {

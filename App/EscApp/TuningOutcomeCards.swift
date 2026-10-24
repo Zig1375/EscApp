@@ -67,7 +67,9 @@ struct TuningFailedCard: View {
     var body: some View {
         VStack(spacing: 14) {
             HStack(spacing: 12) {
-                ForEach(0..<3) { _ in MiniScreen(state: .failed, game: library.game(launch.id), library: library) }
+                ForEach(0..<max(launch.tuning?.order.count ?? 3, 1), id: \.self) { _ in
+                    MiniScreen(state: .failed, game: library.game(launch.id), library: library)
+                }
             }
             .padding(.vertical, 4)
             Text("\(launch.name) doesn't start yet").font(.system(size: 22, weight: .bold))

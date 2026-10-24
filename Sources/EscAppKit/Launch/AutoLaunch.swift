@@ -201,11 +201,19 @@ public struct AutoLaunch: Sendable {
         var verdict = try await watch(running, game: game.id, judge: judge, context: context, seen: &seen)
         // The bottle only goes idle once the warm-up's helper is gone.
         await context.warmer?.release(game.id)
+        // A Chromium GPU process still running without EscApp's switches: its picture can't reach the window,
+        // whatever the window shows. Known without looking at the screen.
+        let switched = game.chromium != nil || context.chromiumProgram
+        if verdict == .working, !switched, context.control.retrying,
+           PictureLooks.chromiumRuns(for: running.session) {
+            verdict = .failed(.blankPicture)
+        }
         if verdict == .working {
             context.events(.working(backend, learned: number > 1))
             // A first launch: a blank Chromium window may come after a launcher that drew.
             if game.backend == nil, context.control.retrying,
-               await lateBlank(running, patience: judge.blankAfter, chromium: judge.checksPicture) {
+               await lateBlank(running, patience: judge.blankAfter, chromium: judge.checksPicture,
+                               switched: switched) {
                 verdict = .failed(.blankPicture)
             }
         }
@@ -284,26 +292,6 @@ public struct AutoLaunch: Sendable {
         }
     }
 
-    /// Looks at the game's window while it plays, for `timing.lateWatch`: true once a window it shows has stayed
-    /// blank (`LateBlank`) and the program is Chromium (`chromium`, or a Chromium GPU process in the bottle by
-    /// then: a launcher starts it later). False when everything in the bottle ends first, or time is up. The
-    /// started program itself may quit early: Steam's bootstrapper restarts Steam.
-    private func lateBlank(_ running: any GameAttempt, patience: TimeInterval, chromium: Bool) async -> Bool {
-        var late = LateBlank(patience: patience)
-        var looks = PictureLooks(picture: picture, every: timing.lateEvery)
-        let start = Date()
-        while Date().timeIntervalSince(start) < timing.lateWatch, !running.isIdle {
-            if running.exitCode != nil { running.watchForIdle() }
-            let elapsed = Date().timeIntervalSince(start)
-            if let look = await looks.look(at: windows(running.session), elapsed: elapsed),
-               late.observe(look, at: elapsed), chromium || PictureLooks.chromiumRuns(for: running.session) {
-                return true
-            }
-            guard (try? await Task.sleep(for: timing.poll)) != nil else { return false }
-        }
-        return false
-    }
-
     private func record(_ id: GameID, duration: TimeInterval, working: GraphicsBackend?) throws {
         try GameLibrary.modify(paths.library) { $0.recordPlay(of: id, duration: duration, working: working) }
     }
@@ -314,31 +302,6 @@ public struct AutoLaunch: Sendable {
             change(&game)
             library[id] = game
         }
-    }
-}
-
-/// Looks at a Chromium program's window about once a second while it is up (`WindowPicture`).
-struct PictureLooks {
-    let picture: @Sendable ([Int32]) async -> WindowLook?
-    let every: TimeInterval
-    private var last: TimeInterval = -.infinity
-
-    init(picture: @escaping @Sendable ([Int32]) async -> WindowLook?, every: TimeInterval) {
-        self.picture = picture
-        self.every = every
-    }
-
-    /// What the window shows now; nil between looks, without a window, or when it can't be told.
-    mutating func look(at owners: [Int32], elapsed: TimeInterval) async -> WindowLook? {
-        guard !owners.isEmpty, elapsed - last >= every else { return nil }
-        last = elapsed
-        return await picture(owners)
-    }
-
-    /// A Chromium GPU process in the game's bottle: Chromium after all, unpacked or started by a launcher.
-    static func chromiumRuns(for session: GameSession) -> Bool {
-        guard let bottle = session.environment["WINEPREFIX"] else { return false }
-        return ChromiumApp.runsGPUProcess(in: URL(filePath: bottle, directoryHint: .isDirectory))
     }
 }
 

@@ -53,10 +53,10 @@ public enum BackendPlan: Sendable, Equatable {
         case .d3d12:
             return .unsupported(.directX12)
         case .d3d11:
-            // 32-bit games start with DXMT: DXVK-macOS creates no 32-bit D3D11 device on some Wine builds
-            // (Gcenx 11.18, and mapc's engines). On WhiskyWine 11.0 it does, so it stays as the fallback.
-            return traits.architecture == .x64
-                ? .attempts([.dxvk, .dxmt, .wined3d]) : .attempts([.dxmt, .dxvk, .wined3d])
+            // DXVK first for 32-bit games too. They once started with DXMT because DXVK-macOS created no 32-bit
+            // D3D11 device on Gcenx 11.18; EscApp's Wine 11.20 creates it, and DXMT left a 32-bit GameMaker game
+            // (Daughter for Dessert) a white window that DXVK draws.
+            return .attempts([.dxvk, .dxmt, .wined3d])
         case .d3d9, .legacy:
             // DXVK-macOS has no working Direct3D 9, and DXMT is 10/11 only.
             return .attempts([.wined3d])

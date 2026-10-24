@@ -20,7 +20,7 @@ import Testing
     }
 
     @Test func plan() async {
-        #expect(await command.run(["plan", "--arch", "x86", "--dx", "11"]).stdout == "DXMT → DXVK → WineD3D\n")
+        #expect(await command.run(["plan", "--arch", "x86", "--dx", "11"]).stdout == "DXVK → DXMT → WineD3D\n")
         #expect(await command.run(["plan", "--arch", "x64", "--dx", "9", "--dx", "11"]).stdout
             == "DXVK → DXMT → WineD3D\n")
         #expect(await command.run(["plan", "--arch", "x64", "--dx", "12"]).status == 1)

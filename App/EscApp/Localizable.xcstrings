@@ -3597,6 +3597,16 @@
           }
         }
       }
+    },
+    "The first launch can take up to a minute.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Первый запуск может занять до минуты."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

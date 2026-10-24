@@ -1,7 +1,7 @@
 import EscAppKit
 import SwiftUI
 
-/// Launching.dc.html: "getting the game ready" until the game's window appears, "trying again" when it failed at
+/// Launching.dc.html: "starting" until the game's window appears, "trying again" when it failed at
 /// start, and "nothing helped" when no backend worked.
 struct LaunchSheet: View {
     let launch: LibraryModel.Launch
@@ -10,23 +10,22 @@ struct LaunchSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             switch launch.phase {
-            case .preparing where !launch.firstTime: starting
-            case .preparing: preparing
+            case .preparing: starting
             case let .retrying(retry): retrying(retry)
             case let .failed(failure): failed(failure)
             }
         }
         .padding(22)
-        .frame(width: launch.phase == .preparing && !launch.firstTime ? 380 : 520)
+        .frame(width: launch.phase == .preparing ? 380 : 520)
         .background(Color.cardBackground)
         // A sheet is its own view tree: the window's setting doesn't reach it.
         .focusEffectDisabled()
     }
 
-    // MARK: Starting a game that ran before
+    // MARK: Starting
 
-    /// Its settings are known, so there is nothing to explain: the game, "Starting", a bar and Cancel. The steps
-    /// (Windows, graphics) only mean something on the first launch.
+    /// The game, "Starting", a bar and Cancel. The steps behind it (its own Windows, the graphics) meant nothing
+    /// to players, on the first launch as much as later ones; the settings search has its own screen.
     @ViewBuilder private var starting: some View {
         VStack(spacing: 14) {
             if let game = library.game(launch.id) {
@@ -38,7 +37,8 @@ struct LaunchSheet: View {
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                 if launch.slow {
-                    Text("Taking longer than usual. This can happen after a Mac restart.")
+                    Text(launch.firstTime ? "The first launch can take up to a minute."
+                                          : "Taking longer than usual. This can happen after a Mac restart.")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.secondaryText)
                         .multilineTextAlignment(.center)
@@ -55,49 +55,6 @@ struct LaunchSheet: View {
         }
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity)
-    }
-
-    // MARK: Getting ready
-
-    @ViewBuilder private var preparing: some View {
-        caption(launch.firstTime ? "First launch" : "Starting")
-        gameRow(launch.firstTime ? "Getting the game ready for its first launch" : "Getting the game ready")
-        StepRow(state: launch.windowsState, title: windowsTitle, detail: windowsDetail)
-        if let graphics = launch.graphics {
-            StepRow(state: .done, title: "Graphics: \(graphics)", detail: nil)
-        }
-        VStack(alignment: .leading, spacing: 6) {
-            StepRow(state: launch.startState, title: "Starting the game", detail: nil)
-            if launch.startState == .active {
-                ProgressView()
-                    .progressViewStyle(.linear)
-                    .tint(.brand)
-                    .padding(.leading, 34)
-                if launch.slow {
-                    Text("Wine is still starting. The first launch can take up to a minute.")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.secondaryText)
-                        .padding(.leading, 34)
-                }
-            }
-        }
-        HStack {
-            Spacer()
-            Button("Cancel") { library.cancelLaunch() }
-                .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
-                .keyboardShortcut(.cancelAction)
-        }
-        .padding(.top, 8)
-    }
-
-    private var windowsTitle: LocalizedStringKey {
-        "Its own \(launch.windows?.displayName ?? WindowsVersion.default.displayName)"
-    }
-
-    private var windowsDetail: LocalizedStringKey? {
-        guard launch.windows != nil else { return nil }
-        if launch.windowsFirstTime { return "once, about 30 s" }
-        return launch.windowsState == .done ? "instant" : nil
     }
 
     // MARK: Trying again
@@ -237,44 +194,6 @@ private struct Callout<Content: View>: View {
                 .strokeBorder(tone == .warning ? Color.warnBorder : Color.errorBorder, lineWidth: 1)
         }
     }
-}
-
-private struct StepRow: View {
-    let state: LibraryModel.Launch.StepState
-    let title: LocalizedStringKey
-    let detail: LocalizedStringKey?
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle().fill(background)
-                switch state {
-                case .done: Image(systemName: "checkmark").font(.system(size: 10, weight: .bold))
-                case .active: ProgressView().controlSize(.mini)
-                case .waiting: EmptyView()
-                }
-            }
-            .foregroundStyle(foreground)
-            .frame(width: 22, height: 22)
-            Text(title)
-                .foregroundStyle(state == .waiting ? Color.secondaryText : .primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            if let detail {
-                Text(detail).font(.system(size: 12)).foregroundStyle(Color.secondaryText)
-            }
-        }
-        .font(.system(size: 14))
-    }
-
-    private var background: Color {
-        switch state {
-        case .done: .newBackground
-        case .active: .navSelected
-        case .waiting: .chip
-        }
-    }
-
-    private var foreground: Color { state == .done ? .newText : .brand }
 }
 
 /// Launching.dc.html, "it worked": after retries found a backend, which one, and that it is remembered.

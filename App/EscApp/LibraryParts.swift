@@ -47,8 +47,8 @@ struct HintLine: View {
         HStack(spacing: 8) {
             Image(systemName: "info.circle")
             Text("""
-                To add a game, double-click its .exe or .msi in Finder, or drag the file onto the EscApp icon \
-                in the Dock.
+                To add a game, double-click its .exe or .msi in Finder, or drag the file or its disc image \
+                onto the EscApp icon in the Dock.
                 """)
             if !library.isDefaultForExe {
                 Button("Open .exe Files with EscApp") { library.makeDefaultForExe() }

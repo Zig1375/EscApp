@@ -60,6 +60,7 @@ struct LibraryView: View {
         .sheet(item: Binding(get: { library.launch }, set: { if $0 == nil { library.cancelLaunch() } })) { launch in
             LaunchSheet(launch: launch, library: library)
         }
+        .installSheet(library)
         .alert(library.notice?.title ?? "", isPresented: Binding(get: { library.notice != nil },
                                                                  set: { if !$0 { library.notice = nil } }),
                presenting: library.notice) { notice in
@@ -111,9 +112,9 @@ struct LibraryView: View {
 
     private func chooseGame() {
         let panel = NSOpenPanel()
-        panel.message = String(localized: "Choose the game's .exe")
+        panel.message = String(localized: "Choose the game's .exe, its installer or its disc image")
         panel.allowedContentTypes = [UTType("com.microsoft.windows-executable"), UTType(filenameExtension: "msi")]
-            .compactMap { $0 }
+            .compactMap { $0 } + DiscImage.extensions.compactMap { UTType(filenameExtension: $0) }
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
         library.open(url)

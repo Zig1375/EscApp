@@ -37,6 +37,12 @@ targets:
             CFBundleTypeRole: Viewer
             LSHandlerRank: Default
             LSItemContentTypes: [com.microsoft.windows-installer]
+          # A game's CD. "Alternate": Finder keeps mounting disc images itself; EscApp is in "Open With" and
+          # takes an image dropped on its icon or window.
+          - CFBundleTypeName: Disc Image
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.iso-image]
         UTImportedTypeDeclarations:
           - UTTypeIdentifier: com.microsoft.windows-executable
             UTTypeDescription: Windows Program

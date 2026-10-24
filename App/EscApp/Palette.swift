@@ -34,6 +34,12 @@ extension Color {
     static let warnText = Color("WarnText")
     static let errorBackground = Color("ErrorBackground")
     static let errorBorder = Color("ErrorBorder")
+    /// Installer.dc.html: the "Installer" tag, the green number of the last step, the folder field, body text.
+    static let installerTag = Color("InstallerTag")
+    static let installerTagText = Color("InstallerTagText")
+    static let stepDone = Color("StepDone")
+    static let fieldBackground = Color("FieldBackground")
+    static let bodyText = Color("BodyText")
 }
 
 /// The design's two button looks: white with a thin border, and the amber primary.

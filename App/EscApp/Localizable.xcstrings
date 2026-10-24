@@ -347,16 +347,6 @@
         }
       }
     },
-    "Installers are coming soon": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Установщики появятся позже"
-          }
-        }
-      }
-    },
     "Open .exe Files with EscApp": {
       "localizations": {
         "ru": {
@@ -393,16 +383,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "EscApp не может открыть этот файл"
-          }
-        }
-      }
-    },
-    "EscApp can't run .msi installers yet. Installing games arrives in a later version.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp пока не умеет запускать установщики .msi. Установка игр появится в одной из следующих версий."
           }
         }
       }
@@ -653,16 +633,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Сменить"
-          }
-        }
-      }
-    },
-    "Choose the game's .exe": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выберите .exe игры"
           }
         }
       }
@@ -1047,12 +1017,12 @@
         }
       }
     },
-    "To add a game, double-click its .exe or .msi in Finder, or drag the file onto the EscApp icon in the Dock.": {
+    "To add a game, double-click its .exe or .msi in Finder, or drag the file or its disc image onto the EscApp icon in the Dock.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Чтобы добавить игру, дважды щёлкните по .exe или .msi в Finder или перетащите файл на значок EscApp в Dock."
+            "value": "Чтобы добавить игру, дважды щёлкните по .exe или .msi в Finder или перетащите файл или образ диска на значок EscApp в Dock."
           }
         }
       }
@@ -1798,6 +1768,346 @@
           "stringUnit": {
             "state": "translated",
             "value": "Пробовали: %@"
+          }
+        }
+      }
+    },
+    "%@ (%@) is in drive **D:**, like a real CD in a drive.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ (%2$@) подключён как диск **D:**, как настоящий CD в дисководе."
+          }
+        }
+      }
+    },
+    "%@ is installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ установлена"
+          }
+        }
+      }
+    },
+    "Another game is being installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уже устанавливается другая игра"
+          }
+        }
+      }
+    },
+    "Change…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изменить…"
+          }
+        }
+      }
+    },
+    "Choose the folder for %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите папку для %@"
+          }
+        }
+      }
+    },
+    "Choose the game's .exe, its installer or its disc image": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите .exe игры, её установщик или образ диска"
+          }
+        }
+      }
+    },
+    "Couldn't install %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось установить %@"
+          }
+        }
+      }
+    },
+    "Disc image open": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Образ диска открыт"
+          }
+        }
+      }
+    },
+    "Disc menu": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Меню диска"
+          }
+        }
+      }
+    },
+    "Eject Disc": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отключить диск"
+          }
+        }
+      }
+    },
+    "EscApp doesn't show the game's uninstaller (%@)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удаление игры (%@) EscApp не показывает"
+          }
+        }
+      }
+    },
+    "Finish installing it first, then open this file again.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сначала завершите её установку, потом откройте этот файл снова."
+          }
+        }
+      }
+    },
+    "Game folder": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Папка игры"
+          }
+        }
+      }
+    },
+    "Install": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установить"
+          }
+        }
+      }
+    },
+    "Install Game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установить игру"
+          }
+        }
+      }
+    },
+    "Installer": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установщик"
+          }
+        }
+      }
+    },
+    "Installing %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устанавливается %@"
+          }
+        }
+      }
+    },
+    "Keep the disc in after installing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не отключать диск после установки"
+          }
+        }
+      }
+    },
+    "Looking for the game's program…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ищем программу игры…"
+          }
+        }
+      }
+    },
+    "Next, the game's installer opens, as in Windows. If it asks where to install, enter %@: that's this folder.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дальше откроется окно установщика игры, как в Windows. Если он спросит, куда ставить, укажите %@ — это папка выше."
+          }
+        }
+      }
+    },
+    "Next, the game's installer opens, as in Windows. The folder is already filled in.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дальше откроется окно установщика игры, как в Windows. Путь в нём уже будет указан."
+          }
+        }
+      }
+    },
+    "Nothing was installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ничего не установилось"
+          }
+        }
+      }
+    },
+    "Preparing Windows for the game (once, about 30 s)…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовим Windows для игры (один раз, около 30 с)…"
+          }
+        }
+      }
+    },
+    "Preparing Windows for the game…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовим Windows для игры…"
+          }
+        }
+      }
+    },
+    "Recommended": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Рекомендуем"
+          }
+        }
+      }
+    },
+    "The game checks for its CD on every launch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра проверяет CD при каждом запуске"
+          }
+        }
+      }
+    },
+    "The game goes into an ordinary folder on your Mac and stays there if its Windows is reset": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра ставится в обычную папку на Mac и не пропадёт при сбросе среды"
+          }
+        }
+      }
+    },
+    "The game starts with %@.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра запускается программой %@."
+          }
+        }
+      }
+    },
+    "The game's main program": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Главная программа игры"
+          }
+        }
+      }
+    },
+    "The installer finished without putting a game program in the folder or in its Windows.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установщик закончил, но программы игры не оказалось ни в папке, ни в её Windows."
+          }
+        }
+      }
+    },
+    "The installer's window is open. Go through it as in Windows: EscApp waits until it finishes.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окно установщика открыто. Пройдите его, как в Windows: EscApp подождёт, пока он закончит."
+          }
+        }
+      }
+    },
+    "There are several programs in the folder. Which one starts the game?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В папке несколько программ. Какая из них запускает игру?"
+          }
+        }
+      }
+    },
+    "There's no installer on this disc.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На этом диске нет установщика."
+          }
+        }
+      }
+    },
+    "Where to install": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Куда установить"
           }
         }
       }

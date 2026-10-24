@@ -29,6 +29,8 @@ final class LibraryModel {
     var states: [GameID: PlayState] = [:]
     var notice: Notice?
     var launch: Launch?
+    /// The install sheet, while a game is being installed from its installer or disc.
+    var install: Install?
     /// "Diablo II started with WineD3D": shown after retries found a backend (Launching.dc.html, last panel).
     var learned: Learned?
     /// Ticks once a minute so "12 min" in the menu bar and cards stays current.
@@ -70,6 +72,8 @@ final class LibraryModel {
         startClock()
         reload()
         watchFocus()
+        // Discs left attached when EscApp last quit or crashed.
+        Task { [paths] in await DiscImage.detachAll(paths: paths) }
         let waiting = pending
         pending = []
         for url in waiting { open(url) }
@@ -81,13 +85,8 @@ final class LibraryModel {
             pending.append(url)
             return
         }
-        if url.pathExtension.lowercased() == "msi" {
-            notice = Notice(title: String(localized: "Installers are coming soon"),
-                            message: String(localized: """
-                                EscApp can't run .msi installers yet. Installing games arrives in a later version.
-                                """))
-            return
-        }
+        if DiscImage.isImage(url) { return openDisc(url) }
+        if let kind = InstallerKind.detect(url) { return openInstaller(url, kind: kind) }
         do {
             let game = try GameIdentifier(paths: paths).identify(executable: url).record
             reload()
@@ -159,7 +158,8 @@ final class LibraryModel {
 
     func makeDefaultForExe() {
         Task {
-            let types = [UTType("com.microsoft.windows-executable"), UTType(filenameExtension: "msi")].compactMap { $0 }
+            let types = [UTType("com.microsoft.windows-executable"), UTType(filenameExtension: "msi")]
+                .compactMap { $0 }
             for type in types {
                 try? await NSWorkspace.shared.setDefaultApplication(at: Bundle.main.bundleURL, toOpen: type)
             }

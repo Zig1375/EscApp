@@ -60,9 +60,11 @@ extension LibraryModel {
 
     /// "Quit Steam": the client and everything in its bottle.
     func quitStore(_ store: Store) {
+        guard stoppingStores.insert(store).inserted else { return }
         Task {
             await StoreClient(paths: paths).shutDown(store)
             runningStores.remove(store)
+            stoppingStores.remove(store)
         }
     }
 

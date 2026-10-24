@@ -173,12 +173,21 @@ struct StoreCard: View {
                 Text(store.name)
                     .font(.system(size: 16, weight: .semibold))
                     .lineLimit(1)
-                Text("Store · its games appear here by themselves")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.secondaryText)
-                    .lineLimit(1)
+                status
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            if isRunning {
+                // Closing a client's window only hides it, and on a Mac there is no tray icon to quit it from.
+                Button {
+                    library.quitStore(store)
+                } label: {
+                    Label("Stop", systemImage: "stop.fill")
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .buttonStyle(BrandButtonStyle(height: 34))
+                .disabled(isStopping || library.isPlaying(from: store))
+                .help(library.isPlaying(from: store) ? String(localized: "A game from \(store.name) is running") : "")
+            }
             Button {
                 library.openStore(store)
             } label: {
@@ -186,6 +195,7 @@ struct StoreCard: View {
                     .font(.system(size: 13, weight: .medium))
             }
             .buttonStyle(BrandButtonStyle(kind: .primary, height: 34))
+            .disabled(isStopping)
         }
         .padding(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 14))
         .background(Color.cardBackground, in: .rect(cornerRadius: 16, style: .continuous))
@@ -196,13 +206,40 @@ struct StoreCard: View {
         .onHover { isHovered = $0 }
         .animation(.easeOut(duration: 0.15), value: isHovered)
         .contextMenu {
-            if library.runningStores.contains(store) {
-                // Closing a client's window only hides it, and on a Mac there is no tray icon to quit it from.
+            if isRunning {
                 Button("Quit \(store.name)") { library.quitStore(store) }
-                    .disabled(library.isPlaying(from: store))
+                    .disabled(isStopping || library.isPlaying(from: store))
                 Divider()
             }
             Button("Stores…") { library.shownPage = .stores }
+        }
+    }
+
+    private var isRunning: Bool { library.runningStores.contains(store) }
+    private var isStopping: Bool { library.stoppingStores.contains(store) }
+
+    /// What the client is doing: running (a green dot, as on a game's card), stopping, or the plain description.
+    @ViewBuilder private var status: some View {
+        if isStopping {
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.mini)
+                Text(String(localized: "store.stopping", defaultValue: "Stopping…"))
+            }
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(Color.secondaryText)
+        } else if isRunning {
+            HStack(spacing: 6) {
+                Circle().fill(Color.green).frame(width: 8, height: 8)
+                // "Запущен": the Russian word agrees with the store, like "store.installed".
+                Text(String(localized: "store.running", defaultValue: "Running"))
+            }
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(Color.okText)
+        } else {
+            Text("Store · its games appear here by themselves")
+                .font(.system(size: 12))
+                .foregroundStyle(Color.secondaryText)
+                .lineLimit(1)
         }
     }
 }

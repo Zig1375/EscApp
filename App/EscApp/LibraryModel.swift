@@ -58,6 +58,8 @@ final class LibraryModel {
     var runningStores: Set<Store> = []
     /// Stores the app is closing and opening again (deleting one of their games).
     var restartingStores: Set<Store> = []
+    /// Stores whose client "Stop" is closing; Steam may take up to 20 s to save and quit.
+    var stoppingStores: Set<Store> = []
     /// The screenshot shown over the whole window (`ScreenshotViewer`).
     var viewing: Viewing?
 

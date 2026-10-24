@@ -3757,6 +3757,48 @@
           }
         }
       }
+    },
+    "store.running": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запущен"
+          }
+        }
+      }
+    },
+    "store.stopping": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopping…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Останавливается…"
+          }
+        }
+      }
+    },
+    "A game from %@ is running": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Идёт игра из %@"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

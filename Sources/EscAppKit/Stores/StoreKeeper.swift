@@ -34,8 +34,7 @@ public actor StoreKeeper {
             if store == .steam {
                 for pid in SteamHelperSweep.strays(SteamHelperSweep.helpers(in: processes)) { kill(pid, SIGKILL) }
             }
-            let game = busy.contains(store) || processes.contains { !store.isClientProgram($0.program) }
-                || store == .steam && (SteamLaunches.inProgress(in: bottle) || SteamDownloads.inProgress(in: bottle))
+            let game = busy.contains(store) || Self.playing(store, in: bottle, processes: processes)
             let oldest = processes.compactMap(\.started).min() ?? Date()
             var quit = quits[store] ?? StoreQuit(used: Date().timeIntervalSince(oldest) > Self.settledAfter)
             // A client first seen with nothing on screen may be minimised: ask Wine once.
@@ -44,13 +43,20 @@ public actor StoreKeeper {
             if quit.update(windows: windows, game: game, now: Date()) {
                 quits[store] = nil
                 shownOffScreen[store] = nil
-                await client.shutDown(store)
+                // Checked again just before Wine is ended: a game may start while the client is asked to quit.
+                await client.shutDown(store) { Self.playing(store, in: bottle) }
                 running.remove(store)
             } else {
                 quits[store] = quit
             }
         }
         return running
+    }
+
+    /// A game of the store's running, Steam getting one ready, or Steam downloading.
+    static func playing(_ store: Store, in bottle: URL, processes: [WineProcesses.Process]? = nil) -> Bool {
+        (processes ?? WineProcesses.running(in: bottle)).contains { !store.isClientProgram($0.program) }
+            || store == .steam && (SteamLaunches.inProgress(in: bottle) || SteamDownloads.inProgress(in: bottle))
     }
 
     /// Whether the client shows a window: on screen, as the Mac sees it, or else minimised or on another Space,

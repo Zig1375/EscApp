@@ -180,7 +180,10 @@ public struct StoreClient: Sendable {
     /// state; whatever is still running 20 s later is ended. Nothing here waits on Wine without a limit: a Steam
     /// stuck at start never answered `-shutdown`, and its `steam.exe` even outlived `wineserver -k`, so what is
     /// left at the end is killed.
-    public func shutDown(_ store: Store) async {
+    /// - Parameter sparing: checked before the bottle's Wine is ended; true stops there, leaving what runs.
+    ///   `StoreKeeper` quits an idle client this way: a game started while Steam was asked to quit (Banished, 11 s
+    ///   into it) was killed with the rest.
+    public func shutDown(_ store: Store, sparing: (@Sendable () -> Bool)? = nil) async {
         guard let wine = runningWine(store) else { return }
         let environment = WineEnvironment.make(host: host, bottle: bottle(for: store).path,
                                                fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
@@ -190,6 +193,7 @@ public struct StoreClient: Sendable {
             let deadline = Date().addingTimeInterval(20)
             while isRunning(store), Date() < deadline { try? await Task.sleep(for: .milliseconds(500)) }
         }
+        if let sparing, sparing() { return }
         _ = try? await ProcessRunner.run(wine.wineserver.path, ["-k"], environment: environment, timeout: 10)
         _ = try? await ProcessRunner.run(wine.wineserver.path, ["-w"], environment: environment, timeout: 10)
         await Self.killLeftovers(in: bottle(for: store))

@@ -231,9 +231,23 @@ public struct StoreClient: Sendable {
             if let runtime { try await BottleManager(paths: paths, host: host).ensureBottle(for: store.bottleID,
                                                                                             runtime: runtime) }
             try ChromiumHelper.wrap(store, in: bottle(for: store))
+            try Self.drawSharp(bottle(for: store))
             if store == .epic, Self.epicHasStagedUpdate(bottle(for: store)) { await applyEpicUpdate(wine: wine) }
         }
         return wine
+    }
+
+    /// Store clients draw at the screen's full resolution. At Wine's default, Steam's windows were drawn at half
+    /// the pixels and stretched by macOS: soft text with coloured ClearType fringes, jagged corners. The DPI
+    /// matches, so they keep their size: clients that handle high DPI (Steam, Epic) draw larger themselves, and
+    /// Wine enlarges the ones that don't. A store game started while its client is idle gets its own settings
+    /// (`GameLauncher.configure`). Only while the bottle's Wine is down.
+    static func drawSharp(_ bottle: URL, scale: Double = GameScaling.backingScale()) throws {
+        let retina = scale > 1
+        try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\Mac Driver"#, name: "RetinaMode",
+                                            value: retina ? "y" : "n")
+        try BottleManager.setRegistryDWord(bottle: bottle, key: #"Control Panel\Desktop"#, name: "LogPixels",
+                                           value: UInt32(GameScaling.dpi(for: retina ? scale : 1)))
     }
 
     private func clientReady(_ store: Store) -> Bool {

@@ -94,11 +94,25 @@ extension LibraryModel {
         }
     }
 
-    /// A store game's "Delete…": the store removes its own games, so its client opens to do it. The game leaves
-    /// EscApp once the store has removed it.
-    func uninstallInStore(_ game: GameRecord) {
-        guard let store = game.store else { return }
-        openStore(store, uninstalling: game.storeID)
+    /// "Delete" on a game: one from Steam or Epic goes straight to the Trash, with the store's record of it, and
+    /// no question (it can be installed again from the store); one from another store is removed by its client;
+    /// any other game asks how (`DeleteGameSheet`).
+    func delete(_ game: GameRecord) {
+        guard let store = game.store else {
+            deleting = game
+            return
+        }
+        guard StoreUninstall.canRemove(store) else {
+            openStore(store, uninstalling: game.storeID)
+            return
+        }
+        do {
+            try StoreUninstall.remove(game, paths: paths)
+            reload()
+        } catch {
+            notice = Notice(title: String(localized: "Couldn't delete \(game.name)"),
+                            message: String(describing: error))
+        }
     }
 
     func games(from store: Store?) -> [GameRecord] {

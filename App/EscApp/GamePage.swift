@@ -91,9 +91,17 @@ struct GamePage: View {
     @ViewBuilder private func secondaryActions(_ game: GameRecord) -> some View {
         Button { library.showInFinder(game) } label: { Label("Open Game Folder", systemImage: "folder") }
             .buttonStyle(BrandButtonStyle(height: 40))
-        // The store removes its own games (ARCHITECTURE.md, "Where a game is from").
-        Button("Delete…") { if game.store != nil { library.uninstallInStore(game) } else { isDeleting = true } }
-            .buttonStyle(BrandButtonStyle(kind: .danger, height: 40))
+        // A Steam or Epic game goes to the Trash at once; other stores remove their own games.
+        Button(game.store == nil ? "Delete…" : "Delete") {
+            if game.store == nil {
+                isDeleting = true
+            } else {
+                library.delete(game)
+                if let store = game.store, StoreUninstall.canRemove(store) { back() }
+            }
+        }
+        .buttonStyle(BrandButtonStyle(kind: .danger, height: 40))
+        .disabled(library.states[game.id] != nil)
     }
 
     /// "DirectX 11 · 32-bit · Retina", from what the exe imports and declares.

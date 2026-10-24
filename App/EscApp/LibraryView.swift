@@ -69,6 +69,9 @@ struct LibraryView: View {
         })) { launch in
             LaunchSheet(launch: launch, library: library)
         }
+        .sheet(item: Binding(get: { library.deleting }, set: { library.deleting = $0 })) { game in
+            DeleteGameSheet(game: game, folderSize: nil, library: library) { _ in library.deleting = nil }
+        }
         .installSheet(library)
         .problemSheet(library)
         .onChange(of: library.shownPage, initial: true) {
@@ -323,6 +326,10 @@ struct GameCard: View {
             if let log = library.latestLog(for: game) {
                 Button("Show Last Log") { library.openLog(log) }
             }
+            Divider()
+            // A store game goes at once (it can be installed again from the store); others ask how.
+            Button(game.store == nil ? "Delete…" : "Delete", role: .destructive) { library.delete(game) }
+                .disabled(library.states[game.id] != nil)
         }
     }
 }

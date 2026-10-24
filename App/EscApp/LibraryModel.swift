@@ -30,6 +30,8 @@ final class LibraryModel {
     private(set) var infos: [GameID: ExecutableInfo] = [:]
     var states: [GameID: PlayState] = [:]
     var notice: Notice?
+    /// The game "Delete" asks about (`DeleteGameSheet`).
+    var deleting: GameRecord?
     var launch: Launch? {
         // While EscApp looks for a first launch's settings, its screen covers the game's windows.
         didSet { tuningCover.update(showing: launch?.tuning != nil, library: self) }

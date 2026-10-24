@@ -11,6 +11,8 @@ struct DeleteGameSheet: View {
     let library: LibraryModel
     let done: (_ removed: Bool) -> Void
     @State private var choice: Choice = .appOnly
+    /// Measured here when the caller didn't know it yet (the library's context menu).
+    @State private var measured: Int64?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -50,11 +52,14 @@ struct DeleteGameSheet: View {
         }
         .padding(24)
         .frame(width: 460)
+        .task { if folderSize == nil { measured = await library.folderSize(of: game) } }
     }
 
     private var folder: String { (game.folder as NSString).abbreviatingWithTildeInPath }
 
-    private var sizeText: String { folderSize.map { " (\($0.formatted(.byteCount(style: .file))))" } ?? "" }
+    private var sizeText: String {
+        (folderSize ?? measured).map { " (\($0.formatted(.byteCount(style: .file))))" } ?? ""
+    }
 
     private func option(title: LocalizedStringKey, text: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 2) {

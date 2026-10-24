@@ -28,13 +28,41 @@ extension LibraryModel {
         }
     }
 
-    /// While EscApp runs, a store may install or remove games at any time: look every 15 seconds.
+    /// While EscApp runs, a store may install or remove games at any time: look every 15 seconds. Running clients
+    /// are looked at every 3: one the player closed is quit (`StoreKeeper`).
     func watchStores() {
         Task {
             while !Task.isCancelled {
                 refreshStores()
                 try? await Task.sleep(for: .seconds(15))
             }
+        }
+        let keeper = StoreKeeper(paths: paths)
+        Task {
+            while !Task.isCancelled {
+                runningStores = await keeper.check(installedStores, busy: busyStores)
+                try? await Task.sleep(for: .seconds(3))
+            }
+        }
+    }
+
+    /// Stores installing, restarting, or with a game of theirs starting or running.
+    private var busyStores: Set<Store> {
+        var games = Array(states.keys)
+        if let launch { games.append(launch.id) }
+        return Set(storeInstalls.keys).union(restartingStores).union(games.compactMap { game($0)?.store })
+    }
+
+    /// Whether one of the store's games is starting or running: quitting the client would end it.
+    func isPlaying(from store: Store) -> Bool {
+        states.keys.contains { game($0)?.store == store }
+    }
+
+    /// "Quit Steam": the client and everything in its bottle.
+    func quitStore(_ store: Store) {
+        Task {
+            await StoreClient(paths: paths).shutDown(store)
+            runningStores.remove(store)
         }
     }
 
@@ -117,6 +145,8 @@ extension LibraryModel {
         Task {
             let client = StoreClient(paths: paths)
             let wasRunning = client.isRunning(store)
+            restartingStores.insert(store)
+            defer { restartingStores.remove(store) }
             if wasRunning { await client.shutDown(store) }
             do {
                 try StoreUninstall.remove(game, paths: paths)

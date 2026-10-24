@@ -15,6 +15,8 @@ public enum WineProcesses {
         public var fastSync = false
         /// The Windows program's arguments.
         public var arguments: [String] = []
+        /// When macOS started the process.
+        public var started: Date?
     }
 
     /// Every process running in `bottle`.
@@ -28,8 +30,16 @@ public enum WineProcesses {
                   let executable = GameWindows.executablePath(of: pid) else { return nil }
             return Process(pid: pid, executable: executable, program: process.arguments.first ?? "",
                            fastSync: WineEnvironment.fastSyncIsOn(process.environment),
-                           arguments: Array(process.arguments.dropFirst()))
+                           arguments: Array(process.arguments.dropFirst()), started: startTime(of: pid))
         }
+    }
+
+    static func startTime(of pid: pid_t) -> Date? {
+        var info = proc_bsdinfo()
+        let size = Int32(MemoryLayout<proc_bsdinfo>.size)
+        guard proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &info, size) == size else { return nil }
+        return Date(timeIntervalSince1970: TimeInterval(info.pbi_start_tvsec)
+            + TimeInterval(info.pbi_start_tvusec) / 1_000_000)
     }
 
     /// Processes in `bottle` started from a program in the Windows folder `folder`.

@@ -54,6 +54,10 @@ final class LibraryModel {
     /// Stores being installed, with how far each is.
     var storeInstalls: [Store: StoreClient.Step] = [:]
     var storeTasks: [Store: Task<Void, Never>] = [:]
+    /// Stores whose client runs, looked at every few seconds (`StoreKeeper`).
+    var runningStores: Set<Store> = []
+    /// Stores the app is closing and opening again (deleting one of their games).
+    var restartingStores: Set<Store> = []
     /// Set to show a screen in the main window: Stores from Settings or a "needs Steam" message, a game's Advanced
     /// settings from the first-launch check.
     var shownPage: LibraryView.Page?

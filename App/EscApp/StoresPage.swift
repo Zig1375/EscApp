@@ -83,6 +83,11 @@ private struct StoreRow: View {
                 .foregroundStyle(Color.okText)
             Button("Remove…", action: remove)
                 .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
+            if library.runningStores.contains(store) {
+                Button("Quit") { library.quitStore(store) }
+                    .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
+                    .disabled(library.isPlaying(from: store))
+            }
             Button("Open \(store.name)") { library.openStore(store) }
                 .buttonStyle(BrandButtonStyle(kind: .primary, height: 32, radius: 8))
         case let .installing(step):
@@ -191,6 +196,12 @@ struct StoreCard: View {
         .onHover { isHovered = $0 }
         .animation(.easeOut(duration: 0.15), value: isHovered)
         .contextMenu {
+            if library.runningStores.contains(store) {
+                // Closing a client's window only hides it, and on a Mac there is no tray icon to quit it from.
+                Button("Quit \(store.name)") { library.quitStore(store) }
+                    .disabled(library.isPlaying(from: store))
+                Divider()
+            }
             Button("Stores…") { library.shownPage = .stores }
         }
     }

@@ -63,6 +63,18 @@ public struct GameLauncher: Sendable {
         case starting
     }
 
+    /// A store game's client, made ready for it, and the command that starts the game through the client.
+    /// Returns whether the bottle was idle; always for a game without a store.
+    private func prepareStore(for game: GameRecord, wine: Wine, dpiAware: Bool) async throws
+        -> (idle: Bool, client: (url: URL, arguments: [String])?) {
+        guard let store = game.store else { return (true, nil) }
+        let stores = StoreClient(paths: paths, host: host)
+        let retina = GameSettings.retina(game.retina, dpiAware: dpiAware)
+        let idle = try await stores.prepareForGame(store, wine: wine, retina: retina)
+        guard store.launchesGames, let id = game.storeID else { return (idle, nil) }
+        return (idle, try stores.playCommand(store, storeID: id))
+    }
+
     public func prepare(_ game: GameRecord, runtime: RuntimeManifest.Runtime,
                         backend override: GraphicsBackend? = nil, verboseLog: Bool = false,
                         progress: @Sendable (Step) -> Void = { _ in }) async throws -> Prepared {
@@ -87,13 +99,7 @@ public struct GameLauncher: Sendable {
                                                     windows: game.store == nil ? game.windowsVersion : .default)
         progress(.graphics(backend, directX: info.directX.max()))
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
-        var idle = true
-        var client: (url: URL, arguments: [String])?
-        if let store = game.store {
-            let stores = StoreClient(paths: paths, host: host)
-            idle = try await stores.prepareForGame(store, wine: wine)
-            if store.launchesGames, let id = game.storeID { client = try stores.playCommand(store, storeID: id) }
-        }
+        let (idle, client) = try await prepareStore(for: game, wine: wine, dpiAware: info.dpiAware)
         let fastSync = WineEnvironment.fastSync(for: game, wine: wine)
         if game.store == nil { await Self.stopWine(in: bottle, unless: fastSync) }
         // With the store's client already running in the right Wine, its registry can't be written: the game

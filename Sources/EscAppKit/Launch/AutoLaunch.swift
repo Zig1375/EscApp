@@ -51,14 +51,14 @@ public struct AutoLaunch: Sendable {
     /// The game's window size once it works, which decides how much it is enlarged next time (`GameScaling`).
     let measure: @Sendable (GameSession) -> GameScaling.LearnedWindow?
     /// Whether the window of these processes shows one flat colour (`WindowPicture`); nil when it can't be told.
-    let picture: @Sendable ([Int32]) async -> Bool?
+    let picture: @Sendable ([Int32]) async -> WindowLook?
     let timing: Timing
 
     public init(paths: AppPaths, host: [String: String] = ProcessInfo.processInfo.environment,
                 starter: (any AttemptStarter)? = nil,
                 windows: @escaping @Sendable (GameSession) -> [Int32] = GameWindows.owners(of:),
                 measure: @escaping @Sendable (GameSession) -> GameScaling.LearnedWindow? = GameWindows.learnWindow(of:),
-                picture: @escaping @Sendable ([Int32]) async -> Bool? = WindowPicture.isBlank(windowOf:),
+                picture: @escaping @Sendable ([Int32]) async -> WindowLook? = WindowPicture.look(windowOf:),
                 timing: Timing = .standard) {
         self.paths = paths
         self.starter = starter ?? GameLauncher(paths: paths, host: host)
@@ -198,11 +198,18 @@ public struct AutoLaunch: Sendable {
         var seen: GameScaling.LearnedWindow?
         var judge = AttemptJudge(windowTimeout: timeout, windowHolds: timing.windowHolds)
         judge.checksPicture = game.chromium != nil || context.chromiumProgram
-        let verdict = try await watch(running, game: game.id, judge: judge, context: context, seen: &seen)
+        var verdict = try await watch(running, game: game.id, judge: judge, context: context, seen: &seen)
         // The bottle only goes idle once the warm-up's helper is gone.
         await context.warmer?.release(game.id)
+        if verdict == .working {
+            context.events(.working(backend, learned: number > 1))
+            // A first launch: a blank Chromium window may come after a launcher that drew.
+            if game.backend == nil, context.control.retrying,
+               await lateBlank(running, patience: judge.blankAfter, chromium: judge.checksPicture) {
+                verdict = .failed(.blankPicture)
+            }
+        }
         if case .failed = verdict { await running.stop() }
-        if verdict == .working { context.events(.working(backend, learned: number > 1)) }
         let outcome = await running.finish()
         let diagnosis = LogDiagnosis(log: LogDiagnosis.read(outcome.log) ?? "")
         var failure: AttemptJudge.Failure? = switch verdict {
@@ -258,7 +265,7 @@ public struct AutoLaunch: Sendable {
                 // Not judging any more: the game just runs; `finish` waits for its end.
                 return nil
             }
-            let blank = judge.checksPicture ? await looks.look(at: owners, elapsed: elapsed) : nil
+            let blank = judge.checksPicture ? await looks.look(at: owners, elapsed: elapsed)?.blank : nil
             if let verdict = judge.observe(elapsed: elapsed, window: !owners.isEmpty, exitCode: running.exitCode,
                                            idle: running.isIdle, blank: blank) {
                 return verdict
@@ -277,6 +284,26 @@ public struct AutoLaunch: Sendable {
         }
     }
 
+    /// Looks at the game's window while it plays, for `timing.lateWatch`: true once a window it shows has stayed
+    /// blank (`LateBlank`) and the program is Chromium (`chromium`, or a Chromium GPU process in the bottle by
+    /// then: a launcher starts it later). False when everything in the bottle ends first, or time is up. The
+    /// started program itself may quit early: Steam's bootstrapper restarts Steam.
+    private func lateBlank(_ running: any GameAttempt, patience: TimeInterval, chromium: Bool) async -> Bool {
+        var late = LateBlank(patience: patience)
+        var looks = PictureLooks(picture: picture, every: timing.lateEvery)
+        let start = Date()
+        while Date().timeIntervalSince(start) < timing.lateWatch, !running.isIdle {
+            if running.exitCode != nil { running.watchForIdle() }
+            let elapsed = Date().timeIntervalSince(start)
+            if let look = await looks.look(at: windows(running.session), elapsed: elapsed),
+               late.observe(look, at: elapsed), chromium || PictureLooks.chromiumRuns(for: running.session) {
+                return true
+            }
+            guard (try? await Task.sleep(for: timing.poll)) != nil else { return false }
+        }
+        return false
+    }
+
     private func record(_ id: GameID, duration: TimeInterval, working: GraphicsBackend?) throws {
         try GameLibrary.modify(paths.library) { $0.recordPlay(of: id, duration: duration, working: working) }
     }
@@ -292,17 +319,17 @@ public struct AutoLaunch: Sendable {
 
 /// Looks at a Chromium program's window about once a second while it is up (`WindowPicture`).
 struct PictureLooks {
-    let picture: @Sendable ([Int32]) async -> Bool?
+    let picture: @Sendable ([Int32]) async -> WindowLook?
     let every: TimeInterval
     private var last: TimeInterval = -.infinity
 
-    init(picture: @escaping @Sendable ([Int32]) async -> Bool?, every: TimeInterval) {
+    init(picture: @escaping @Sendable ([Int32]) async -> WindowLook?, every: TimeInterval) {
         self.picture = picture
         self.every = every
     }
 
-    /// Whether the window is blank now; nil between looks, without a window, or when it can't be told.
-    mutating func look(at owners: [Int32], elapsed: TimeInterval) async -> Bool? {
+    /// What the window shows now; nil between looks, without a window, or when it can't be told.
+    mutating func look(at owners: [Int32], elapsed: TimeInterval) async -> WindowLook? {
         guard !owners.isEmpty, elapsed - last >= every else { return nil }
         last = elapsed
         return await picture(owners)

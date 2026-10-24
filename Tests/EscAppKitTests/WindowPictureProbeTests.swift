@@ -9,7 +9,7 @@ import Testing
 struct WindowPictureProbeTests {
     @Test func theWindowOfThatProcess() async throws {
         let pid = try #require(Int32(ProcessInfo.processInfo.environment["ESCAPP_PICTURE_PID"] ?? ""))
-        let blank = await WindowPicture.isBlank(windowOf: [pid])
+        let blank = await WindowPicture.look(windowOf: [pid])
         print("allowed: \(WindowPicture.allowed), blank: \(String(describing: blank))")
         if let path = ProcessInfo.processInfo.environment["ESCAPP_PICTURE_SAVE"],
            let image = await WindowPicture.capture([pid], width: 480) {

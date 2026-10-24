@@ -60,6 +60,10 @@ extension AutoLaunch {
         public var handOverAfter: TimeInterval = 10
         /// How often a Chromium program's window is looked at while it is checked (`WindowPicture`).
         public var pictureEvery: TimeInterval = 1
+        /// How long a first launch of a Chromium program keeps looking after it counted as working: a launcher
+        /// (Steam's updater) can draw, and the window that follows stay blank.
+        public var lateWatch: TimeInterval = 180
+        public var lateEvery: TimeInterval = 2
 
         public static let standard = Timing()
     }

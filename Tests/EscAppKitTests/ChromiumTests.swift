@@ -66,9 +66,12 @@ extension AutoLaunchTests {
         var chromiumGame = game
         chromiumGame.chromium = .inProcessGPU
         try GameLibrary.modify(paths.library) { $0[chromiumGame.id] = chromiumGame }
-        let starter = try FakeStarter([.dxvk: .works], logs: logs())
+        // Running well past the blank check (0.27 s here), so a busy machine can't end it first.
+        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.02, exitAt: 0.8)], logs: logs())
         // The first start's window stays white; the second one draws.
-        let picture: @Sendable ([Int32]) async -> Bool? = { owners in owners == [100] }
+        let picture: @Sendable ([Int32]) async -> WindowLook? = { owners in
+            WindowLook(window: 1, blank: owners == [100])
+        }
         var fast = timing
         fast.pictureEvery = 0.005
         let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
@@ -102,5 +105,60 @@ extension ChromiumAppTests {
         #expect(info.directX.contains(.d3d12))
         info.chromium = true
         #expect(info.directX == [.d3d11])
+    }
+}
+
+@Suite struct LateBlankTests {
+    @Test func aWindowAfterTheLauncherThatStaysBlankIsCaught() {
+        var late = LateBlank(patience: 40)
+        // The launcher's window draws.
+        for second in stride(from: 0.0, to: 10, by: 2) {
+            let caught = late.observe(WindowLook(window: 1, blank: false), at: second)
+            #expect(!caught)
+        }
+        // The sign-in window that follows stays white.
+        var caught = false
+        for second in stride(from: 10.0, through: 60, by: 2) where late.observe(WindowLook(window: 2, blank: true),
+                                                                               at: second) {
+            caught = caught || second >= 50
+        }
+        #expect(caught)
+    }
+
+    @Test func aWindowThatDrewAndThenWentBlackIsTheGamesOwn() {
+        var late = LateBlank(patience: 40)
+        var caught = late.observe(WindowLook(window: 1, blank: false), at: 0)
+        for second in stride(from: 2.0, through: 120, by: 2) {
+            caught = caught || late.observe(WindowLook(window: 1, blank: true), at: second)
+        }
+        #expect(!caught)
+    }
+}
+
+extension AutoLaunchTests {
+    @Test func aBlankWindowAfterAWorkingStartRestartsItDrawnAnotherWay() async throws {
+        var chromiumGame = game
+        chromiumGame.chromium = .inProcessGPU
+        try GameLibrary.modify(paths.library) { $0[chromiumGame.id] = chromiumGame }
+        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.02, exitAt: 1.2)], logs: logs())
+        let firstLook = Mutex<Date?>(nil)
+        // The first start: its launcher window draws, then the window after it stays blank. The second draws.
+        let picture: @Sendable ([Int32]) async -> WindowLook? = { owners in
+            guard owners == [100] else { return WindowLook(window: 3, blank: false) }
+            let since = firstLook.withLock { $0 = $0 ?? Date(); return $0! }
+            return Date().timeIntervalSince(since) < 0.15 ? WindowLook(window: 1, blank: false)
+                : WindowLook(window: 2, blank: true)
+        }
+        var fast = timing
+        fast.pictureEvery = 0.005
+        fast.lateEvery = 0.005
+        fast.lateWatch = 0.8
+        let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
+                                          measure: { _ in nil }, picture: picture, timing: fast)
+            .play(chromiumGame, runtime: runtime)
+        #expect(starter.started.map(\.0) == [.dxvk, .dxvk])
+        #expect(result.attempts.first?.failure == .blankPicture)
+        #expect(result.working == .dxvk)
+        #expect(try GameLibrary.load(from: paths.library)[game.id]?.chromium == .noGPU)
     }
 }

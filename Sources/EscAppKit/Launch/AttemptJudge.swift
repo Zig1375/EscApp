@@ -82,3 +82,34 @@ public struct AttemptJudge: Sendable, Equatable {
         return nil
     }
 }
+
+/// After a first launch counted as working: a window that appears later (the game's own after its launcher's, or
+/// Steam's sign-in after its updater) and stays one flat colour as long as `AttemptJudge.blankAfter` without ever
+/// drawing. A window that drew once and then went black is the game's own (a loading screen) and isn't counted.
+struct LateBlank: Sendable, Equatable {
+    let patience: TimeInterval
+    private var window: UInt32?
+    private var since: TimeInterval?
+    private var looks = 0
+    private var drawn: Set<UInt32> = []
+
+    init(patience: TimeInterval) {
+        self.patience = patience
+    }
+
+    /// Whether the window has now stayed blank long enough.
+    mutating func observe(_ look: WindowLook, at elapsed: TimeInterval) -> Bool {
+        guard look.blank else {
+            drawn.insert(look.window)
+            return false
+        }
+        if drawn.contains(look.window) { return false }
+        if window != look.window {
+            window = look.window
+            since = elapsed
+            looks = 0
+        }
+        looks += 1
+        return looks >= AttemptJudge.blankSamplesNeeded && elapsed - (since ?? elapsed) >= patience
+    }
+}

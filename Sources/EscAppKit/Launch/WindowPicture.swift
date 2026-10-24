@@ -9,13 +9,25 @@ import ScreenCaptureKit
 ///
 /// Reading another program's window needs the Screen Recording permission. Without it the answer is "don't
 /// know", and the check is skipped; nothing is asked from here (the app asks once, `LibraryModel`).
+/// What one look at a game's window saw.
+public struct WindowLook: Sendable, Equatable {
+    /// The window's number: a launcher's window and the game's main window are told apart by it.
+    public var window: UInt32
+    public var blank: Bool
+
+    public init(window: UInt32, blank: Bool) {
+        self.window = window
+        self.blank = blank
+    }
+}
+
 public enum WindowPicture {
     public static var allowed: Bool { CGPreflightScreenCaptureAccess() }
 
-    /// Whether the largest window of `owners` is one flat colour; nil when it can't be told, or when the look
-    /// takes longer than `timeout` (it must never hold up a launch).
-    public static func isBlank(windowOf owners: [Int32]) async -> Bool? {
-        await withTaskGroup(of: Bool??.self) { group in
+    /// The largest window of `owners` and whether it is one flat colour; nil when it can't be told, or when the
+    /// look takes longer than `timeout` (it must never hold up a launch).
+    public static func look(windowOf owners: [Int32]) async -> WindowLook? {
+        await withTaskGroup(of: WindowLook??.self) { group in
             group.addTask { await look(at: owners) }
             group.addTask {
                 try? await Task.sleep(for: timeout)
@@ -29,13 +41,19 @@ public enum WindowPicture {
 
     static let timeout: Duration = .seconds(3)
 
-    private static func look(at owners: [Int32]) async -> Bool? {
-        await capture(owners).map(isBlank)
+    private static func look(at owners: [Int32]) async -> WindowLook? {
+        guard let window = largestWindow(of: owners), let image = await capture(window) else { return nil }
+        return WindowLook(window: window, blank: isBlank(image))
     }
 
     /// A small picture of the largest window of `owners`.
     static func capture(_ owners: [Int32], width: Int = 96) async -> CGImage? {
-        guard allowed, !owners.isEmpty else { return nil }
+        guard let window = largestWindow(of: owners) else { return nil }
+        return await capture(window, width: width)
+    }
+
+    static func capture(_ target: CGWindowID, width: Int = 96) async -> CGImage? {
+        guard allowed else { return nil }
         // ScreenCaptureKit needs the process connected to the window server, which an app is and the CLI isn't:
         // without it the capture aborts the process.
         await MainActor.run { _ = NSApplication.shared }
@@ -43,8 +61,7 @@ public enum WindowPicture {
         else { return nil }
         // The window by its number, as the rest of EscApp sees the game's windows: ScreenCaptureKit's own list
         // gave an Electron program's real window to no process, and its hidden 500×500 one to the game.
-        guard let target = largestWindow(of: owners),
-              let window = content.windows.first(where: { $0.windowID == target }) else { return nil }
+        guard let window = content.windows.first(where: { $0.windowID == target }) else { return nil }
         let configuration = SCStreamConfiguration()
         configuration.width = width
         configuration.height = max(Int(Double(width) * window.frame.height / max(window.frame.width, 1)), 48)

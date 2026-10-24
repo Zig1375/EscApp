@@ -97,7 +97,7 @@ struct LaunchSheet: View {
         gameRow("Tried: \(failure.tried.map(\.displayName).formatted(.list(type: .and)))")
         Callout(tone: .error) {
             Text(failure.tried.count > 1 ? "The game didn't start with any graphics option." : "The game didn't start.")
-                + Text(verbatim: " ") + reason(failure)
+                + Text(verbatim: " ") + Self.reason(failure)
         }
         HStack(spacing: 8) {
             Button("Close") { library.cancelLaunch() }
@@ -115,7 +115,8 @@ struct LaunchSheet: View {
         .padding(.top, 8)
     }
 
-    private func reason(_ failure: LibraryModel.Launch.Failure) -> Text {
+    /// The most telling reason in plain words; the first-launch cover says it too.
+    static func reason(_ failure: LibraryModel.Launch.Failure) -> Text {
         switch failure.problem {
         case let .missingFile(name)?:
             Text("The log says **\(name)** is missing — the game isn't fully installed.")

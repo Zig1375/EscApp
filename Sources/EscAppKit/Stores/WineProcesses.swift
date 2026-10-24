@@ -13,6 +13,8 @@ public enum WineProcesses {
         public var program: String
         /// Started with msync on (`WineEnvironment`).
         public var msync = false
+        /// The Windows program's arguments.
+        public var arguments: [String] = []
     }
 
     /// Every process running in `bottle`.
@@ -25,7 +27,8 @@ public enum WineProcesses {
                   wanted == trimmed || wanted == trimmed + "/",
                   let executable = GameWindows.executablePath(of: pid) else { return nil }
             return Process(pid: pid, executable: executable, program: process.arguments.first ?? "",
-                           msync: WineEnvironment.msyncIsOn(process.environment))
+                           msync: WineEnvironment.msyncIsOn(process.environment),
+                           arguments: Array(process.arguments.dropFirst()))
         }
     }
 

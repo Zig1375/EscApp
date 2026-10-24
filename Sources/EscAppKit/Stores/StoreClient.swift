@@ -64,6 +64,10 @@ public struct StoreClient: Sendable {
             progress(.updating(received: nil, total: nil))
             try await updateSteam(client, wine: wine, environment: environment, progress: progress)
         }
+        if store == .epic {
+            progress(.updating(received: nil, total: nil))
+            try await updateEpic(client, wine: wine, environment: environment)
+        }
     }
 
     /// Steam's installer only puts down a bootstrapper. Its first start downloads the client in two rounds,
@@ -144,6 +148,7 @@ public struct StoreClient: Sendable {
         let wine = try await prepare(store, runtime: runtime, wine: runningWine(store) ?? defaultWine(runtime))
         let extra = storeID.map { store.uninstallArguments(storeID: $0) } ?? []
         try start(wine, client, store.clientArguments(clientReady: clientReady(store)) + extra, store: store)
+        if store == .epic { watchEpicUpdates(client, wine: wine) }
     }
 
     /// Gets the store's bottle ready to start one of its games with `wine` (the game's graphics backend): a
@@ -222,6 +227,7 @@ public struct StoreClient: Sendable {
             if let runtime { try await BottleManager(paths: paths, host: host).ensureBottle(for: store.bottleID,
                                                                                             runtime: runtime) }
             try ChromiumHelper.wrap(store, in: bottle(for: store))
+            if store == .epic, Self.epicHasStagedUpdate(bottle(for: store)) { await applyEpicUpdate(wine: wine) }
         }
         return wine
     }
@@ -231,7 +237,7 @@ public struct StoreClient: Sendable {
     }
 
     /// Starts the client in the background; it outlives this call and EscApp's window.
-    private func start(_ wine: Wine, _ client: URL, _ arguments: [String], store: Store) throws {
+    func start(_ wine: Wine, _ client: URL, _ arguments: [String], store: Store) throws {
         let log = newLog(store, "client")
         FileManager.default.createFile(atPath: log.path, contents: nil)
         let handle = try FileHandle(forWritingTo: log)
@@ -249,7 +255,7 @@ public struct StoreClient: Sendable {
         try process.run()
     }
 
-    private func newLog(_ store: Store, _ kind: String) -> URL {
+    func newLog(_ store: Store, _ kind: String) -> URL {
         let folder = paths.logs(forGame: store.bottleID)
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let formatter = DateFormatter()

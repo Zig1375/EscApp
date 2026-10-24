@@ -112,7 +112,11 @@ public enum Store: String, Codable, CaseIterable, Sendable, Identifiable {
         case .steam: ["-no-cef-sandbox"] + (clientReady ? ["-noverifyfiles"] : [])
         // The EA app's Chromium reads these from its own command line.
         case .eaApp: ["--disable-gpu", "--disable-gpu-compositing", "--in-process-gpu"]
-        case .epic, .gog, .ubisoft: []
+        // The launcher draws its window with Unreal's OpenGL renderer: with its default Direct3D one the store
+        // pages never appear over the Epic logo, since Chromium's GPU process can't start in Wine ("Failed to
+        // launch GPU process" in cef3.log). No prerequisite installers at each start either.
+        case .epic: ["-opengl", "-SkipBuildPatchPrereq"]
+        case .gog, .ubisoft: []
         }
     }
 

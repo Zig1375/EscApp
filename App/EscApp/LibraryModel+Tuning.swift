@@ -26,6 +26,13 @@ extension LibraryModel.Launch {
         var needed = Int(AttemptJudge.windowHolds)
         /// When the search began: the simple screen's bar fills with time, not with attempts.
         var startedAt = Date()
+        /// An attempt worked: the simple screen celebrates for a moment before the game comes out.
+        var ready: Ready?
+
+        struct Ready: Equatable {
+            var backend: GraphicsBackend
+            var learned: Bool
+        }
 
         var currentBackend: GraphicsBackend { order[min(current, order.count - 1)] }
     }
@@ -59,14 +66,31 @@ extension LibraryModel {
             tuning.failed.append(.init(backend: failed.backend, seconds: failed.seconds, reason: failed.failure,
                                        problem: failed.diagnosis.problem))
         case let .working(backend, learned):
-            tuningWorked(tuning, backend: backend, learned: learned, for: id)
-            return true
+            guard !Self.tuningDetails else {
+                tuningWorked(tuning, backend: backend, learned: learned, for: id)
+                return true
+            }
+            // FirstRunReady.dc.html: "ready, next time it starts at once", with confetti, then the game.
+            tuning.ready = .init(backend: backend, learned: learned)
+            Task {
+                try? await Task.sleep(for: .seconds(3))
+                revealTunedGame(id)
+            }
         case .preparing, .tuning, .asksForDisc:
             // Getting ready updates the steps as usual; the CD request ends the screen there.
             return false
         }
         launch?.tuning = tuning
         return true
+    }
+
+    /// Whether the player chose the detailed first-launch screen (`TuningScreen`).
+    static var tuningDetails: Bool { UserDefaults.standard.bool(forKey: "TuningDetails") }
+
+    /// "Play" on the ready screen, or its time is up.
+    func revealTunedGame(_ id: GameID) {
+        guard launch?.id == id, let tuning = launch?.tuning, let ready = tuning.ready else { return }
+        tuningWorked(tuning, backend: ready.backend, learned: false, for: id)
     }
 
     /// The cover goes and the game, which has been running under it, comes to the front.

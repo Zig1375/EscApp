@@ -330,3 +330,47 @@ private func makeBottle(in temp: TempFolder, name: String = "Bottle") throws -> 
         #expect(!diagnosis.retryHelps)
     }
 }
+
+@Suite struct EpicUpdateTests {
+    @Test func theInstallingUpdatesWindowIsToldFromTheService() {
+        let program = "C:/Program Files/Epic Games/Launcher/Portal/Binaries/Win64/EpicGamesUpdater.exe"
+        func process(_ arguments: [String]) -> WineProcesses.Process {
+            .init(pid: 1, executable: "/w/bin/wine", program: program, arguments: arguments)
+        }
+        #expect(StoreClient.isWaitingUpdater(process(["start", "-epicenv=Prod"])))
+        #expect(!StoreClient.isWaitingUpdater(process(["queryinstallation", "strict"])))
+        #expect(!StoreClient.isWaitingUpdater(process([])))
+        var launcher = process(["start"])
+        launcher.program = #"C:\Program Files\Epic Games\Launcher\Portal\Binaries\Win64\EpicGamesLauncher.exe"#
+        #expect(!StoreClient.isWaitingUpdater(launcher))
+    }
+
+    @Test func aDownloadedUpdateIsOneWithFilesInItsStage() throws {
+        let bottle = FileManager.default.temporaryDirectory.appending(path: "epic-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: bottle) }
+        let stage = StoreClient.epicUpdateStage(bottle)
+        #expect(!StoreClient.epicHasStagedUpdate(bottle))
+        // Installing it leaves the empty folders behind.
+        try FileManager.default.createDirectory(at: stage.appending(path: "Portal/Binaries"),
+                                                withIntermediateDirectories: true)
+        #expect(!StoreClient.epicHasStagedUpdate(bottle))
+        try Data("x".utf8).write(to: stage.appending(path: "Portal/Binaries/EpicGamesLauncher.exe"))
+        #expect(StoreClient.epicHasStagedUpdate(bottle))
+    }
+
+    @Test func theLauncherDrawsWithOpenGL() {
+        #expect(Store.epic.clientArguments(clientReady: true).contains("-opengl"))
+    }
+}
+
+extension EpicUpdateTests {
+    @Test func aLauncherOnItsLogoIsToldFromOneShowingItsPages() {
+        let stuck = """
+            [2026.10.24-12.26.57:534][101]LogInit: AllCheckComplete SelfUpdate=1 SignedIn=0 RequiresRestart=0
+            [2026.10.24-12.27.25:564][634]LogPortal: Warning: Memory pressure detected: 317.7% of commit limit used
+            """
+        let shown = stuck + "\n[2026.10.24-12.06.15:873][367]LogWebView:   WARN  [Statsig] The user does not have"
+        #expect(!StoreClient.showsPages(Data(stuck.utf8)))
+        #expect(StoreClient.showsPages(Data(shown.utf8)))
+    }
+}

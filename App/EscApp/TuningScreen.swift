@@ -60,7 +60,13 @@ struct TuningScreen: View {
         ZStack {
             Color.windowBackground.ignoresSafeArea()
             if let launch = library.launch, let tuning = launch.tuning {
-                if details {
+                if case let .failed(failure) = launch.phase {
+                    TuningFailedCard(launch: launch, failure: failure, library: library)
+                        .frame(width: 620)
+                } else if let ready = tuning.ready {
+                    TuningReadyCard(launch: launch, ready: ready, library: library)
+                        .frame(width: 560)
+                } else if details {
                     TuningCard(launch: launch, tuning: tuning, library: library) { details = false }
                         .frame(width: 600)
                 } else {

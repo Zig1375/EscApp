@@ -3397,6 +3397,66 @@
           }
         }
       }
+    },
+    "%@ doesn't start yet": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ пока не запускается"
+          }
+        }
+      }
+    },
+    "Details: what was tried": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подробнее: что пробовали"
+          }
+        }
+      }
+    },
+    "EscApp remembered how to start %@. From now on it opens much faster.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp запомнил, как запускать %@. Теперь игра будет открываться намного быстрее."
+          }
+        }
+      }
+    },
+    "EscApp tried every setting, but the game closed each time. It isn't something you did — some games need more.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp попробовал все настройки, но игра каждый раз закрывалась. Дело не в вас — некоторым играм нужно больше."
+          }
+        }
+      }
+    },
+    "Next time: right away, without checking": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В следующий раз — сразу, без проверки"
+          }
+        }
+      }
+    },
+    "Ready — time to play": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово — можно играть"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

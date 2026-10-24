@@ -34,6 +34,8 @@ struct SimpleTuningCard: View {
                       detail: "Its window stays hidden meanwhile")
                 Point(symbol: "checkmark.seal", title: "Keeping the best", detail: "Only needed once")
             }
+            // All three as tall as the tallest.
+            .fixedSize(horizontal: false, vertical: true)
             VStack(spacing: 8) {
                 TimeBar(startedAt: tuning.startedAt)
                 Text("Usually under a minute").modifier(TuningHint())
@@ -74,7 +76,7 @@ private struct Point: View {
             Text(title).font(.system(size: 13, weight: .semibold))
             Text(detail).modifier(TuningHint()).multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.vertical, 14)
         .padding(.horizontal, 8)
         .background(Color.windowBackground, in: .rect(cornerRadius: 14, style: .continuous))
@@ -150,7 +152,7 @@ private struct TuningIllustration: View {
     }
 }
 
-private struct MiniScreen: View {
+struct MiniScreen: View {
     enum State { case waiting, trying, failed, works }
 
     let state: State
@@ -179,6 +181,8 @@ private struct MiniScreen: View {
                     badge.offset(x: 22, y: 16)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay { if state == .trying { ScanBeam() } }
+                .clipped()
             }
             .frame(width: 118, height: 84)
             .background(Color.windowBackground, in: .rect(cornerRadius: 12, style: .continuous))
@@ -196,8 +200,7 @@ private struct MiniScreen: View {
         switch state {
         case .failed: mark("xmark", background: .errorBackground, foreground: .danger)
         case .works: mark("checkmark", background: .newBackground, foreground: .newText)
-        case .trying: ProgressView().controlSize(.small)
-        case .waiting: EmptyView()
+        case .trying, .waiting: EmptyView()
         }
     }
 
@@ -236,5 +239,26 @@ private struct MiniScreen: View {
         case .failed: .danger
         case .works: .newText
         }
+    }
+}
+
+/// FirstRunSimple.dc.html, variant A: a beam sweeping the screen while the game is being tried on it.
+private struct ScanBeam: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        TimelineView(.animation(paused: reduceMotion)) { context in
+            GeometryReader { box in
+                let phase = context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.4) / 1.4
+                // Down and back up, easing at the ends.
+                let position = (1 - cos(phase * 2 * .pi)) / 2
+                Rectangle()
+                    .fill(Color.brand.opacity(0.85))
+                    .frame(height: 2)
+                    .shadow(color: Color.brand.opacity(0.5), radius: 4)
+                    .offset(y: box.size.height * position)
+            }
+        }
+        .allowsHitTesting(false)
     }
 }

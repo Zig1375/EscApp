@@ -189,9 +189,14 @@ extension LibraryModel {
             ?? last.diagnosis.problem
         let report = LaunchReport.text(result, runtime: runtime.id, macOS: Version.thisMac.description,
                                        app: Version.thisApp.description)
-        launch = Launch(id: result.game.id, name: result.game.name, firstTime: false,
-                        phase: .failed(.init(problem: problem, reason: last.failure,
-                                             tried: result.attempts.map(\.backend), report: report)))
+        let failure = Launch.Failure(problem: problem, reason: last.failure, tried: result.attempts.map(\.backend),
+                                     report: report)
+        // FirstRunFailed.dc.html: a first launch on the simple screen says so where it searched, on the cover.
+        if launch?.id == result.game.id, launch?.tuning != nil, !Self.tuningDetails {
+            launch?.phase = .failed(failure)
+            return
+        }
+        launch = Launch(id: result.game.id, name: result.game.name, firstTime: false, phase: .failed(failure))
         NSApp.activate()
     }
 

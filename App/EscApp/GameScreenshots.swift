@@ -39,18 +39,7 @@ struct ScreenshotsSection: View {
             }
             if more {
                 Button { open(3) } label: {
-                    Color.chip
-                        .aspectRatio(4 / 3, contentMode: .fit)
-                        .overlay {
-                            Text("\(shots.count - 3) more")
-                                .font(.system(size: 12))
-                                .foregroundStyle(Color.secondaryText)
-                        }
-                        .clipShape(.rect(cornerRadius: 10, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Color.buttonBorder)
-                        }
-                        .contentShape(.rect)
+                    ShotTile(shot: shots[3], appID: game.storeID ?? "", paths: library.paths, more: shots.count - 3)
                 }
                 .buttonStyle(.plain)
             }
@@ -74,6 +63,8 @@ private struct ShotTile: View {
     let shot: SteamScreenshots.Shot
     let appID: String
     let paths: AppPaths
+    /// "N more" over the picture, darkened under the words, for the last tile of the row.
+    var more: Int?
     @State private var image: NSImage?
 
     var body: some View {
@@ -82,6 +73,14 @@ private struct ShotTile: View {
             .overlay {
                 if let image {
                     Image(nsImage: image).resizable().scaledToFill()
+                }
+            }
+            .overlay {
+                if let more {
+                    Color.black.opacity(0.55)
+                    Text("\(more) more")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
                 }
             }
             .clipShape(.rect(cornerRadius: 10, style: .continuous))

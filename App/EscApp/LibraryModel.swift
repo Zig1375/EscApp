@@ -25,6 +25,8 @@ final class LibraryModel {
     private(set) var games: [GameRecord] = []
     private(set) var icons: [GameID: NSImage] = [:]
     private(set) var tints: [GameID: Color] = [:]
+    /// Icons drawn edge to edge (opaque corners), shown filling their tile rather than inset in it.
+    private(set) var fullBleedIcons: Set<GameID> = []
     private(set) var infos: [GameID: ExecutableInfo] = [:]
     var states: [GameID: PlayState] = [:]
     var notice: Notice?
@@ -205,16 +207,32 @@ final class LibraryModel {
             guard let info = try? ExecutableInfo.read(exe) else { return }
             let image = info.icon.flatMap(NSImage.init(data:))
             let tint = image?.averageColor.map { Color(nsColor: $0) }
+            let fullBleed = image?.hasOpaqueCorners == true
             await MainActor.run {
                 self.infos[game.id] = info
                 self.icons[game.id] = image
                 self.tints[game.id] = tint
+                if fullBleed { self.fullBleedIcons.insert(game.id) } else { self.fullBleedIcons.remove(game.id) }
             }
         }
     }
 }
 
 extension NSImage {
+    /// A square picture with no transparent margin (GameMaker's default icon, for one): inset in its tile it
+    /// looks cut off at the edges.
+    var hasOpaqueCorners: Bool {
+        guard let cgImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else { return false }
+        let side = 16
+        var pixels = [UInt8](repeating: 0, count: side * side * 4)
+        guard let context = CGContext(data: &pixels, width: side, height: side, bitsPerComponent: 8,
+                                      bytesPerRow: side * 4, space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return false }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: side, height: side))
+        let corners = [0, side - 1, side * (side - 1), side * side - 1]
+        return corners.allSatisfy { pixels[$0 * 4 + 3] > 240 }
+    }
+
     /// The icon's overall colour, for the tinted square behind it.
     var averageColor: NSColor? {
         guard let cgImage = cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }

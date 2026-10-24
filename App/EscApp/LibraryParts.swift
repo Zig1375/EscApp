@@ -234,7 +234,7 @@ enum GameText {
     }
 }
 
-/// The icon on a light square of its own main colour.
+/// The icon on a light square of its own main colour; an edge-to-edge icon fills the square instead.
 struct GameIconTile: View {
     let game: GameRecord
     let library: LibraryModel
@@ -243,6 +243,20 @@ struct GameIconTile: View {
     let radius: CGFloat
 
     var body: some View {
+        if let image = library.icons[game.id], library.fullBleedIcons.contains(game.id) {
+            Image(nsImage: image)
+                .resizable()
+                .interpolation(.high)
+                .scaledToFill()
+                .frame(width: size, height: size)
+                .clipShape(.rect(cornerRadius: radius, style: .continuous))
+                .accessibilityHidden(true)
+        } else {
+            inset
+        }
+    }
+
+    private var inset: some View {
         RoundedRectangle(cornerRadius: radius, style: .continuous)
             .fill((library.tints[game.id] ?? .brand).opacity(0.2))
             .frame(width: size, height: size)

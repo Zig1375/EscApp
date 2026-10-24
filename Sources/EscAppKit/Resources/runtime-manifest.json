@@ -39,90 +39,16 @@
       ]
     },
     {
-      "id": "wine-11.0-escapp-2",
+      "id": "wine-11.20-escapp-3",
       "minApp": "0.1.0",
       "minMacOS": "15.0",
       "components": [
         {
           "kind": "wine",
-          "version": "11.0 (EscApp build 2)",
-          "url": "https://github.com/Zig1375/EscApp-Runtime/releases/download/wine-11.0-2/escapp-wine-11.0-2.tar.xz",
-          "sha256": "db89d93d575bf8d9c5da5c9b8b7ef86c7c9f3f7a5444415236d105d35a44815b",
-          "size": 228174208,
-          "license": "LGPL-2.1-or-later",
-          "from": "wine",
-          "into": "wine"
-        },
-        {
-          "kind": "dxvk",
-          "version": "1.10.3-20230507-repack",
-          "url": "https://github.com/Gcenx/DXVK-macOS/releases/download/v1.10.3-20230507-repack/dxvk-macOS-async-v1.10.3-20230507-repack-builtin.tar.gz",
-          "sha256": "810b1e5caf8ce975b784fae866a130ad23fa0ea233b0e5609cbc4a45f3ef6f00",
-          "size": 2785833,
-          "license": "Zlib",
-          "from": "dxvk-macOS-async-v1.10.3-20230507-repack-builtin",
-          "into": "dxvk"
-        },
-        {
-          "kind": "dxmt",
-          "version": "0.80",
-          "url": "https://github.com/3Shain/dxmt/releases/download/v0.80/dxmt-v0.80-builtin.tar.gz",
-          "sha256": "8f260e36b5739e68f3bad613381441385c4dc7b85b78ba8de653d5a6a264529d",
-          "size": 18681669,
-          "license": "MIT",
-          "from": "v0.80",
-          "into": "dxmt"
-        }
-      ]
-    },
-    {
-      "id": "wine-11.20-escapp-1",
-      "minApp": "0.1.0",
-      "minMacOS": "15.0",
-      "components": [
-        {
-          "kind": "wine",
-          "version": "11.20 (EscApp build 1)",
-          "url": "https://github.com/Zig1375/EscApp-Runtime/releases/download/wine-11.20-1/escapp-wine-11.20-1.tar.xz",
-          "sha256": "309331a780d416a583e5f6eeafe6ccc96170f8d42562a231cf75145030bd149b",
-          "size": 245083712,
-          "license": "LGPL-2.1-or-later",
-          "from": "wine",
-          "into": "wine"
-        },
-        {
-          "kind": "dxvk",
-          "version": "1.10.3-20230507-repack",
-          "url": "https://github.com/Gcenx/DXVK-macOS/releases/download/v1.10.3-20230507-repack/dxvk-macOS-async-v1.10.3-20230507-repack-builtin.tar.gz",
-          "sha256": "810b1e5caf8ce975b784fae866a130ad23fa0ea233b0e5609cbc4a45f3ef6f00",
-          "size": 2785833,
-          "license": "Zlib",
-          "from": "dxvk-macOS-async-v1.10.3-20230507-repack-builtin",
-          "into": "dxvk"
-        },
-        {
-          "kind": "dxmt",
-          "version": "0.80",
-          "url": "https://github.com/3Shain/dxmt/releases/download/v0.80/dxmt-v0.80-builtin.tar.gz",
-          "sha256": "8f260e36b5739e68f3bad613381441385c4dc7b85b78ba8de653d5a6a264529d",
-          "size": 18681669,
-          "license": "MIT",
-          "from": "v0.80",
-          "into": "dxmt"
-        }
-      ]
-    },
-    {
-      "id": "wine-11.20-escapp-2",
-      "minApp": "0.1.0",
-      "minMacOS": "15.0",
-      "components": [
-        {
-          "kind": "wine",
-          "version": "11.20 (EscApp build 2)",
-          "url": "https://github.com/Zig1375/EscApp-Runtime/releases/download/wine-11.20-2/escapp-wine-11.20-2.tar.xz",
-          "sha256": "1939cbb969e6ccb59573283ba91c379b38d408211f0762468bd12cf4b81ce1f1",
-          "size": 260210572,
+          "version": "11.20 (EscApp build 3)",
+          "url": "https://github.com/Zig1375/EscApp-Runtime/releases/download/wine-11.20-3/escapp-wine-11.20-3.tar.xz",
+          "sha256": "81d62ca5c49686f7ce712eec5ec869fa3033ec1dafe4c03f80f75510c20921ae",
+          "size": 260172140,
           "license": "LGPL-2.1-or-later",
           "from": "wine",
           "into": "wine",

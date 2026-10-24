@@ -94,18 +94,23 @@ extension LibraryModel {
         }
     }
 
-    /// "Delete" on a game: one from Steam or Epic goes straight to the Trash, with the store's record of it, and
-    /// no question (it can be installed again from the store); one from another store is removed by its client;
-    /// any other game asks how (`DeleteGameSheet`).
+    /// "Delete" on a game: one from Steam or Epic asks once and goes to the Trash with the store's record of it
+    /// (it can be installed again from the store); one from another store is removed by its client; any other
+    /// game asks how (`DeleteGameSheet`).
     func delete(_ game: GameRecord) {
         guard let store = game.store else {
             deleting = game
             return
         }
-        guard StoreUninstall.canRemove(store) else {
+        if StoreUninstall.canRemove(store) {
+            confirmingDelete = game
+        } else {
             openStore(store, uninstalling: game.storeID)
-            return
         }
+    }
+
+    /// The confirmed "Delete" of a Steam or Epic game.
+    func deleteStoreGame(_ game: GameRecord) {
         do {
             try StoreUninstall.remove(game, paths: paths)
             reload()

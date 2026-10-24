@@ -32,6 +32,8 @@ final class LibraryModel {
     var notice: Notice?
     /// The game "Delete" asks about (`DeleteGameSheet`).
     var deleting: GameRecord?
+    /// The store game "Delete" asks to confirm: one click on it once removed a Steam game by accident.
+    var confirmingDelete: GameRecord?
     var launch: Launch? {
         // While EscApp looks for a first launch's settings, its screen covers the game's windows.
         didSet { tuningCover.update(showing: launch?.tuning != nil, library: self) }

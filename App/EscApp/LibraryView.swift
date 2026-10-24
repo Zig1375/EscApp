@@ -72,6 +72,20 @@ struct LibraryView: View {
         .sheet(item: Binding(get: { library.deleting }, set: { library.deleting = $0 })) { game in
             DeleteGameSheet(game: game, folderSize: nil, library: library) { _ in library.deleting = nil }
         }
+        .confirmationDialog(library.confirmingDelete.map { String(localized: "Delete \($0.name)?") } ?? "",
+                            isPresented: Binding(get: { library.confirmingDelete != nil },
+                                                 set: { if !$0 { library.confirmingDelete = nil } }),
+                            presenting: library.confirmingDelete) { game in
+            Button("Move to Trash", role: .destructive) {
+                library.deleteStoreGame(game)
+                if page == .game(game.id) { page = nil }
+            }
+        } message: { game in
+            Text("""
+                The game folder goes to the Trash, and \(game.store?.name ?? "") will show it as not installed. \
+                You can install it again from the store. Saves stay.
+                """)
+        }
         .installSheet(library)
         .problemSheet(library)
         .onChange(of: library.shownPage, initial: true) {
@@ -327,8 +341,7 @@ struct GameCard: View {
                 Button("Show Last Log") { library.openLog(log) }
             }
             Divider()
-            // A store game goes at once (it can be installed again from the store); others ask how.
-            Button(game.store == nil ? "Delete…" : "Delete", role: .destructive) { library.delete(game) }
+            Button("Delete…", role: .destructive) { library.delete(game) }
                 .disabled(library.states[game.id] != nil)
         }
     }

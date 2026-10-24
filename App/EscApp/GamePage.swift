@@ -91,15 +91,7 @@ struct GamePage: View {
     @ViewBuilder private func secondaryActions(_ game: GameRecord) -> some View {
         Button { library.showInFinder(game) } label: { Label("Open Game Folder", systemImage: "folder") }
             .buttonStyle(BrandButtonStyle(height: 40))
-        // A Steam or Epic game goes to the Trash at once; other stores remove their own games.
-        Button(game.store == nil ? "Delete…" : "Delete") {
-            if game.store == nil {
-                isDeleting = true
-            } else {
-                library.delete(game)
-                if let store = game.store, StoreUninstall.canRemove(store) { back() }
-            }
-        }
+        Button("Delete…") { if game.store == nil { isDeleting = true } else { library.delete(game) } }
         .buttonStyle(BrandButtonStyle(kind: .danger, height: 40))
         .disabled(library.states[game.id] != nil)
     }

@@ -37,7 +37,7 @@ import Testing
         try StoreUninstall.remove(record(.steam, id: "242920", folder: steamapps.appending(path: "common/Banished")),
                                   paths: paths) { trashed.append($0); try FileManager.default.removeItem(at: $0) }
 
-        #expect(trashed.map(\.lastPathComponent) == ["Banished"])
+        #expect(trashed.map(\.lastPathComponent) == ["Banished", "appmanifest_242920.acf", "appworkshop_242920.acf"])
         let left = try FileManager.default.contentsOfDirectory(atPath: steamapps.path).sorted()
         // Another game's manifest stays.
         #expect(left == ["appmanifest_70.acf", "common", "workshop"])

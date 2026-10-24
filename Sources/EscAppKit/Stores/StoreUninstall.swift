@@ -1,7 +1,7 @@
 import Foundation
 
-/// "Delete" on a store game, without opening the store: the game's folder goes to the Trash and the store's own
-/// record of it is removed, so the store shows it as not installed. Only for stores that record their games in
+/// "Delete" on a store game, once confirmed, without opening the store: the game's folder and the store's own
+/// record of it go to the Trash, so the store shows it as not installed. Only for stores that record their games in
 /// files (Steam, Epic); the registry-based ones (GOG Galaxy, EA app, Ubisoft Connect) remove their games
 /// themselves.
 public enum StoreUninstall {
@@ -31,7 +31,8 @@ public enum StoreUninstall {
         if FileManager.default.fileExists(atPath: folder.path) {
             try trash(folder)
         }
-        for record in records { try? FileManager.default.removeItem(at: record) }
+        // The records go to the Trash too: "Put Back" there restores the game whole, as the store knew it.
+        for record in records { try? trash(record) }
         if store == .epic { try? removeFromEpicList(appName: epicAppName(id), bottle: bottle) }
         _ = try StoreLibrary.sync(paths: paths)
     }

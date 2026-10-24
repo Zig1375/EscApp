@@ -3627,6 +3627,16 @@
           }
         }
       }
+    },
+    "The game folder goes to the Trash, and %@ will show it as not installed. You can install it again from the store. Saves stay.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Папка игры отправится в Корзину, и в %@ игра будет числиться неустановленной. Её можно снова установить из магазина. Сохранения останутся."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

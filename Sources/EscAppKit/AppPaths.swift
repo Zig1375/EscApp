@@ -42,6 +42,8 @@ public struct AppPaths: Sendable, Equatable {
     /// Partial downloads, named by SHA-256 so an interrupted download resumes even if the URL changed.
     public var downloads: URL { folder("Downloads") }
     public var screenshots: URL { folder("Screenshots") }
+    /// Pictures of games fetched from their stores (`SteamScreenshots`); safe to delete, they come back.
+    public var artwork: URL { folder("Artwork") }
     public var library: URL { root.appending(path: "Games.json", directoryHint: .notDirectory) }
 
     public func runtime(_ id: String) -> URL { runtimes.appending(path: id, directoryHint: .isDirectory) }

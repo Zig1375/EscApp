@@ -3657,6 +3657,106 @@
           }
         }
       }
+    },
+    "Screenshots": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Снимки экрана"
+          }
+        }
+      }
+    },
+    "%lld · from the Steam store": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld · из магазина Steam"
+          }
+        }
+      }
+    },
+    "All Screenshots": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все снимки"
+          }
+        }
+      }
+    },
+    "Screenshot %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Снимок %lld"
+          }
+        }
+      }
+    },
+    "%lld more": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё %lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld из %2$lld"
+          }
+        }
+      }
+    },
+    "Previous Screenshot": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Предыдущий снимок"
+          }
+        }
+      }
+    },
+    "Next Screenshot": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Следующий снимок"
+          }
+        }
+      }
+    },
+    "Full Screen": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Во весь экран"
+          }
+        }
+      }
+    },
+    "Exit Full Screen": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выйти из полноэкранного режима"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

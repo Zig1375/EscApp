@@ -55,6 +55,10 @@ struct LibraryView: View {
             }
             return !providers.isEmpty
         }
+        .overlay {
+            // Over the header too: in full screen nothing but the picture and its controls.
+            if library.viewing != nil { ScreenshotViewer(library: library) }
+        }
         .overlay(alignment: .bottom) {
             if let learned = library.learned {
                 LearnedToast(learned: learned) { library.learned = nil }

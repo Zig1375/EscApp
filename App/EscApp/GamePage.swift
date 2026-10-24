@@ -2,8 +2,8 @@ import EscAppKit
 import SwiftUI
 
 /// A game's own page, as in the design (Game.dc.html): the game and its actions, recent runs, and the details
-/// column. Parts EscApp can't fill yet (screenshots, saves, Launchpad shortcut) are left out rather than
-/// shown empty.
+/// column. Parts EscApp can't fill yet (saves, Launchpad shortcut, screenshots of games not from Steam) are left
+/// out rather than shown empty.
 struct GamePage: View {
     let id: GameID
     let library: LibraryModel
@@ -11,6 +11,7 @@ struct GamePage: View {
     let advanced: () -> Void
     @State private var size: Int64?
     @State private var isDeleting = false
+    @State private var shots: [SteamScreenshots.Shot] = []
 
     var body: some View {
         Group {
@@ -24,6 +25,9 @@ struct GamePage: View {
                         }
                     }
                     .task(id: game.folder) { size = await library.folderSize(of: game) }
+                    .task(id: game.storeID) {
+                        await ScreenshotsSection.load(for: game, paths: library.paths, into: $shots)
+                    }
             } else {
                 Text("This game is no longer in EscApp.")
                     .foregroundStyle(Color.secondaryText)
@@ -38,6 +42,11 @@ struct GamePage: View {
             HStack(alignment: .top, spacing: 24) {
                 VStack(alignment: .leading, spacing: 20) {
                     hero(game)
+                    if !shots.isEmpty {
+                        ScreenshotsSection(game: game, shots: shots, library: library) {
+                            library.viewing = .init(shots: shots, appID: game.storeID ?? "", index: $0)
+                        }
+                    }
                     RunsSection(runs: library.runs(for: game), library: library)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -129,7 +138,7 @@ private struct Chip: View {
     }
 }
 
-private struct SectionTitle: View {
+struct SectionTitle: View {
     let text: LocalizedStringKey
 
     var body: some View {

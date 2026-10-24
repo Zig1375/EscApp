@@ -58,6 +58,14 @@ final class LibraryModel {
     var runningStores: Set<Store> = []
     /// Stores the app is closing and opening again (deleting one of their games).
     var restartingStores: Set<Store> = []
+    /// The screenshot shown over the whole window (`ScreenshotViewer`).
+    var viewing: Viewing?
+
+    struct Viewing: Equatable {
+        var shots: [SteamScreenshots.Shot]
+        var appID: String
+        var index: Int
+    }
     /// Set to show a screen in the main window: Stores from Settings or a "needs Steam" message, a game's Advanced
     /// settings from the first-launch check.
     var shownPage: LibraryView.Page?

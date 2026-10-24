@@ -52,7 +52,9 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 - Logic that can be "input → result" is a pure function with tests (environment, backend order, scaling,
   game identity, log parsing). Processes, files and the registry stay a thin layer on top.
 - Anything EscApp puts into a bottle is recorded in a marker so EscApp only ever removes its own files.
-- Every download is pinned by SHA-256 in the runtime manifest. Nothing sends data anywhere.
+- Every download of something EscApp runs is pinned by SHA-256 in the runtime manifest. Nothing sends data about
+  the player anywhere. Pictures of a game from its store's public pages (`SteamScreenshots`: the request names only
+  the app id) are fetched, kept in `Artwork/` and never run.
 - Host environment reaches Wine only through `WineEnvironment.hostAllowlist`; per-game user settings apply last.
 - Doc comments explain *why*, naming the game or failure that motivated the code.
 - User-facing text is plain, without Wine jargon ("bottle", "prefix", "DLL override" never appear in the UI).

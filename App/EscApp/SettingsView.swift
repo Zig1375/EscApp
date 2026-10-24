@@ -237,15 +237,6 @@ private struct ComponentsCard: View {
     }
 }
 
-/// Settings' smaller button: 30 high, radius 8, 12-pt sides.
-private struct CompactButtonStyle: ButtonStyle {
-    var kind: BrandButtonStyle.Kind = .plain
-
-    func makeBody(configuration: Configuration) -> some View {
-        BrandButtonStyle(kind: kind, height: 30, radius: 8).makeBody(configuration: configuration)
-    }
-}
-
 private struct DiskCard: View {
     let components: ComponentsModel
 

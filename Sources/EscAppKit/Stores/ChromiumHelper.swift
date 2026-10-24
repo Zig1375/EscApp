@@ -30,6 +30,16 @@ public enum ChromiumHelper {
         return wrapped
     }
 
+    /// Whether a helper in `bottle` is the vendor's own file: the client put it back (its self-update, or an
+    /// install EscApp didn't see to the end), so it runs unwrapped and its window is black.
+    public static func needsWrapping(_ store: Store, in bottle: URL) -> Bool {
+        guard wrapper != nil else { return false }
+        let drive = bottle.appending(path: "drive_c", directoryHint: .isDirectory)
+        return store.chromiumHelpers.flatMap { expand($0, in: drive) }.contains { helper in
+            (try? Data(contentsOf: helper, options: .alwaysMapped))?.range(of: marker) == nil
+        }
+    }
+
     /// The helpers a pattern names; a `*` part matches each folder at that place.
     static func expand(_ pattern: String, in root: URL) -> [URL] {
         var found = [root]

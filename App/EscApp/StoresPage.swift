@@ -154,6 +154,48 @@ private struct StoreProgress: View {
     }
 }
 
+/// An installed store in the main list, shaped like a game card: its logo, "Store · your games appear by
+/// themselves", and "Open".
+struct StoreCard: View {
+    let store: Store
+    let library: LibraryModel
+    @State private var isHovered = false
+
+    var body: some View {
+        HStack(spacing: 16) {
+            StoreLogo(store: store, size: 84)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(store.name)
+                    .font(.system(size: 16, weight: .semibold))
+                    .lineLimit(1)
+                Text("Store · its games appear here by themselves")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.secondaryText)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                library.openStore(store)
+            } label: {
+                Label("Open", systemImage: "arrow.up.forward.app")
+                    .font(.system(size: 13, weight: .medium))
+            }
+            .buttonStyle(BrandButtonStyle(kind: .primary, height: 34))
+        }
+        .padding(EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 14))
+        .background(Color.cardBackground, in: .rect(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(isHovered ? Color.cardBorderHover : .cardBorder, lineWidth: 1)
+        }
+        .onHover { isHovered = $0 }
+        .animation(.easeOut(duration: 0.15), value: isHovered)
+        .contextMenu {
+            Button("Stores…") { library.shownPage = .stores }
+        }
+    }
+}
+
 /// The store's square: its logo in white on its brand colour. The logos are from Simple Icons (CC0); the marks
 /// themselves belong to their owners and only name the store, as in any launcher.
 struct StoreLogo: View {

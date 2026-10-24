@@ -270,6 +270,18 @@ private func makeBottle(in temp: TempFolder, name: String = "Bottle") throws -> 
         #expect(try Data(contentsOf: helper) == wrapper)
     }
 
+    @Test func aVendorsHelperPutBackIsNoticed() throws {
+        let bottle = temp.url.appending(path: "bottle", directoryHint: .isDirectory)
+        let helper = bottle.appending(path: "drive_c/Program Files (x86)/Steam/bin/cef/cef.win64/steamwebhelper.exe")
+        try FileManager.default.createDirectory(at: helper.deletingLastPathComponent(),
+                                                withIntermediateDirectories: true)
+        #expect(!ChromiumHelper.needsWrapping(.steam, in: bottle))
+        try Data("vendor".utf8).write(to: helper)
+        #expect(ChromiumHelper.needsWrapping(.steam, in: bottle))
+        try ChromiumHelper.wrap(.steam, in: bottle)
+        #expect(!ChromiumHelper.needsWrapping(.steam, in: bottle))
+    }
+
     @Test func aStarStandsForEachFolder() throws {
         let drive = temp.url.appending(path: "drive_c", directoryHint: .isDirectory)
         for name in ["cef.win7x64", "cef.win64"] {

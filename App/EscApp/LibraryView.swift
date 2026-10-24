@@ -26,7 +26,7 @@ struct LibraryView: View {
                 StoresPage(library: library)
             } else {
                 if components.catalog?.updateAvailable == true { UpdateStrip(components: components) }
-                if library.games.isEmpty {
+                if library.games.isEmpty && library.installedStores.isEmpty {
                     EmptyLibraryView { page = .stores }
                 } else {
                     LibraryScreen(library: library, search: search) { page = .game($0) }
@@ -165,11 +165,16 @@ private struct LibraryScreen: View {
                 header
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)],
                           spacing: 14) {
+                    // An installed store is started from here like a game: before, it was only on the Stores
+                    // screen, and players looked for it in the list.
+                    ForEach(shownStores) { store in
+                        StoreCard(store: store, library: library)
+                    }
                     ForEach(shown) { game in
                         GameCard(game: game, library: library) { open(game.id) }
                     }
                 }
-                if shown.isEmpty {
+                if shown.isEmpty && shownStores.isEmpty {
                     Text("No games match “\(search)”.")
                         .foregroundStyle(Color.secondaryText)
                         .frame(maxWidth: .infinity)
@@ -192,8 +197,8 @@ private struct LibraryScreen: View {
             FilterChip(title: "From disk · \(library.games(from: nil).count)", isOn: filter == .disk) {
                 filter = .disk
             }
-            // A store's filter shows once it has games (Main.dc.html: "Steam · 1", "GOG Galaxy · 1").
-            ForEach(Store.allCases.filter { !library.games(from: $0).isEmpty }) { store in
+            // A store's filter shows once it is installed or has games (Main.dc.html: "Steam · 1").
+            ForEach(Store.allCases.filter(showsChip)) { store in
                 FilterChip(title: "\(store.name) · \(library.games(from: store).count)",
                            isOn: filter == .store(store)) { filter = .store(store) }
             }
@@ -203,6 +208,22 @@ private struct LibraryScreen: View {
                 .foregroundStyle(Color.secondaryText)
             DesignSelect(selection: $order, options: Order.allCases, title: { String(localized: $0.title) },
                          width: 180)
+        }
+    }
+
+    private func showsChip(_ store: Store) -> Bool {
+        library.installedStores.contains(store) || !library.games(from: store).isEmpty
+    }
+
+    private var shownStores: [Store] {
+        Store.allCases.filter { store in
+            guard library.installedStores.contains(store),
+                  search.isEmpty || store.name.localizedCaseInsensitiveContains(search) else { return false }
+            switch filter {
+            case .all: return true
+            case .disk: return false
+            case let .store(chosen): return chosen == store
+            }
         }
     }
 
@@ -339,51 +360,6 @@ struct PlayButton: View {
             }
             .buttonStyle(BrandButtonStyle(kind: .primary, height: large ? 40 : 34))
         }
-    }
-}
-
-/// The icon on a light square of its own main colour.
-struct GameIconTile: View {
-    let game: GameRecord
-    let library: LibraryModel
-    let size: CGFloat
-    let iconSize: CGFloat
-    let radius: CGFloat
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: radius, style: .continuous)
-            .fill((library.tints[game.id] ?? .brand).opacity(0.2))
-            .frame(width: size, height: size)
-            .overlay {
-                if let image = library.icons[game.id] {
-                    Image(nsImage: image)
-                        .resizable()
-                        .interpolation(.high)
-                        .scaledToFit()
-                        .frame(width: iconSize, height: iconSize)
-                        .shadow(color: .black.opacity(0.25), radius: 5, y: 6)
-                } else {
-                    Image(systemName: "gamecontroller.fill")
-                        .font(.system(size: iconSize * 0.5))
-                        .foregroundStyle(Color.brand)
-                }
-            }
-            .accessibilityHidden(true)
-    }
-}
-
-/// Green dot, "Running · 12 min" (Launching.dc.html).
-struct RunningBadge: View {
-    let since: Date
-    let now: Date
-
-    var body: some View {
-        HStack(spacing: 6) {
-            Circle().fill(Color.green).frame(width: 8, height: 8)
-            Text("Running · \(GameText.duration(max(now, Date()).timeIntervalSince(since)))")
-        }
-        .font(.system(size: 12, weight: .semibold))
-        .foregroundStyle(Color.okText)
     }
 }
 

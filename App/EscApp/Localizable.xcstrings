@@ -3577,6 +3577,26 @@
           }
         }
       }
+    },
+    "Store · its games appear here by themselves": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Магазин · его игры появятся здесь сами"
+          }
+        }
+      }
+    },
+    "Stores…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Магазины…"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

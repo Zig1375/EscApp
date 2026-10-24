@@ -233,3 +233,57 @@ enum GameText {
         return Duration.seconds(seconds).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated))
     }
 }
+
+/// The icon on a light square of its own main colour.
+struct GameIconTile: View {
+    let game: GameRecord
+    let library: LibraryModel
+    let size: CGFloat
+    let iconSize: CGFloat
+    let radius: CGFloat
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: radius, style: .continuous)
+            .fill((library.tints[game.id] ?? .brand).opacity(0.2))
+            .frame(width: size, height: size)
+            .overlay {
+                if let image = library.icons[game.id] {
+                    Image(nsImage: image)
+                        .resizable()
+                        .interpolation(.high)
+                        .scaledToFit()
+                        .frame(width: iconSize, height: iconSize)
+                        .shadow(color: .black.opacity(0.25), radius: 5, y: 6)
+                } else {
+                    Image(systemName: "gamecontroller.fill")
+                        .font(.system(size: iconSize * 0.5))
+                        .foregroundStyle(Color.brand)
+                }
+            }
+            .accessibilityHidden(true)
+    }
+}
+
+/// Green dot, "Running · 12 min" (Launching.dc.html).
+struct RunningBadge: View {
+    let since: Date
+    let now: Date
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Circle().fill(Color.green).frame(width: 8, height: 8)
+            Text("Running · \(GameText.duration(max(now, Date()).timeIntervalSince(since)))")
+        }
+        .font(.system(size: 12, weight: .semibold))
+        .foregroundStyle(Color.okText)
+    }
+}
+
+/// Settings' smaller button: 30 high, radius 8, 12-pt sides.
+struct CompactButtonStyle: ButtonStyle {
+    var kind: BrandButtonStyle.Kind = .plain
+
+    func makeBody(configuration: Configuration) -> some View {
+        BrandButtonStyle(kind: kind, height: 30, radius: 8).makeBody(configuration: configuration)
+    }
+}

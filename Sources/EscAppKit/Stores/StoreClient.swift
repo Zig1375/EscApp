@@ -145,6 +145,10 @@ public struct StoreClient: Sendable {
     public func open(_ store: Store, runtime: RuntimeManifest.Runtime, uninstalling storeID: String? = nil)
         async throws {
         guard let client = store.client(in: bottle(for: store)) else { throw StoreError.notInstalled(store.name) }
+        // A client running with its vendor's helper shows a black window, and asking it to come forward only
+        // brings that back. It happens after Steam updated itself while running, or when EscApp quit halfway
+        // through installing it. Restarted, it gets the wrapper.
+        if isRunning(store), ChromiumHelper.needsWrapping(store, in: bottle(for: store)) { await shutDown(store) }
         let wine = try await prepare(store, runtime: runtime, wine: runningWine(store) ?? defaultWine(runtime))
         let extra = storeID.map { store.uninstallArguments(storeID: $0) } ?? []
         try start(wine, client, store.clientArguments(clientReady: clientReady(store)) + extra, store: store)

@@ -3098,12 +3098,12 @@
         }
       }
     },
-    "Fast sync (msync)": {
+    "Fast sync": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Быстрая синхронизация (msync)"
+            "value": "Быстрая синхронизация"
           }
         }
       }

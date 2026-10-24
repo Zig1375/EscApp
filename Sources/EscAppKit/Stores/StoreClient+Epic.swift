@@ -77,7 +77,7 @@ extension StoreClient {
         let bottle = bottle ?? self.bottle(for: .epic)
         guard let client = Store.epic.client(in: bottle) else { return }
         let environment = WineEnvironment.make(host: host, bottle: bottle.path, extra: Store.epic.environment,
-                                               msync: WineEnvironment.msync(for: nil, wine: wine))
+                                               fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
         _ = try? await Self.run(wine, [client.path(percentEncoded: false)] + Self.epicSelfUpdateArguments,
                                 in: client.deletingLastPathComponent(), environment: environment,
                                 log: newLog(.epic, "update"))
@@ -121,7 +121,7 @@ extension StoreClient {
         guard WineProcesses.running(in: bottle).isEmpty else { return }
         if store == .steam, !Self.steamReady(bottle), let client = store.client(in: bottle) {
             let environment = WineEnvironment.make(host: host, bottle: bottle.path,
-                                                   msync: WineEnvironment.msync(for: nil, wine: wine))
+                                                   fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
             try await updateSteam(client, wine: wine, environment: environment, in: bottle) { _ in }
         }
         try ChromiumHelper.wrap(store, in: bottle)

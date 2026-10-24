@@ -127,7 +127,7 @@
           "from": "wine",
           "into": "wine",
           "features": [
-            "msync"
+            "osync"
           ]
         },
         {

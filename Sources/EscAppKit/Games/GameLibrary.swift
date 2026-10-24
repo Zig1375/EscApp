@@ -41,9 +41,9 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     public var fpsCounter: Bool?
     /// ⌘ works as Ctrl, so Ctrl+S, Ctrl+C and the rest can be pressed the Mac way.
     public var commandAsControl: Bool?
-    /// msync (`WineEnvironment.msync(for:wine:)`); unlike the others nil is on, and only `false` turns it off,
+    /// osync (`WineEnvironment.fastSync(for:wine:)`); unlike the others nil is on, and only `false` turns it off,
     /// for a game that hangs with it.
-    public var msync: Bool?
+    public var fastSync: Bool?
     /// Launch parameters, as typed.
     public var arguments: String?
     /// Environment variables, as typed: one `NAME=value` per line.

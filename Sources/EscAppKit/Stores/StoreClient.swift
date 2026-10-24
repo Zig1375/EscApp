@@ -50,7 +50,7 @@ public struct StoreClient: Sendable {
         progress(.installing)
         let wine = try plainWine(runtime)
         let environment = WineEnvironment.make(host: host, bottle: bottle.path, extra: store.environment,
-                                               msync: WineEnvironment.msync(for: nil, wine: wine))
+                                               fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
         let windowsPath = #"C:\windows\temp\"# + name
         let arguments = store.installerIsPackage
             ? ["msiexec", "/i", windowsPath] + store.installerArguments
@@ -174,7 +174,7 @@ public struct StoreClient: Sendable {
     public func shutDown(_ store: Store) async {
         guard let wine = runningWine(store) else { return }
         let environment = WineEnvironment.make(host: host, bottle: bottle(for: store).path,
-                                               msync: WineEnvironment.msync(for: nil, wine: wine))
+                                               fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
         if store == .steam, let client = store.client(in: bottle(for: store)) {
             _ = try? await ProcessRunner.run(wine.wine.path, [client.path(percentEncoded: false), "-shutdown"],
                                              environment: environment)
@@ -248,7 +248,7 @@ public struct StoreClient: Sendable {
         process.currentDirectoryURL = client.deletingLastPathComponent()
         process.environment = WineEnvironment.make(host: host, bottle: bottle(for: store).path,
                                                    extra: store.environment,
-                                                   msync: WineEnvironment.msync(for: nil, wine: wine))
+                                                   fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
         process.standardOutput = handle
         process.standardError = handle
         process.standardInput = FileHandle.nullDevice

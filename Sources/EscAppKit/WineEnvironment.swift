@@ -9,16 +9,16 @@ public enum WineEnvironment {
     /// - Parameters:
     ///   - extra: per-game variables from Advanced settings. Applied last, so the user always wins.
     ///   - verboseLog: keeps Wine's default `fixme`/`err` output for the log instead of silencing it.
-    ///   - msync: Wine's events, mutexes and semaphores handled inside each process instead of by asking
-    ///     wineserver every time (EscApp's Wine 11.20 build 2 onwards, `Wine.supportsMsync`). Every process in a
-    ///     bottle must agree with its running wineserver: one started the other way exits at once. So a bottle's
-    ///     processes all take it from the same place, `msync(for:wine:)`.
+    ///   - fastSync: osync, Wine's events, mutexes and semaphores handled inside each process instead of by asking
+    ///     wineserver every time (EscApp's Wine 11.20 build 3 onwards, `Wine.supportsFastSync`). The bottle's
+    ///     wineserver decides, from the environment it starts with, and its processes follow it; so a bottle's
+    ///     processes all take the setting from the same place, `fastSync(for:wine:)`.
     public static func make(
         host: [String: String],
         bottle: String,
         extra: [String: String] = [:],
         verboseLog: Bool = false,
-        msync: Bool = false
+        fastSync: Bool = false
     ) -> [String: String] {
         var env = host.filter { hostAllowlist.contains($0.key) }
         env["WINEPREFIX"] = bottle
@@ -28,7 +28,7 @@ public enum WineEnvironment {
         // game's message boxes: an old game asking for its CD says so in one, and nothing else in the log does.
         env["WINEDEBUG"] = verboseLog ? "+seh,+loaddll,+msgbox" : "fixme-all,trace+msgbox"
         env["WINEDLLOVERRIDES"] = dllOverrides
-        if msync { env["WINEMSYNC"] = "1" }
+        if fastSync { env["WINEOSYNC"] = "1" }
         env.merge(extra) { _, user in user }
         return env
     }
@@ -38,20 +38,20 @@ public enum WineEnvironment {
     /// no overrides: each runs from its own Wine tree (`BackendTree`).
     static let dllOverrides = "winemenubuilder.exe=d"
 
-    /// The runtime feature that says a Wine build has msync.
-    static let msyncFeature = "msync"
+    /// The runtime feature that says a Wine build has osync.
+    static let fastSyncFeature = "osync"
 
-    /// msync for everything a bottle runs: on wherever the Wine has it, except for a game whose player turned
+    /// osync for everything a bottle runs: on wherever the Wine has it, except for a game whose player turned
     /// it off in Advanced. A store's bottle is shared by its client and all its games, so it stays on there.
-    public static func msync(for game: GameRecord?, wine: Wine) -> Bool {
-        guard wine.supportsMsync else { return false }
+    public static func fastSync(for game: GameRecord?, wine: Wine) -> Bool {
+        guard wine.supportsFastSync else { return false }
         guard let game, game.store == nil else { return true }
-        return game.msync != false
+        return game.fastSync != false
     }
 
-    /// Whether a running process's environment has msync on, the way Wine reads the variable: a number, on when
+    /// Whether a running process's environment has osync on, the way Wine reads the variable: a number, on when
     /// it isn't zero.
-    static func msyncIsOn(_ environment: [String: String]) -> Bool {
-        (environment["WINEMSYNC"].flatMap { Int($0.trimmingCharacters(in: .whitespaces)) } ?? 0) != 0
+    static func fastSyncIsOn(_ environment: [String: String]) -> Bool {
+        (environment["WINEOSYNC"].flatMap { Int($0.trimmingCharacters(in: .whitespaces)) } ?? 0) != 0
     }
 }

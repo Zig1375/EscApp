@@ -173,9 +173,9 @@ struct AdvancedPage: View {
             }
             if game.store == nil {
                 // A store game shares its store's Windows with the client, which must run the same way.
-                SettingRow(title: "Fast sync (msync)", detail: "Usually faster; turn it off if the game freezes") {
-                    Switch(isOn: Binding(get: { game.msync != false }, set: { value in
-                        library.changeSetting(of: game.id) { $0.msync = value ? nil : false }
+                SettingRow(title: "Fast sync", detail: "Usually faster; turn it off if the game freezes") {
+                    Switch(isOn: Binding(get: { game.fastSync != false }, set: { value in
+                        library.changeSetting(of: game.id) { $0.fastSync = value ? nil : false }
                     }))
                 }
             }

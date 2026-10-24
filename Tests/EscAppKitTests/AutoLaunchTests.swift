@@ -278,13 +278,15 @@ import Testing
     }
 
     @Test func aWarmBottleIsHandedOverAfterAWhileWithoutAWindow() async throws {
-        try GameLibrary.modify(paths.library) { $0[game.id]?.backend = .dxvk }
-        var game = game
-        game.backend = .dxvk
+        // Not `var game = game`: Swift 6.0 (CI) rejects the closure above capturing a name declared after it.
+        let id = game.id
+        try GameLibrary.modify(paths.library) { $0[id]?.backend = .dxvk }
+        var played = game
+        played.backend = .dxvk
         let starter = try FakeStarter([.dxvk: Script(exitAt: 0.4)], logs: logs())
         let warmer = FakeWarmer()
         _ = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, timing: timing)
-            .play(game, runtime: runtime, warmer: warmer)
+            .play(played, runtime: runtime, warmer: warmer)
         let start = try #require(starter.started.first?.1.startedAt)
         let after = try #require(await warmer.releasedAt).timeIntervalSince(start)
         #expect(after >= timing.handOverAfter && after < 0.4)

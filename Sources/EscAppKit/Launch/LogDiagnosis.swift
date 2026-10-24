@@ -111,11 +111,25 @@ public struct LogDiagnosis: Sendable, Equatable {
         return trim(text.split(separator: " ", omittingEmptySubsequences: true).joined(separator: " "))
     }
 
-    /// `err:module:import_dll Library binkw32.dll (which is needed by L"Z:\\…\\game.exe") not found`
+    /// `err:module:import_dll Library binkw32.dll (which is needed by L"Z:\\…\\game.exe") not found`.
+    /// Not when a store client's own program needs it: on a cold start Steam runs `bin\gldriverquery.exe`, which
+    /// can't find SDL2.dll, and a Banished the player had just quit was reported as "not fully installed".
     static func missingDLL(in lines: [String]) -> (String, String)? {
-        guard let line = lines.last(where: { $0.contains("err:module:import_dll") && $0.contains("not found") }),
-              let range = line.range(of: #"Library [^\s]+"#, options: .regularExpression) else { return nil }
+        guard let line = lines.last(where: {
+            $0.contains("err:module:import_dll") && $0.contains("not found") && !isStoreClients($0)
+        }), let range = line.range(of: #"Library [^\s]+"#, options: .regularExpression) else { return nil }
         return (String(line[range].dropFirst("Library ".count)), line)
+    }
+
+    /// Whether the program a log line names (`needed by L"…"`) belongs to a store's client rather than a game.
+    static func isStoreClients(_ line: String) -> Bool {
+        guard let start = line.range(of: #"needed by L""#) else { return false }
+        let rest = line[start.upperBound...]
+        let program = String(rest.prefix { $0 != "\"" }).replacingOccurrences(of: #"\\"#, with: #"\"#)
+        return Store.allCases.contains { store in
+            store.clientFolders.contains { WineProcesses.runs(program, from: $0) }
+                && !store.gameFolders.contains { WineProcesses.runs(program, from: $0) }
+        }
     }
 
     /// Only the start and the end of a log: DXVK and MoltenVK can write megabytes of feature lists in between.

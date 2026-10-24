@@ -198,7 +198,7 @@ public struct AutoLaunch: Sendable {
         var seen: GameScaling.LearnedWindow?
         var judge = AttemptJudge(windowTimeout: timeout, windowHolds: timing.windowHolds)
         judge.checksPicture = game.chromium != nil || context.chromiumProgram
-        var verdict = try await watch(running, game: game.id, judge: judge, context: context, seen: &seen)
+        var verdict = try await watch(running, game: game.id, judge: &judge, context: context, seen: &seen)
         // The bottle only goes idle once the warm-up's helper is gone.
         await context.warmer?.release(game.id)
         // A Chromium GPU process still running without EscApp's switches: its picture can't reach the window,
@@ -222,7 +222,10 @@ public struct AutoLaunch: Sendable {
         let diagnosis = LogDiagnosis(log: LogDiagnosis.read(outcome.log) ?? "")
         var failure: AttemptJudge.Failure? = switch verdict {
         case let .failed(failure)?: failure
-        case .ended?: diagnosis.problem.map { _ in .closed(exitCode: outcome.exitCode) }
+        // The game showed its window and ended cleanly: the player quit it, sooner than the window check takes
+        // (Banished, closed after 16 s). Errors in its log don't make that a failure.
+        case .ended?: judge.sawWindow && outcome.exitCode == 0 ? nil
+            : diagnosis.problem.map { _ in .closed(exitCode: outcome.exitCode) }
         case .working?, nil: nil
         }
         // Its "Please insert the CD" box stays up as long as the player leaves it: that window isn't the game.
@@ -240,9 +243,8 @@ public struct AutoLaunch: Sendable {
     /// Returns nil for an attempt that ran unjudged.
     /// - Parameter seen: the game's window, measured while it is on screen.
     /// - Parameter judge: set up for this attempt; it checks the picture of a program known to be Chromium.
-    private func watch(_ running: any GameAttempt, game: GameID, judge start: AttemptJudge, context: Context,
+    private func watch(_ running: any GameAttempt, game: GameID, judge: inout AttemptJudge, context: Context,
                        seen: inout GameScaling.LearnedWindow?) async throws -> AttemptJudge.Verdict? {
-        var judge = start
         var looks = PictureLooks(picture: picture, every: timing.pictureEvery)
         var announced = false
         var held: Int?

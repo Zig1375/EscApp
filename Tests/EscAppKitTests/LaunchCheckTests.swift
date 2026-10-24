@@ -53,6 +53,18 @@ import Testing
         let log = "[EscApp] Backend dxvk\ninfo: fine\nerr:x:y broken\nerr:x:y broken\n\tdetail\n"
         #expect(LogDiagnosis(log: log).excerpt == ["[EscApp] Backend dxvk", "err:x:y broken"])
     }
+
+    @Test func aStoreClientsMissingFileIsNotTheGames() {
+        // Steam's cold start runs gldriverquery.exe, which can't find SDL2.dll.
+        let steam = #"C:\\Program Files (x86)\\Steam"#
+        let log = #"032c:err:module:import_dll Library SDL2.dll (which is needed by L""#
+            + steam + #"\\bin\\gldriverquery.exe") not found"#
+        #expect(LogDiagnosis(log: log).problem == nil)
+        let game = #"032c:err:module:import_dll Library binkw32.dll (which is needed by L""#
+            + steam + #"\\steamapps\\common\\G\\g.exe") not found"#
+        #expect(LogDiagnosis(log: log + "\n" + game).problem == .missingFile("binkw32.dll"))
+        #expect(LogDiagnosis(log: game + "\n" + log).problem == .missingFile("binkw32.dll"))
+    }
 }
 
 @Suite struct AttemptJudgeTests {

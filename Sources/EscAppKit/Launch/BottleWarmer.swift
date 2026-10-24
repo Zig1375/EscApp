@@ -133,10 +133,18 @@ struct WineWarmUp: WarmUpSteps {
     let host: [String: String]
 
     func canWarm(_ game: GameRecord, runtime: RuntimeManifest.Runtime) -> Bool {
-        // Warming a disc game would attach its image just for hovering over it. A store game's bottle is its
-        // store's, started with the client.
-        game.disc == nil && game.store == nil
-            && BottleManager(paths: paths, host: host).bottleInfo(for: game.id)?.runtime == runtime.id
+        let bottles = BottleManager(paths: paths, host: host)
+        return Self.canWarm(game, bottleRuntime: bottles.bottleInfo(for: game.id)?.runtime, current: runtime.id,
+                            hasTemplate: bottles.hasTemplate(for: runtime))
+    }
+
+    /// Warming a disc game would attach its image just for hovering over it, and a store game's bottle is its
+    /// store's, started with the client. A game that never ran has no bottle. One made by an earlier runtime is
+    /// moved onto the current one first, as a launch does, when that runtime's template is ready (a clone, a
+    /// second or two): after each runtime update the last played game started cold until it was played once.
+    static func canWarm(_ game: GameRecord, bottleRuntime: String?, current: String, hasTemplate: Bool) -> Bool {
+        guard game.disc == nil, game.store == nil, let bottleRuntime else { return false }
+        return bottleRuntime == current || hasTemplate
     }
 
     func boot(_ game: GameRecord, runtime: RuntimeManifest.Runtime) async -> WarmWine? {

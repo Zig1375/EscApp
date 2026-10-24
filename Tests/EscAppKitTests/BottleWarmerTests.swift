@@ -192,3 +192,25 @@ import Testing
         #expect(WarmPolicy.coolAfterFocusLoss == .seconds(5))
     }
 }
+
+@Suite struct WarmableTests {
+    let game = GameRecord(id: .make(), name: "DFD", executable: "/g/DFD_Ch1.exe", folder: "/g", hasMarker: true,
+                          addedAt: Date())
+
+    @Test func bottleOfThisRuntimeWarms() {
+        #expect(WineWarmUp.canWarm(game, bottleRuntime: "wine-4", current: "wine-4", hasTemplate: false))
+    }
+
+    @Test func bottleOfAnEarlierRuntimeWarmsOnceTheTemplateIsReady() {
+        #expect(WineWarmUp.canWarm(game, bottleRuntime: "wine-3", current: "wine-4", hasTemplate: true))
+        // Making the template takes half a minute: left to the launch.
+        #expect(!WineWarmUp.canWarm(game, bottleRuntime: "wine-3", current: "wine-4", hasTemplate: false))
+    }
+
+    @Test func noBottleStoreOrDiscDoesNot() {
+        #expect(!WineWarmUp.canWarm(game, bottleRuntime: nil, current: "wine-4", hasTemplate: true))
+        var store = game
+        store.store = .steam
+        #expect(!WineWarmUp.canWarm(store, bottleRuntime: "wine-4", current: "wine-4", hasTemplate: true))
+    }
+}

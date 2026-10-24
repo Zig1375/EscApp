@@ -15,7 +15,9 @@ static BOOL CALLBACK print(HWND window, LPARAM data) {
     (void)data;
     if (!IsWindowVisible(window)) return TRUE;
     wchar_t title[256] = L"";
-    GetWindowTextW(window, title, 256);
+    /* Not GetWindowTextW: for another process's window it sends WM_GETTEXT and waits for an answer, and a
+     * Steam stuck at start never gave one, so this check hung with it. */
+    InternalGetWindowText(window, title, 256);
     DWORD pid = 0;
     GetWindowThreadProcessId(window, &pid);
     char utf8[1024] = "";

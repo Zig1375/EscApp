@@ -57,3 +57,35 @@ import Testing
         #expect(!state.running)
     }
 }
+
+@Suite struct SteamStartCheckTests {
+    let start = Date(timeIntervalSince1970: 1_000_000)
+
+    func stuck(client: Bool = true, helper: Bool = false, log: TimeInterval?, at second: TimeInterval) -> Bool {
+        SteamStartCheck.stuck(clientRunning: client, helperRunning: helper,
+                              lastLogWrite: log.map { start.addingTimeInterval($0) }, startedAt: start,
+                              now: start.addingTimeInterval(second))
+    }
+
+    @Test func clientSilentWithoutHelperIsStuck() {
+        // Build 4: "Verification skipped" at 0 s, then nothing.
+        #expect(!stuck(log: 0, at: 30))
+        #expect(stuck(log: 0, at: 46))
+    }
+
+    @Test func steamStillWritingIsNot() {
+        // Its first update writes bootstrap_log as it downloads.
+        #expect(!stuck(log: 40, at: 60))
+    }
+
+    @Test func helperUpOrNoClientIsNot() {
+        #expect(!stuck(helper: true, log: 0, at: 120))
+        #expect(!stuck(client: false, log: 0, at: 120))
+    }
+
+    @Test func oldLogsCountFromTheLaunch() {
+        // Logs last written an hour before this launch.
+        #expect(!stuck(log: -3600, at: 20))
+        #expect(stuck(log: -3600, at: 50))
+    }
+}

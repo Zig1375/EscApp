@@ -67,8 +67,9 @@ public enum StoreWindows {
         guard let program else { return nil }
         let environment = WineEnvironment.make(host: host, bottle: bottle.path,
                                                fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
+        // A limit: the helper itself can't wait on a window (`InternalGetWindowText`), but Wine under it can.
         guard let result = try? await ProcessRunner.run(wine.wine.path, [program.path(percentEncoded: false)],
-                                                        environment: environment),
+                                                        environment: environment, timeout: 8),
               result.status == 0 else { return nil }
         return !parse(result.output).isEmpty
     }

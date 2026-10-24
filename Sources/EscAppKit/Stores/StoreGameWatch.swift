@@ -28,10 +28,15 @@ struct StoreGameWatch: Sendable {
 
     /// Feeds `game` once the game has come and gone. `starter` is the `wine` EscApp started: if it fails before
     /// the game appears (no client), so did the game.
-    func watch(starter: ProcessExit, game: ProcessExit) {
+    /// - Parameter restart: closes the store's client and starts the game through it again, returning the new
+    ///   starter; used once, for a Steam stuck at start (`SteamStartCheck`).
+    func watch(starter: ProcessExit, game: ProcessExit,
+               restart: (@Sendable () async -> ProcessExit?)? = nil) {
         let steamLog = steamApp.map { SteamGameLog.Reader(file: SteamGameLog.file(in: bottle), appID: $0) }
         Task.detached {
-            let started = Date()
+            var started = Date()
+            var starter = starter
+            var restarted = false
             var seen = false
             var missing = 0
             var steam = SteamGameLog.State()
@@ -41,6 +46,16 @@ struct StoreGameWatch: Sendable {
                 if running || steam.running {
                     seen = true
                     missing = 0
+                } else if !seen, steamApp != nil, !restarted, let restart,
+                          SteamStartCheck.stuck(in: bottle, startedAt: started) {
+                    restarted = true
+                    if let again = await restart() {
+                        starter = again
+                        started = Date()
+                    }
+                } else if !seen, steamApp != nil, restarted, SteamStartCheck.stuck(in: bottle, startedAt: started) {
+                    // Stuck again after a restart: the launch ends rather than wait for half an hour.
+                    return game.exited(1)
                 } else if seen {
                     missing += 1
                     let limit = (steam.lastExit ?? 0) != 0 ? Self.goneAfterErrorFor : Self.goneFor
@@ -123,5 +138,36 @@ enum SteamGameLog {
         static func size(of file: URL) -> UInt64 {
             ((try? FileManager.default.attributesOfItem(atPath: file.path))?[.size] as? NSNumber)?.uint64Value ?? 0
         }
+    }
+}
+
+/// Steam stuck at start, which waiting can't fix: its `steam.exe` runs, its web helper never started, and it
+/// hasn't written to any of its logs for a while. On Wine 11.20 build 4 a Steam started right after EscApp had
+/// shut it down stopped like that after "Verification skipped" and waited for good, and the game's launch
+/// window with it. A Steam that is updating, signing in or asking something writes its logs or shows its helper.
+enum SteamStartCheck {
+    static let quietFor: TimeInterval = 45
+
+    static func stuck(clientRunning: Bool, helperRunning: Bool, lastLogWrite: Date?, startedAt: Date,
+                      now: Date) -> Bool {
+        guard clientRunning, !helperRunning, now.timeIntervalSince(startedAt) >= quietFor else { return false }
+        return now.timeIntervalSince(max(lastLogWrite ?? startedAt, startedAt)) >= quietFor
+    }
+
+    static func stuck(in bottle: URL, startedAt: Date, now: Date = Date()) -> Bool {
+        let programs = WineProcesses.running(in: bottle).map { $0.program.lowercased() }
+        return stuck(clientRunning: programs.contains { $0.hasSuffix("\\steam.exe") || $0.hasSuffix("/steam.exe") },
+                     helperRunning: programs.contains { $0.contains("steamwebhelper") },
+                     lastLogWrite: lastLogWrite(in: bottle), startedAt: startedAt, now: now)
+    }
+
+    /// When Steam last wrote any of its logs.
+    static func lastLogWrite(in bottle: URL) -> Date? {
+        let logs = bottle.appending(path: "drive_c/Program Files (x86)/Steam/logs", directoryHint: .isDirectory)
+        let files = (try? FileManager.default.contentsOfDirectory(at: logs, includingPropertiesForKeys:
+            [.contentModificationDateKey])) ?? []
+        return files.compactMap {
+            try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+        }.max()
     }
 }

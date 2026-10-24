@@ -177,19 +177,31 @@ public struct StoreClient: Sendable {
     }
 
     /// Closes the client and everything else in its bottle. Steam is asked to quit first, so it saves its
-    /// state; whatever is still running 20 s later is ended.
+    /// state; whatever is still running 20 s later is ended. Nothing here waits on Wine without a limit: a Steam
+    /// stuck at start never answered `-shutdown`, and its `steam.exe` even outlived `wineserver -k`, so what is
+    /// left at the end is killed.
     public func shutDown(_ store: Store) async {
         guard let wine = runningWine(store) else { return }
         let environment = WineEnvironment.make(host: host, bottle: bottle(for: store).path,
                                                fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
         if store == .steam, let client = store.client(in: bottle(for: store)) {
             _ = try? await ProcessRunner.run(wine.wine.path, [client.path(percentEncoded: false), "-shutdown"],
-                                             environment: environment)
+                                             environment: environment, timeout: 20)
             let deadline = Date().addingTimeInterval(20)
             while isRunning(store), Date() < deadline { try? await Task.sleep(for: .milliseconds(500)) }
         }
-        _ = try? await ProcessRunner.run(wine.wineserver.path, ["-k"], environment: environment)
-        _ = try? await ProcessRunner.run(wine.wineserver.path, ["-w"], environment: environment)
+        _ = try? await ProcessRunner.run(wine.wineserver.path, ["-k"], environment: environment, timeout: 10)
+        _ = try? await ProcessRunner.run(wine.wineserver.path, ["-w"], environment: environment, timeout: 10)
+        await Self.killLeftovers(in: bottle(for: store))
+    }
+
+    /// Kills whatever still runs in `bottle` and waits up to 5 s for it to go.
+    static func killLeftovers(in bottle: URL) async {
+        for process in WineProcesses.running(in: bottle) { kill(process.pid, SIGKILL) }
+        let deadline = Date().addingTimeInterval(5)
+        while !WineProcesses.running(in: bottle).isEmpty, Date() < deadline {
+            try? await Task.sleep(for: .milliseconds(200))
+        }
     }
 
     /// "Remove…": the client and its bottle go, with every game installed through it. Saves in the shared

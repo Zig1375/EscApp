@@ -15,9 +15,12 @@ enum ProcessRunner {
     }
 
     /// Combined stdout and stderr, so a failure message has whatever the tool said.
-    /// - Parameter environment: replaces the inherited environment entirely when given.
-    static func run(_ executable: String, _ arguments: [String],
-                    environment: [String: String]? = nil) async throws -> Output {
+    /// - Parameters:
+    ///   - environment: replaces the inherited environment entirely when given.
+    ///   - timeout: the tool is killed after this many seconds. For anything that talks to a running Wine program,
+    ///     which can hang for good: `steam.exe -shutdown` waited forever on a Steam stuck at start.
+    static func run(_ executable: String, _ arguments: [String], environment: [String: String]? = nil,
+                    timeout: TimeInterval? = nil) async throws -> Output {
         let process = Process()
         process.executableURL = URL(filePath: executable)
         process.arguments = arguments
@@ -40,6 +43,12 @@ enum ProcessRunner {
             }
             do {
                 try process.run()
+                if let timeout {
+                    let pid = process.processIdentifier
+                    DispatchQueue.global().asyncAfter(deadline: .now() + timeout) {
+                        if process.isRunning { kill(pid, SIGKILL) }
+                    }
+                }
             } catch {
                 process.terminationHandler = nil
                 continuation.resume(throwing: error)

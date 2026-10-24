@@ -237,7 +237,7 @@ public struct GameLauncher: Sendable {
             try process.run()
             let steamApp = prepared.game.store == .steam ? prepared.game.storeID : nil
             StoreGameWatch(bottle: prepared.bottle, folder: folder, steamApp: steamApp)
-                .watch(starter: started, game: exit)
+                .watch(starter: started, game: exit) { [self] in await restartStuckSteam(prepared, arguments) }
         } else {
             process.terminationHandler = { exit.exited($0.terminationStatus) }
             try process.run()
@@ -251,6 +251,21 @@ public struct GameLauncher: Sendable {
         return RunningGame(prepared: prepared, session: session, startedAt: startedAt, process: exit) { [self] in
             pruneLogs(for: $0)
         }
+    }
+
+    /// Steam stuck at start (`SteamStartCheck`): closed, everything in its bottle killed, and the game started
+    /// through it again. Returns the new starter, nil when it couldn't start.
+    private func restartStuckSteam(_ prepared: Prepared, _ arguments: [String]) async -> ProcessExit? {
+        await StoreClient(paths: paths, host: host).shutDown(.steam)
+        guard let log = try? FileHandle(forWritingTo: prepared.log) else { return nil }
+        defer { try? log.close() }
+        _ = try? log.seekToEnd()
+        log.write(Data("[EscApp] Steam was stuck at start; closed it and started the game again\n".utf8))
+        let process = Self.process(for: prepared, arguments: arguments, log: log)
+        let exit = ProcessExit()
+        process.terminationHandler = { exit.exited($0.terminationStatus) }
+        guard (try? process.run()) != nil else { return nil }
+        return exit
     }
 
     /// `wine <exe> <arguments>` from the game's folder, or for a store game `wine <client> -applaunch <id> …`.

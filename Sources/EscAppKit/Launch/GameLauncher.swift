@@ -90,6 +90,8 @@ public struct GameLauncher: Sendable {
             idle = try await stores.prepareForGame(store, wine: wine)
             if store.launchesGames, let id = game.storeID { client = try stores.playCommand(store, storeID: id) }
         }
+        let msync = WineEnvironment.msync(for: game, wine: wine)
+        if game.store == nil { await Self.stopWine(in: bottle, unless: msync) }
         // With the store's client already running in the right Wine, its registry can't be written: the game
         // keeps the settings the bottle had when the client started.
         let scale = idle ? try Self.configure(bottle: bottle, for: game, dpiAware: info.dpiAware,
@@ -99,7 +101,8 @@ public struct GameLauncher: Sendable {
         let environment = WineEnvironment.make(host: host, bottle: bottle.path,
                                                extra: (game.store?.environment ?? [:])
                                                    .merging(GameSettings.environment(of: game)) { _, user in user },
-                                               verboseLog: verboseLog || game.verboseLog == true)
+                                               verboseLog: verboseLog || game.verboseLog == true,
+                                               msync: msync)
         progress(.starting)
         let folder = game.store.map { _ in
             WindowsPath.windowsPath(of: URL(filePath: game.folder, directoryHint: .isDirectory), inBottle: bottle)
@@ -107,6 +110,25 @@ public struct GameLauncher: Sendable {
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
                         environment: environment, log: newLogFile(for: game.id), scale: scale, client: client,
                         gameFolder: folder)
+    }
+
+    /// Ends what still runs in a game's bottle with msync the other way: the game would exit at once in it.
+    /// Something EscApp started there without the game's settings (an installer, a bottle update) lingers for a
+    /// few seconds after it finishes, and Wine keeps its server up that long.
+    static func stopWine(in bottle: URL, unless msync: Bool) async {
+        let running = WineProcesses.running(in: bottle)
+        guard running.contains(where: { $0.msync != msync }) else { return }
+        let trees = Set(running.compactMap { WineProcesses.wineTree(of: $0.executable) })
+        for tree in trees {
+            let wine = Wine(root: tree)
+            guard FileManager.default.fileExists(atPath: wine.wineserver.path) else { continue }
+            _ = try? await ProcessRunner.run(wine.wineserver.path, ["-k"],
+                                             environment: ["WINEPREFIX": bottle.path(percentEncoded: false)])
+        }
+        let deadline = Date().addingTimeInterval(10)
+        while !WineProcesses.running(in: bottle).isEmpty, Date() < deadline {
+            try? await Task.sleep(for: .milliseconds(200))
+        }
     }
 
     /// Writes the game's settings into its bottle before a launch, each value only when it changes. Returns how
@@ -177,6 +199,7 @@ public struct GameLauncher: Sendable {
             "[EscApp] Scale \(prepared.scale.formatted(.number.precision(.fractionLength(0...2))))x",
             "[EscApp] Wine \(prepared.wine.root.path(percentEncoded: false))",
             "[EscApp] WINEDEBUG=\(prepared.environment["WINEDEBUG"] ?? "")",
+            "[EscApp] msync \(WineEnvironment.msyncIsOn(prepared.environment) ? "on" : "off")",
         ]
         let arguments = GameSettings.arguments(prepared.game.arguments ?? "")
         var extra = arguments.isEmpty ? [] : ["[EscApp] Arguments \(arguments.joined(separator: " "))"]

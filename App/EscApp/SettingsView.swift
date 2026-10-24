@@ -84,7 +84,7 @@ struct SettingsView: View {
                 .accessibilityAddTraits(section == item ? .isSelected : [])
             }
             Button {
-                library.showsStores = true
+                library.shownPage = .stores
                 openWindow(id: "library")
             } label: {
                 Text("Stores")

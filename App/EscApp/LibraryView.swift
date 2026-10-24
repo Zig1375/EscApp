@@ -63,15 +63,18 @@ struct LibraryView: View {
             }
         }
         .animation(.easeOut(duration: 0.2), value: library.learned)
-        .sheet(item: Binding(get: { library.launch }, set: { if $0 == nil { library.cancelLaunch() } })) { launch in
+        // While settings are looked for, the launch shows on the cover over the game instead (`TuningCover`).
+        .sheet(item: Binding(get: { library.launch?.tuning == nil ? library.launch : nil }, set: {
+            if $0 == nil, library.launch?.tuning == nil { library.cancelLaunch() }
+        })) { launch in
             LaunchSheet(launch: launch, library: library)
         }
         .installSheet(library)
         .problemSheet(library)
-        .onChange(of: library.showsStores, initial: true) {
-            guard library.showsStores else { return }
-            library.showsStores = false
-            page = .stores
+        .onChange(of: library.shownPage, initial: true) {
+            guard let shown = library.shownPage else { return }
+            library.shownPage = nil
+            page = shown
         }
         .alert(library.notice?.title ?? "", isPresented: Binding(get: { library.notice != nil },
                                                                  set: { if !$0 { library.notice = nil } }),

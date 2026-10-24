@@ -60,7 +60,8 @@ public struct BottleManager: Sendable {
             // wineboot works, and the template needs no display. Games run with the driver as usual.
             let environment = WineEnvironment.make(
                 host: host, bottle: staging.path,
-                extra: ["WINEDLLOVERRIDES": WineEnvironment.dllOverrides + ";winemac.drv=d"])
+                extra: ["WINEDLLOVERRIDES": WineEnvironment.dllOverrides + ";winemac.drv=d"],
+                msync: WineEnvironment.msync(for: nil, wine: wine))
             try await ProcessRunner.check(wine.wine.path, ["wineboot", "--init"], environment: environment)
             // wineboot returns before wineserver has written the registry to disk.
             try await ProcessRunner.check(wine.wineserver.path, ["-w"], environment: environment)
@@ -252,6 +253,15 @@ public struct Wine: Sendable {
 
     public var wine: URL { root.appending(path: "bin/wine") }
     public var wineserver: URL { root.appending(path: "bin/wineserver") }
+
+    /// Whether this Wine has msync, read from the runtime it belongs to (`RUNTIME.json` next to every tree,
+    /// `wine` and the backends' clones alike). False for a tree outside a runtime folder.
+    public var supportsMsync: Bool {
+        let marker = root.deletingLastPathComponent().appending(path: RuntimeInstaller.markerName)
+        guard let data = try? Data(contentsOf: marker),
+              let runtime = try? JSONDecoder().decode(RuntimeManifest.Runtime.self, from: data) else { return false }
+        return runtime.wineHas(WineEnvironment.msyncFeature)
+    }
 }
 
 public enum BottleError: Error, Equatable, CustomStringConvertible {

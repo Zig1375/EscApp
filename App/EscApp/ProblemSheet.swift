@@ -51,7 +51,7 @@ struct ProblemSheet: View {
             // Stores.dc.html, where installing Steam takes one button.
             Button(library.installedStores.contains(.steam) ? "Show Stores" : "Install Steam") {
                 library.problem = nil
-                library.showsStores = true
+                library.shownPage = .stores
             }
             .buttonStyle(BrandButtonStyle(kind: .primary, height: 32, radius: 8))
             .keyboardShortcut(.defaultAction)

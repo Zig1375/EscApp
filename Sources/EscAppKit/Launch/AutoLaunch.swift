@@ -10,11 +10,17 @@ import Synchronization
 /// help (a missing game file, anti-cheat) ends the loop at once.
 public struct AutoLaunch: Sendable {
     public enum Event: Sendable {
+        /// EscApp is looking for the settings the game works with (`isTuning`), trying these backends in this
+        /// order. Comes before everything else; without it the launch is an ordinary one.
+        case tuning([GraphicsBackend])
         case preparing(GameLauncher.Step)
         /// Attempt `attempt` (from 1) of `total` is running.
         case started(GameSession, backend: GraphicsBackend, attempt: Int, total: Int)
         /// The game has a window on screen, owned by `pid`.
         case windowShown(pid: Int32)
+        /// The window has stayed up `held` of the `needed` seconds that make the attempt count as working. Once a
+        /// second while the attempt is judged.
+        case checking(held: Int, needed: Int)
         /// The attempt works; the game plays on. `learned` when earlier attempts failed, so the player should hear
         /// what EscApp settled on.
         case working(GraphicsBackend, learned: Bool)
@@ -110,6 +116,7 @@ public struct AutoLaunch: Sendable {
             order = [game.backend ?? .dxvk]
         }
 
+        if Self.isTuning(game, order: order, retrying: control.retrying) { events(.tuning(order)) }
         var attempts: [LaunchAttempt] = []
         for (index, backend) in order.enumerated() {
             let ran = try await attempt(backend, of: game, number: index + 1, of: order.count, context: context)
@@ -124,6 +131,13 @@ public struct AutoLaunch: Sendable {
             events(.retrying(ran.attempt, next: order[index + 1], attempt: index + 2, total: order.count))
         }
         return Result(game: game, attempts: attempts, working: nil, log: attempts.last?.log)
+    }
+
+    /// A launch that looks for the game's settings: on Auto graphics, with nothing known to work yet and more than
+    /// one backend to try. The app hides the game's window meanwhile, since a failing attempt can flash it open
+    /// and shut; a store game gets one try, so it never tunes.
+    static func isTuning(_ game: GameRecord, order: [GraphicsBackend], retrying: Bool) -> Bool {
+        retrying && order.count > 1 && game.backend == nil && game.chosenBackend == nil && game.store == nil
     }
 
     /// What one launch keeps the same across its attempts.
@@ -189,6 +203,7 @@ public struct AutoLaunch: Sendable {
                        seen: inout GameScaling.LearnedWindow?) async throws -> AttemptJudge.Verdict? {
         var judge = AttemptJudge(windowTimeout: timeout, windowHolds: timing.windowHolds)
         var announced = false
+        var held: Int?
         // An old game asking for its CD shows a message box and waits: its window counts as the game's, so the
         // request is caught from the log as it is written, not after the game ends.
         let tail = LogTail(running.log)
@@ -218,6 +233,10 @@ public struct AutoLaunch: Sendable {
             if let verdict = judge.observe(elapsed: elapsed, window: !owners.isEmpty, exitCode: running.exitCode,
                                            idle: running.isIdle) {
                 return verdict
+            }
+            if let seconds = judge.held(at: elapsed).map({ Int($0) }), seconds != held {
+                held = seconds
+                context.events(.checking(held: seconds, needed: Int(timing.windowHolds.rounded(.up))))
             }
             do {
                 try await Task.sleep(for: timing.poll)

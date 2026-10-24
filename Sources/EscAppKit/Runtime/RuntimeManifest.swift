@@ -45,6 +45,9 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
         /// Where that folder goes, relative to the runtime folder. It must not exist yet, so later components
         /// can't overwrite earlier ones (Wine Mono goes inside Wine's tree after Wine is in place).
         public var into: String
+        /// What this build can do beyond plain Wine, for the app to switch on: `msync` (`WineEnvironment`).
+        /// Optional, so older manifests and older apps both still read the list.
+        public var features: [String]?
     }
 
     public static func decode(_ data: Data) throws -> RuntimeManifest {
@@ -99,6 +102,13 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
 
     private static func isSafeComponent(_ name: String) -> Bool {
         !name.isEmpty && name != "." && name != ".." && !name.hasPrefix(".") && !name.contains("/")
+    }
+}
+
+extension RuntimeManifest.Runtime {
+    /// Whether the runtime's Wine has `feature`.
+    public func wineHas(_ feature: String) -> Bool {
+        components.contains { $0.kind == .wine && $0.features?.contains(feature) == true }
     }
 }
 

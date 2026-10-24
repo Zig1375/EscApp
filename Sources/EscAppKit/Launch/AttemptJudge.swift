@@ -37,6 +37,11 @@ public struct AttemptJudge: Sendable, Equatable {
 
     public var sawWindow: Bool { windowSince != nil }
 
+    /// How long the window has been up at `elapsed`; nil before it appeared.
+    public func held(at elapsed: TimeInterval) -> TimeInterval? {
+        windowSince.map { max(elapsed - $0, 0) }
+    }
+
     /// - Parameters:
     ///   - elapsed: seconds since the game's process started.
     ///   - window: whether a window of the game is on screen now.

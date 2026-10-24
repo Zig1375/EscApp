@@ -20,21 +20,26 @@ public enum BackendTree {
     public static func wine(for backend: GraphicsBackend, runtimeFolder: URL) throws -> Wine {
         guard let component = backend.component else { return Wine(runtimeFolder: runtimeFolder) }
         let tree = runtimeFolder.appending(path: "wine-\(backend.rawValue)", directoryHint: .isDirectory)
-        if FileManager.default.fileExists(atPath: tree.appending(path: markerName).path) {
-            return Wine(root: tree)
-        }
+        if isBuilt(tree) { return Wine(root: tree) }
         try build(tree, from: runtimeFolder.appending(path: "wine", directoryHint: .isDirectory),
                   overlay: runtimeFolder.appending(path: component.rawValue, directoryHint: .isDirectory),
                   backend: backend)
         return Wine(root: tree)
     }
 
+    static func isBuilt(_ tree: URL) -> Bool {
+        FileManager.default.fileExists(atPath: tree.appending(path: markerName).path)
+    }
+
     /// `overlay` mirrors Wine's `lib/wine`: `x86_64-windows/d3d11.dll` replaces `lib/wine/x86_64-windows/d3d11.dll`.
     static func build(_ tree: URL, from wine: URL, overlay: URL, backend: GraphicsBackend) throws {
         let fileManager = FileManager.default
         guard fileManager.fileExists(atPath: overlay.path) else { throw BottleError.runtimeMissing(backend.rawValue) }
-        let staging = tree.deletingLastPathComponent().appending(path: ".staging-\(tree.lastPathComponent)")
-        try? fileManager.removeItem(at: staging)
+        // Each build has its own staging folder: two games started at once on a new runtime (or a launch and a
+        // warm-up) both build the tree, and a shared folder made one delete the other's half-copied files.
+        let staging = tree.deletingLastPathComponent()
+            .appending(path: ".staging-\(tree.lastPathComponent)-\(UUID().uuidString)")
+        BottleManager.removeStaleStaging(in: tree.deletingLastPathComponent())
         do {
             try BottleManager.clone(wine, to: staging)
             var files: [String] = []
@@ -43,8 +48,9 @@ public enum BackendTree {
             else { throw BottleError.runtimeMissing(backend.rawValue) }
             for case let file as URL in walker
             where (try? file.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true {
-                let relative = String(file.path(percentEncoded: false)
-                    .dropFirst(overlay.path(percentEncoded: false).count))
+                // Both resolved: the enumerator hands out `/private/var/…` for a folder given as `/var/…`.
+                let relative = String(file.resolvingSymlinksInPath().path(percentEncoded: false)
+                    .dropFirst(overlay.resolvingSymlinksInPath().path(percentEncoded: false).count))
                     .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
                 let target = libraries.appending(path: relative)
                 try fileManager.createDirectory(at: target.deletingLastPathComponent(),
@@ -56,10 +62,13 @@ public enum BackendTree {
             }
             let marker = try JSONEncoder().encode(Marker(backend: backend, files: files.sorted()))
             try marker.write(to: staging.appending(path: markerName))
-            try? fileManager.removeItem(at: tree)
+            // A finished tree is never replaced: a game may be running from it. One without its marker is left
+            // over from an older build. The move fails if another build published first; the catch takes that.
+            if fileManager.fileExists(atPath: tree.path), !isBuilt(tree) { try? fileManager.removeItem(at: tree) }
             try fileManager.moveItem(at: staging, to: tree)
         } catch {
             try? fileManager.removeItem(at: staging)
+            if isBuilt(tree) { return }
             throw error
         }
     }

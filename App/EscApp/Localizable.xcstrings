@@ -3047,6 +3047,216 @@
           }
         }
       }
+    },
+    "%@ is missing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "нет %@"
+          }
+        }
+      }
+    },
+    "Checking %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверка %@"
+          }
+        }
+      }
+    },
+    "Checking that its window opens and the game keeps running": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Смотрим, открылось ли окно и держится ли игра"
+          }
+        }
+      }
+    },
+    "Choose Settings Myself": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать настройки самому"
+          }
+        }
+      }
+    },
+    "Don't Check, Just Start": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не проверять, просто запустить"
+          }
+        }
+      }
+    },
+    "Fast sync (msync)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Быстрая синхронизация (msync)"
+          }
+        }
+      }
+    },
+    "Finding settings for %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подбираем настройки для %@"
+          }
+        }
+      }
+    },
+    "First launch · checking": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Первый запуск · идёт проверка"
+          }
+        }
+      }
+    },
+    "Looked at the game's files": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изучили файлы игры"
+          }
+        }
+      }
+    },
+    "Prepared %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подготовили %@"
+          }
+        }
+      }
+    },
+    "Preparing %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовим %@"
+          }
+        }
+      }
+    },
+    "The game's window stays hidden while EscApp checks: it may open and close a few times. Once something works, the game appears by itself.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока идёт проверка, окно игры спрятано: оно может несколько раз открыться и закрыться. Как только найдётся рабочий вариант, игра появится сама."
+          }
+        }
+      }
+    },
+    "This is needed once, usually under a minute": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это нужно один раз, обычно меньше минуты"
+          }
+        }
+      }
+    },
+    "Trying to start the game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пробуем запустить игру"
+          }
+        }
+      }
+    },
+    "Usually faster; turn it off if the game freezes": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обычно быстрее; выключите, если игра зависает"
+          }
+        }
+      }
+    },
+    "closed after %lld s": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "закрылась через %lld с"
+          }
+        }
+      }
+    },
+    "crashed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "упала"
+          }
+        }
+      }
+    },
+    "graphics error": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ошибка графики"
+          }
+        }
+      }
+    },
+    "no window after %lld s": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "нет окна за %lld с"
+          }
+        }
+      }
+    },
+    "starting…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "запускаем…"
+          }
+        }
+      }
+    },
+    "the window opened, checking %lld of %lld s": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "окно открылось, проверяем %1$lld из %2$lld с"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

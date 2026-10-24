@@ -28,7 +28,11 @@ final class LibraryModel {
     private(set) var infos: [GameID: ExecutableInfo] = [:]
     var states: [GameID: PlayState] = [:]
     var notice: Notice?
-    var launch: Launch?
+    var launch: Launch? {
+        // While EscApp looks for a first launch's settings, its screen covers the game's windows.
+        didSet { tuningCover.update(showing: launch?.tuning != nil, library: self) }
+    }
+    let tuningCover = TuningCover()
     /// The install sheet, while a game is being installed from its installer or disc.
     var install: Install?
     /// An honest message about what won't run, or what a game needs (Problems.dc.html).
@@ -44,8 +48,9 @@ final class LibraryModel {
     /// Stores being installed, with how far each is.
     var storeInstalls: [Store: StoreClient.Step] = [:]
     var storeTasks: [Store: Task<Void, Never>] = [:]
-    /// Set to show the Stores screen in the main window, from Settings or a "needs Steam" message.
-    var showsStores = false
+    /// Set to show a screen in the main window: Stores from Settings or a "needs Steam" message, a game's Advanced
+    /// settings from the first-launch check.
+    var shownPage: LibraryView.Page?
 
     let paths: AppPaths
     var sessions: [GameID: GameSession] = [:]

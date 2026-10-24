@@ -46,6 +46,8 @@ extension LibraryModel {
         var startState: StepState = .waiting
         /// Set after a while without a game window, to say that this can take a minute.
         var slow = false
+        /// A first launch looking for its settings (FirstRun.dc.html), shown over the game's windows.
+        var tuning: Tuning?
 
         var isFailed: Bool { if case .failed = phase { true } else { false } }
     }
@@ -79,7 +81,9 @@ extension LibraryModel {
                 }
                 let result = try await AutoLaunch(paths: paths).play(
                     game, runtime: runtime, knownGames: knownGames, control: control, warmer: warmer) { event in
-                    Task { @MainActor in self.handle(event, for: game.id) }
+                    Task { @MainActor in
+                        if !self.handleTuning(event, for: game.id) { self.handle(event, for: game.id) }
+                    }
                 }
                 if result.working == nil, let last = result.attempts.last, last.failure != nil {
                     switch last.diagnosis.problem {
@@ -111,10 +115,16 @@ extension LibraryModel {
         if let session = sessions[current.id] { Task { await session.stop() } }
     }
 
-    /// "Don't Retry": the attempt that is starting runs on as it is, without being judged or replaced.
+    /// "Don't Retry": the attempt that is starting runs on as it is, without being judged or replaced. While
+    /// settings are being looked for, its hidden window comes out.
     func stopRetrying() {
         launchControl?.stopRetrying()
+        let shown = launch?.tuning?.windowOwner.map { (launch?.id, $0) }
         launch = nil
+        if let (id, pid) = shown, let id {
+            states[id] = .running(since: Date())
+            GameWindows.bringForward(pid)
+        }
     }
 
     func copyReport(_ failure: Launch.Failure) {
@@ -129,25 +139,35 @@ extension LibraryModel {
 
     private func handle(_ event: AutoLaunch.Event, for id: GameID) {
         switch event {
+        case .tuning, .checking:
+            break
         case let .preparing(step):
             apply(step, to: id)
         case let .started(session, _, attempt, _):
             sessions[id] = session
             if attempt == 1 { markSlow(id) }
         case let .windowShown(pid):
-            states[id] = .running(since: Date())
-            if launch?.id == id { launch = nil }
-            GameWindows.bringForward(pid)
+            showGame(pid, for: id)
         case let .working(backend, learned):
             if learned, let game = game(id) { self.learned = Learned(id: id, name: game.name, backend: backend) }
         case let .retrying(failed, next, attempt, total):
             showRetry(failed, next: next, attempt: attempt, total: total, for: id)
         case let .asksForDisc(message):
-            // Its "insert the CD" box is up and it waits: EscApp offers the disc image right away.
-            if launch?.id == id { launch = nil }
-            problem = Problem(kind: .needsDisc(id, message: message))
-            NSApp.activate()
+            offerDisc(message, for: id)
         }
+    }
+
+    private func showGame(_ pid: Int32, for id: GameID) {
+        states[id] = .running(since: Date())
+        if launch?.id == id { launch = nil }
+        GameWindows.bringForward(pid)
+    }
+
+    /// Its "insert the CD" box is up and it waits: EscApp offers the disc image right away.
+    private func offerDisc(_ message: String, for id: GameID) {
+        if launch?.id == id { launch = nil }
+        problem = Problem(kind: .needsDisc(id, message: message))
+        NSApp.activate()
     }
 
     private func showRetry(_ failed: LaunchAttempt, next: GraphicsBackend, attempt: Int, total: Int, for id: GameID) {

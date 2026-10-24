@@ -126,7 +126,8 @@ public struct GameInstaller: Sendable {
 
         let folder = WindowsPath.windowsPath(of: plan.folder, under: gamesRoot, drive: Self.gamesDrive)
             ?? #"G:\Game"#
-        let environment = WineEnvironment.make(host: host, bottle: bottle.path)
+        let environment = WineEnvironment.make(host: host, bottle: bottle.path,
+                                               msync: WineEnvironment.msync(for: nil, wine: wine))
         let log = paths.logs(forGame: id).appending(path: "install-\(Self.timestamp()).log")
         try fileManager.createDirectory(at: log.deletingLastPathComponent(), withIntermediateDirectories: true)
         let started = Date().addingTimeInterval(-2)

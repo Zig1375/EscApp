@@ -14,6 +14,8 @@ public struct BottleManager: Sendable {
     public struct BottleInfo: Codable, Sendable, Equatable {
         public var runtime: String
         public var createdAt: Date
+        /// The runtime the bottle was moved from, when it was.
+        public var movedFrom: String?
     }
 
     let paths: AppPaths
@@ -119,12 +121,8 @@ public struct BottleManager: Sendable {
     public func ensureBottle(for game: GameID, runtime: RuntimeManifest.Runtime,
                              windows: WindowsVersion = .default) async throws -> URL {
         let folder = bottleFolder(for: game)
-        // A bottle from another runtime is made again from this runtime's template: Wine doesn't support running
-        // a prefix with an older Wine than the one that last updated it. Saves live in the shared profile, so
-        // nothing of the player's is lost. Until installers exist (M5) nothing else lives in a bottle; before
-        // then this must become a migration that carries over what the game installed.
         if let info = bottleInfo(for: game), info.runtime != runtime.id {
-            try FileManager.default.removeItem(at: folder)
+            try await move(game, from: info.runtime, to: runtime)
         }
         if bottleInfo(for: game) == nil {
             let template = try await ensureTemplate(for: runtime)
@@ -139,6 +137,57 @@ public struct BottleManager: Sendable {
         }
         try Self.setWindowsVersion(windows, bottle: folder)
         return folder
+    }
+
+    /// Moves a bottle made by another runtime onto this one (see `BottleMigration`). The new bottle is built
+    /// next to the old one and swapped in at once, so a crash halfway leaves the old bottle as it was.
+    private func move(_ game: GameID, from old: String, to runtime: RuntimeManifest.Runtime) async throws {
+        let fileManager = FileManager.default
+        let folder = bottleFolder(for: game)
+        let template = try await ensureTemplate(for: runtime)
+        let prefix = ".moving-\(game)-"
+        for name in (try? fileManager.contentsOfDirectory(atPath: paths.bottles.path)) ?? []
+        where name.hasPrefix(prefix) {
+            try? fileManager.removeItem(at: paths.bottles.appending(path: name))
+        }
+        let staging = paths.bottles.appending(path: prefix + UUID().uuidString, directoryHint: .isDirectory)
+        do {
+            try Self.clone(template, to: staging)
+            try? fileManager.removeItem(at: staging.appending(path: Self.templateMarker))
+            let oldTemplate = paths.template(forRuntime: old)
+            let hasOldTemplate = fileManager.fileExists(atPath: oldTemplate.appending(path: Self.templateMarker).path)
+            try BottleMigration.carry(from: folder, oldTemplate: hasOldTemplate ? oldTemplate : nil, into: staging)
+            let info = BottleInfo(runtime: runtime.id, createdAt: Date(), movedFrom: old)
+            try JSONEncoder.iso.encode(info).write(to: staging.appending(path: Self.bottleMarker))
+            guard renamex_np(staging.path, folder.path, UInt32(RENAME_SWAP)) == 0 else {
+                throw BottleError.moveFailed(String(cString: strerror(errno)))
+            }
+        } catch let error as BottleError {
+            try? fileManager.removeItem(at: staging)
+            throw error
+        } catch {
+            try? fileManager.removeItem(at: staging)
+            throw BottleError.moveFailed(error.localizedDescription)
+        }
+        // After the swap, `staging` holds the old bottle.
+        try? fileManager.removeItem(at: staging)
+        removeUnusedTemplates(keeping: runtime.id)
+    }
+
+    /// Templates of earlier runtimes stay while a bottle still needs them for its move (~330 MB each), and go
+    /// once the last one has moved.
+    public func removeUnusedTemplates(keeping current: String) {
+        let fileManager = FileManager.default
+        let bottles = (try? fileManager.contentsOfDirectory(atPath: paths.bottles.path)) ?? []
+        let used = Set(bottles.filter { !$0.hasPrefix(".") }.compactMap { name -> String? in
+            let marker = paths.bottles.appending(path: name).appending(path: Self.bottleMarker)
+            guard let data = try? Data(contentsOf: marker) else { return nil }
+            return (try? JSONDecoder.iso.decode(BottleInfo.self, from: data))?.runtime
+        })
+        for name in (try? fileManager.contentsOfDirectory(atPath: paths.templates.path)) ?? []
+        where !name.hasPrefix(".") && name != current && !used.contains(name) {
+            try? fileManager.removeItem(at: paths.templates.appending(path: name))
+        }
     }
 
     /// Writes the Windows version into the bottle's registry, touching the file only if it changes.
@@ -202,6 +251,7 @@ public enum BottleError: Error, Equatable, CustomStringConvertible {
     case unexpectedUsers([String])
     case cloneFailed(String)
     case monoMissing(String)
+    case moveFailed(String)
 
     public var description: String {
         switch self {
@@ -209,6 +259,7 @@ public enum BottleError: Error, Equatable, CustomStringConvertible {
         case let .unexpectedUsers(names): "Windows was set up with unexpected user folders: \(names)."
         case let .cloneFailed(reason): "Couldn't prepare a copy of Windows for this game: \(reason)."
         case let .monoMissing(id): "The Windows components (\(id)) are incomplete: Wine Mono is missing."
+        case let .moveFailed(reason): "Couldn't move this game to the updated Windows components: \(reason)."
         }
     }
 }

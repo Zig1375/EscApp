@@ -55,4 +55,65 @@ import Testing
         #expect(await command.run(["frobnicate"]).status == 1)
         #expect(await command.run(["env", "--bottle", "/b", "--nope"]).stderr.contains("--nope"))
     }
+
+    // MARK: run and install, without Wine
+
+    static let probes = URL(filePath: #filePath).deletingLastPathComponent()
+        .appending(path: "../Fixtures/probes").standardizedFileURL
+
+    /// A command on a fresh home with a runtime that isn't installed: everything up to starting Wine runs.
+    func scratch() throws -> (EscAppCommand, URL) {
+        let home = FileManager.default.temporaryDirectory.appending(path: "escapp-cli-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        let manifest = try RuntimeManifest.decode(Data("""
+            {"format": 1, "runtimes": [{"id": "r1", "minApp": "0.1", "minMacOS": "15", "components": []}]}
+            """.utf8))
+        let command = EscAppCommand(paths: AppPaths.standard(environment: ["ESCAPP_HOME": home.path]),
+                                    manifest: { manifest }, rosettaInstalled: { true })
+        return (command, home)
+    }
+
+    /// The probe copied into its own folder, so its `.escapp` marker lands in the scratch home.
+    func game(in home: URL) throws -> URL {
+        let exe = home.appending(path: "Games/Probe/probe.exe")
+        try FileManager.default.createDirectory(at: exe.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try FileManager.default.copyItem(at: Self.probes.appending(path: "d3d9-x86.exe"), to: exe)
+        return exe
+    }
+
+    @Test func runKeepsScaleAndDiscForTheGame() async throws {
+        let (command, home) = try scratch()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let exe = try game(in: home)
+        let output = await command.run(["run", exe.path, "--scale", "on", "--disc", "/Games/Probe.cue"])
+        // No runtime here, so it stops before Wine, with the settings already kept.
+        #expect(output.status == 1)
+        let library = try GameLibrary.load(from: home.appending(path: "Games.json"))
+        #expect(library.games.first?.scaling == .on)
+        #expect(library.games.first?.disc == "/Games/Probe.cue")
+
+        _ = await command.run(["run", exe.path, "--scale", "auto"])
+        #expect(try GameLibrary.load(from: home.appending(path: "Games.json")).games.first?.scaling == nil)
+    }
+
+    @Test func runRefusesUnknownChoices() async throws {
+        let (command, home) = try scratch()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let exe = try game(in: home)
+        #expect(await command.run(["run", exe.path, "--scale", "huge"]).stderr.contains("Unknown scaling: huge"))
+        #expect(await command.run(["run", exe.path, "--backend", "metal"]).stderr.contains("Unknown backend: metal"))
+    }
+
+    @Test func installTellsInstallersFromGames() async throws {
+        let (command, home) = try scratch()
+        defer { try? FileManager.default.removeItem(at: home) }
+        #expect(await command.run(["install"]).stderr.contains("install needs"))
+        let game = await command.run(["install", Self.probes.appending(path: "d3d9-x86.exe").path])
+        #expect(game.stderr.contains("doesn't look like an installer"))
+        // An installer gets as far as the runtime, which isn't installed here.
+        let setup = await command.run(["install", Self.probes.appending(path: "setup-x86.exe").path])
+        #expect(setup.status == 1)
+        #expect(setup.stderr.contains("r1"))
+        #expect(try GameLibrary.load(from: home.appending(path: "Games.json")).games.isEmpty)
+    }
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="Probe MSI Game" Language="1033" Version="1.0.0" Manufacturer="Probe Studio" UpgradeCode="5a3c2b1e-1111-4222-8333-944455556666">
+    <Package InstallerVersion="200" Compressed="yes" />
+    <Media Id="1" Cabinet="game.cab" EmbedCab="yes" />
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLDIR" Name="Probe MSI Game">
+          <Component Id="Main" Guid="7b1c2d3e-2222-4333-8444-a55566667777">
+            <File Id="GameExe" Source="payload/probegame.exe" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+    <Feature Id="All" Level="1"><ComponentRef Id="Main" /></Feature>
+  </Product>
+</Wix>

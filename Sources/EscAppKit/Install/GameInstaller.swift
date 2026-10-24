@@ -117,8 +117,8 @@ public struct GameInstaller: Sendable {
     private func run(_ plan: Plan, in target: Target, progress: @Sendable (Step) -> Void) async throws -> Installed {
         let (id, bottle, wine) = (target.id, target.bottle, target.wine)
         let fileManager = FileManager.default
-        let gamesRoot = plan.folder.deletingLastPathComponent()
-        try fileManager.createDirectory(at: gamesRoot, withIntermediateDirectories: true)
+        let gamesRoot = Self.gamesDriveRoot(for: plan)
+        try fileManager.createDirectory(at: plan.folder, withIntermediateDirectories: true)
         try DiscDrive.link(bottle.appending(path: "dosdevices/\(Self.gamesDrive):"),
                            to: gamesRoot.path(percentEncoded: false))
         if let disc = plan.disc { try DiscDrive.insert(disc, into: bottle) }
@@ -145,6 +145,14 @@ public struct GameInstaller: Sendable {
         let found = InstalledPrograms.find(in: folders.filter { fileManager.fileExists(atPath: $0.path) },
                                            shortcutTargets: targets, name: plan.name)
         return Installed(id: id, plan: plan, found: found, log: log)
+    }
+
+    /// The folder drive `G:` is. Usually the game folder's parent, so the installer's folder page shows
+    /// `G:\<name>`. For a Windows Installer package, the game folder itself: msiexec reads a property's value only
+    /// unquoted or quoted inside the argument (`INSTALLDIR="G:\My Game"`), `wine` can pass it neither way when it
+    /// has a space, and `INSTALLDIR=G:\` has none.
+    static func gamesDriveRoot(for plan: Plan) -> URL {
+        plan.kind == .windowsInstaller ? plan.folder : plan.folder.deletingLastPathComponent()
     }
 
     /// What `wine` runs. A file on the disc is started by its `D:` path, as from a real CD: some installers look

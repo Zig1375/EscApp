@@ -65,3 +65,62 @@ import Testing
         #expect(!GameSettings.canReset(record, paths: paths))
     }
 }
+
+/// What a launch writes into the bottle (`GameLauncher.configure`), on a bottle of two registry files.
+@Suite struct LaunchConfigurationTests {
+    let temp: TempFolder
+    var bottle: URL { temp.url }
+    let screen = GameScaling.Size(width: 1728, height: 1056)
+
+    init() throws {
+        temp = try TempFolder()
+        for file in ["user.reg", "system.reg"] {
+            try Data("WINE REGISTRY Version 2\n\n".utf8).write(to: temp.url.appending(path: file))
+        }
+    }
+
+    func game() -> GameRecord {
+        GameRecord(id: .make(), name: "G", executable: "/g.exe", folder: "/", hasMarker: true, addedAt: Date())
+    }
+
+    func userReg() throws -> String { try String(contentsOf: bottle.appending(path: "user.reg"), encoding: .utf8) }
+
+    func value(_ key: String, _ name: String) throws -> String? {
+        WineRegistry.string(in: try userReg(), key: key, name: name)
+    }
+
+    @Test func aPlainGameGetsTheDefaults() throws {
+        let scale = try GameLauncher.configure(bottle: bottle, for: game(), dpiAware: false, screen: screen)
+        #expect(scale == 1)
+        #expect(try value(#"Software\Wine\Mac Driver"#, "RetinaMode") == "n")
+        #expect(try value(#"Software\Wine\Mac Driver"#, "LeftCommandIsCtrl") == "n")
+        #expect(try value(#"Software\Wine\X11 Driver"#, "EmulateModeset") == "y")
+        #expect(try userReg().contains(#""ShowCrashDialog"=dword:00000000"#))
+        #expect(try userReg().contains(#""LogPixels"=dword:00000060"#))
+    }
+
+    @Test func settingsAndTheLearnedWindowReachTheBottle() throws {
+        var record = game()
+        record.commandAsControl = true
+        record.window = GameScaling.LearnedWindow(width: 640, height: 480, fullScreen: false)
+        let scale = try GameLauncher.configure(bottle: bottle, for: record, dpiAware: false, screen: screen)
+        #expect(scale == 2)
+        #expect(try userReg().contains(#""LogPixels"=dword:000000c0"#))
+        #expect(try value(#"Software\Wine\Mac Driver"#, "RightCommandIsCtrl") == "y")
+
+        // Retina on: the game draws for it, nothing is enlarged.
+        record.retina = .on
+        #expect(try GameLauncher.configure(bottle: bottle, for: record, dpiAware: false, screen: screen) == 1)
+        #expect(try value(#"Software\Wine\Mac Driver"#, "RetinaMode") == "y")
+        #expect(try userReg().contains(#""LogPixels"=dword:00000060"#))
+    }
+
+    @Test func anUnchangedBottleIsntRewritten() throws {
+        let record = game()
+        _ = try GameLauncher.configure(bottle: bottle, for: record, dpiAware: true, screen: screen)
+        let file = bottle.appending(path: "user.reg")
+        let before = try file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+        _ = try GameLauncher.configure(bottle: bottle, for: record, dpiAware: true, screen: screen)
+        #expect(try file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate == before)
+    }
+}

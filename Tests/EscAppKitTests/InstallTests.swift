@@ -249,6 +249,18 @@ private let fixtures = URL(filePath: #filePath).deletingLastPathComponent()
             == "Half-Life- Opposing Force-")
     }
 
+    @Test func aPackageGetsItsFolderAsTheWholeDrive() {
+        let folder = URL(filePath: "/Games/Probe MSI", directoryHint: .isDirectory)
+        let package = GameInstaller.Plan(installer: URL(filePath: "/x/p.msi"), kind: .windowsInstaller, name: "P",
+                                         folder: folder)
+        let root = GameInstaller.gamesDriveRoot(for: package)
+        #expect(root == folder)
+        #expect(WindowsPath.windowsPath(of: folder, under: root, drive: "g") == #"G:\"#)
+        var setup = package
+        setup.kind = .innoSetup
+        #expect(GameInstaller.gamesDriveRoot(for: setup).path(percentEncoded: false) == "/Games/")
+    }
+
     @Test func eachKindIsStartedTheWayItTakesItsFolder() {
         let paths = AppPaths(root: URL(filePath: "/tmp/e"), games: URL(filePath: "/G"))
         let installer = GameInstaller(paths: paths)

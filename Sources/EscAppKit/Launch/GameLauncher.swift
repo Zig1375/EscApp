@@ -76,19 +76,8 @@ public struct GameLauncher: Sendable {
         progress(.windows(game.windowsVersion, firstTime: !bottles.hasTemplate(for: runtime)))
         let bottle = try await bottles.ensureBottle(for: game.id, runtime: runtime, windows: game.windowsVersion)
         progress(.graphics(backend, directX: info.directX.max()))
-        // Wine's own "the program has crashed" dialog (winedbg) would pop up over the Mac; EscApp reports
-        // crashes itself, from the log.
-        try BottleManager.disableCrashDialog(bottle: bottle)
-        // Retina only for games that say they handle high DPI; others would draw a tiny interface.
-        let retina = GameSettings.retina(game.retina, dpiAware: info.dpiAware)
-        let macDriver = #"Software\Wine\Mac Driver"#
-        try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: "RetinaMode",
-                                            value: retina ? "y" : "n")
-        let command = game.commandAsControl == true ? "y" : "n"
-        for side in ["LeftCommandIsCtrl", "RightCommandIsCtrl"] {
-            try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: side, value: command)
-        }
-        let scale = try applyScaling(for: game, dpiAware: retina, bottle: bottle)
+        let scale = try Self.configure(bottle: bottle, for: game, dpiAware: info.dpiAware,
+                                       screen: GameScaling.availableScreen())
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
         try BackendTree.prepareBottle(bottle, for: backend, wine: wine)
         try await insertDisc(of: game, into: bottle)
@@ -100,13 +89,28 @@ public struct GameLauncher: Sendable {
                         environment: environment, log: newLogFile(for: game.id), scale: scale)
     }
 
-    /// Full-screen games get an emulated display mode, small windowed ones a system DPI that enlarges them
-    /// (`GameScaling`). The key is the X11 driver's by name, but Wine's core reads it for every driver.
-    private func applyScaling(for game: GameRecord, dpiAware: Bool, bottle: URL) throws -> Double {
+    /// Writes the game's settings into its bottle before a launch, each value only when it changes. Returns how
+    /// many times larger Wine will draw the game. Only while the bottle's Wine is down (see `WineRegistry`).
+    static func configure(bottle: URL, for game: GameRecord, dpiAware: Bool,
+                          screen: GameScaling.Size) throws -> Double {
+        // Wine's own "the program has crashed" dialog (winedbg) would pop up over the Mac; EscApp reports
+        // crashes itself, from the log.
+        try BottleManager.disableCrashDialog(bottle: bottle)
+        // Retina only for games that say they handle high DPI; others would draw a tiny interface.
+        let retina = GameSettings.retina(game.retina, dpiAware: dpiAware)
+        let macDriver = #"Software\Wine\Mac Driver"#
+        try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: "RetinaMode",
+                                            value: retina ? "y" : "n")
+        let command = game.commandAsControl == true ? "y" : "n"
+        for side in ["LeftCommandIsCtrl", "RightCommandIsCtrl"] {
+            try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: side, value: command)
+        }
+        // Full-screen games get an emulated display mode, small windowed ones a system DPI that enlarges them
+        // (`GameScaling`). The key is the X11 driver's by name, but Wine's core reads it for every driver.
         try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\X11 Driver"#, name: "EmulateModeset",
                                             value: "y")
-        let scale = GameScaling.scale(setting: game.scaling ?? .auto, learned: game.window, dpiAware: dpiAware,
-                                      screen: GameScaling.availableScreen())
+        let scale = GameScaling.scale(setting: game.scaling ?? .auto, learned: game.window, dpiAware: retina,
+                                      screen: screen)
         try BottleManager.setRegistryDWord(bottle: bottle, key: #"Control Panel\Desktop"#, name: "LogPixels",
                                            value: UInt32(GameScaling.dpi(for: scale)))
         return scale

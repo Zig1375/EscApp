@@ -136,3 +136,43 @@ import Testing
         #expect(later)
     }
 }
+
+@Suite struct SteamLaunchesTests {
+    let utc = TimeZone(identifier: "UTC")!
+    let now = Date(timeIntervalSince1970: 1_793_000_000)  // 2026-10-26 04:53:20 UTC
+
+    func line(_ secondsAgo: TimeInterval, _ action: Int, _ task: String) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = utc
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let time = formatter.string(from: now.addingTimeInterval(-secondsAgo))
+        return "[\(time)] GameAction [AppID 242920, ActionID \(action)] : LaunchApp changed task to \(task) with \"\""
+    }
+
+    @Test func launchUnderWayCounts() {
+        let log = [line(20, 2, "SynchronizingCloud"), line(15, 2, "RunningInstallScript"),
+                   "[2026-10-26 04:53:10] STARTUP SlowJSMethodCall Apps.GetGameActionDetails took 1.1ms"]
+            .joined(separator: "\n")
+        #expect(SteamLaunches.inProgress(log: log, now: now, timeZone: utc))
+    }
+
+    @Test func finishedOrFailedLaunchDoesNot() {
+        let completed = [line(40, 2, "CreatingProcess"), line(30, 2, "Completed")].joined(separator: "\n")
+        let failed = [line(40, 3, "SynchronizingCloud"), line(30, 3, "Failed")].joined(separator: "\n")
+        #expect(!SteamLaunches.inProgress(log: completed, now: now, timeZone: utc))
+        #expect(!SteamLaunches.inProgress(log: failed, now: now, timeZone: utc))
+        #expect(!SteamLaunches.inProgress(log: "", now: now, timeZone: utc))
+    }
+
+    @Test func oneOfTwoLaunchesUnderWay() {
+        let log = [line(100, 2, "Completed"), line(10, 3, "DelayLaunch")].joined(separator: "\n")
+        #expect(SteamLaunches.inProgress(log: log, now: now, timeZone: utc))
+    }
+
+    @Test func abandonedLaunchStopsCounting() {
+        // The launch that waited for an answer about a session playing Spacewar elsewhere, never given.
+        let log = line(6 * 60, 2, "KickingOtherSession")
+        #expect(!SteamLaunches.inProgress(log: log, now: now, timeZone: utc))
+    }
+}

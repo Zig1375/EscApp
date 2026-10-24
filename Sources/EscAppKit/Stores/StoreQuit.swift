@@ -137,3 +137,46 @@ enum SteamHelperSweep {
         return helpers.filter { !$0.isBrowser && $0.started < newest }.map(\.pid)
     }
 }
+
+/// Steam getting a game ready: `GameAction [AppID 242920, ActionID 2] : LaunchApp changed task to …` lines in
+/// `logs/console_log.txt`, from syncing the cloud and running install scripts to `Completed` or `Failed`. Its
+/// window may be closed meanwhile with no game process yet, and quitting Steam then would cancel the launch.
+enum SteamLaunches {
+    static func file(in bottle: URL) -> URL {
+        bottle.appending(path: "drive_c/Program Files (x86)/Steam/logs/console_log.txt")
+    }
+
+    /// A launch left unfinished this long ago is over: Steam was restarted, or the player never answered.
+    static let staleAfter: TimeInterval = 5 * 60
+
+    /// Whether the log's last word on some launch is neither `Completed` nor `Failed`, said in the last minutes.
+    /// The log's times are the Mac's local time, like `[2026-10-24 22:35:31]`.
+    static func inProgress(log: String, now: Date, timeZone: TimeZone = .current) -> Bool {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        var last: [Substring: (time: Date, finished: Bool)] = [:]
+        for line in log.split(whereSeparator: \.isNewline) {
+            guard line.hasPrefix("["), line.count > 21,
+                  let action = line.range(of: "GameAction ["), line.contains("] : LaunchApp "),
+                  let time = formatter.date(from: String(line.dropFirst().prefix(19))),
+                  let close = line[action.upperBound...].firstIndex(of: "]") else { continue }
+            let finished = line.hasSuffix("task to Completed with \"\"") || line.hasSuffix("task to Failed with \"\"")
+            last[line[action.upperBound..<close]] = (time, finished)
+        }
+        return last.values.contains { !$0.finished && now.timeIntervalSince($0.time) < staleAfter }
+    }
+
+    /// The same for the bottle's Steam, from the end of its log.
+    static func inProgress(in bottle: URL, now: Date = Date()) -> Bool {
+        guard let handle = try? FileHandle(forReadingFrom: file(in: bottle)) else { return false }
+        defer { try? handle.close() }
+        let end = (try? handle.seekToEnd()) ?? 0
+        try? handle.seek(toOffset: end > 65_536 ? end - 65_536 : 0)
+        let data = (try? handle.readToEnd()) ?? Data()
+        // The read may start mid-character; a broken first line is skipped like any other.
+        let text = String(bytes: data, encoding: .utf8) ?? String(bytes: data, encoding: .isoLatin1) ?? ""
+        return inProgress(log: text, now: now)
+    }
+}

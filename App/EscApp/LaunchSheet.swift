@@ -129,6 +129,8 @@ struct LaunchSheet: View {
             Text("It crashes while starting.")
         case .needsDisc?:
             Text("It asks for its disc.")
+        case .needsSteam?:
+            Text("It needs Steam running.")
         case nil:
             if case let .closed(code)? = failure.reason {
                 Text("It closes right after starting (code \(String(code))).")

@@ -91,7 +91,8 @@ struct GamePage: View {
     @ViewBuilder private func secondaryActions(_ game: GameRecord) -> some View {
         Button { library.showInFinder(game) } label: { Label("Open Game Folder", systemImage: "folder") }
             .buttonStyle(BrandButtonStyle(height: 40))
-        Button("Delete…") { isDeleting = true }
+        // The store removes its own games (ARCHITECTURE.md, "Where a game is from").
+        Button("Delete…") { if game.store != nil { library.uninstallInStore(game) } else { isDeleting = true } }
             .buttonStyle(BrandButtonStyle(kind: .danger, height: 40))
     }
 
@@ -227,7 +228,9 @@ private struct DetailsColumn: View {
     var body: some View {
         RowsCard {
             DetailRow(label: "Source") {
-                if let disc = game.disc {
+                if let store = game.store {
+                    Text(store.name)
+                } else if let disc = game.disc {
                     Text("From a disc (\(URL(filePath: disc).lastPathComponent))")
                 } else {
                     Text("From disk")
@@ -247,13 +250,18 @@ private struct DetailsColumn: View {
                 Text(size.map { $0.formatted(.byteCount(style: .file)) } ?? "…")
             }
             DetailRow(label: "System") {
-                DesignSelect(selection: Binding(get: { game.windowsVersion },
-                                                set: { library.setWindowsVersion($0, for: game) }),
-                             options: WindowsVersion.allCases.reversed(),
-                             title: { version in
-                                 version == .default
-                                     ? String(localized: "\(version.displayName) (default)") : version.displayName
-                             })
+                if let store = game.store {
+                    // The store's bottle, shared by all its games: its version isn't one game's to change.
+                    Text("\(WindowsVersion.default.displayName), like \(store.name)")
+                } else {
+                    DesignSelect(selection: Binding(get: { game.windowsVersion },
+                                                    set: { library.setWindowsVersion($0, for: game) }),
+                                 options: WindowsVersion.allCases.reversed(),
+                                 title: { version in
+                                     version == .default
+                                         ? String(localized: "\(version.displayName) (default)") : version.displayName
+                                 })
+                }
             }
             DetailRow(label: "Graphics") { Text(graphics) }
             DetailRow(label: "Played") { Text(played) }

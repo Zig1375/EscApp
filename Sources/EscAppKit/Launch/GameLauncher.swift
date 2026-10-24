@@ -17,6 +17,10 @@ public struct GameLauncher: Sendable {
         public var log: URL
         /// How many times larger Wine draws the game's window (`GameScaling`).
         public var scale: Double = 1
+        /// A store game: the store's client and what makes it start the game. Nil starts the exe itself.
+        public var client: (url: URL, arguments: [String])?
+        /// A store game's folder as Windows sees it, which tells its processes from the client's.
+        public var gameFolder: String?
     }
 
     public struct Outcome: Sendable, Equatable {
@@ -74,19 +78,35 @@ public struct GameLauncher: Sendable {
         }
         let bottles = BottleManager(paths: paths, host: host)
         progress(.windows(game.windowsVersion, firstTime: !bottles.hasTemplate(for: runtime)))
-        let bottle = try await bottles.ensureBottle(for: game.id, runtime: runtime, windows: game.windowsVersion)
+        // A store game shares its store's bottle, and its Windows version.
+        let bottle = try await bottles.ensureBottle(for: game.bottleID, runtime: runtime,
+                                                    windows: game.store == nil ? game.windowsVersion : .default)
         progress(.graphics(backend, directX: info.directX.max()))
-        let scale = try Self.configure(bottle: bottle, for: game, dpiAware: info.dpiAware,
-                                       screen: GameScaling.availableScreen())
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
+        var idle = true
+        var client: (url: URL, arguments: [String])?
+        if let store = game.store {
+            let stores = StoreClient(paths: paths, host: host)
+            idle = try await stores.prepareForGame(store, wine: wine)
+            if store.launchesGames, let id = game.storeID { client = try stores.playCommand(store, storeID: id) }
+        }
+        // With the store's client already running in the right Wine, its registry can't be written: the game
+        // keeps the settings the bottle had when the client started.
+        let scale = idle ? try Self.configure(bottle: bottle, for: game, dpiAware: info.dpiAware,
+                                              screen: GameScaling.availableScreen()) : 1
         try BackendTree.prepareBottle(bottle, for: backend, wine: wine)
         try await insertDisc(of: game, into: bottle)
         let environment = WineEnvironment.make(host: host, bottle: bottle.path,
-                                               extra: GameSettings.environment(of: game),
+                                               extra: (game.store?.environment ?? [:])
+                                                   .merging(GameSettings.environment(of: game)) { _, user in user },
                                                verboseLog: verboseLog || game.verboseLog == true)
         progress(.starting)
+        let folder = game.store.map { _ in
+            WindowsPath.windowsPath(of: URL(filePath: game.folder, directoryHint: .isDirectory), inBottle: bottle)
+        }
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
-                        environment: environment, log: newLogFile(for: game.id), scale: scale)
+                        environment: environment, log: newLogFile(for: game.id), scale: scale, client: client,
+                        gameFolder: folder)
     }
 
     /// Writes the game's settings into its bottle before a launch, each value only when it changes. Returns how
@@ -159,29 +179,52 @@ public struct GameLauncher: Sendable {
             "[EscApp] WINEDEBUG=\(prepared.environment["WINEDEBUG"] ?? "")",
         ]
         let arguments = GameSettings.arguments(prepared.game.arguments ?? "")
-        let extra = arguments.isEmpty ? [] : ["[EscApp] Arguments \(arguments.joined(separator: " "))"]
+        var extra = arguments.isEmpty ? [] : ["[EscApp] Arguments \(arguments.joined(separator: " "))"]
+        if let store = prepared.game.store {
+            extra.append("[EscApp] Store \(store.name) \(prepared.game.storeID ?? "")")
+        }
         log.write(Data(((header + extra).joined(separator: "\n") + "\n").utf8))
 
+        let process = Self.process(for: prepared, arguments: arguments, log: log)
+        let exit = ProcessExit()
+        if let folder = prepared.gameFolder {
+            // A store game is over when its own processes are; the client stays.
+            let started = ProcessExit()
+            process.terminationHandler = { started.exited($0.terminationStatus) }
+            try process.run()
+            StoreGameWatch(bottle: prepared.bottle, folder: folder).watch(starter: started, game: exit)
+        } else {
+            process.terminationHandler = { exit.exited($0.terminationStatus) }
+            try process.run()
+        }
+        // Points on the Mac per pixel of the game: the DPI enlarging, or with Retina on, half a point per pixel.
+        let pointsPerPixel = retina ? 1 / GameScaling.backingScale() : prepared.scale
+        let session = GameSession(wine: prepared.wine, environment: prepared.environment,
+                                  processID: process.processIdentifier, scale: pointsPerPixel,
+                                  gameFolder: prepared.gameFolder)
+        return RunningGame(prepared: prepared, session: session, startedAt: startedAt, process: exit) { [self] in
+            pruneLogs(for: $0)
+        }
+    }
+
+    /// `wine <exe> <arguments>` from the game's folder, or for a store game `wine <client> -applaunch <id> …`.
+    private static func process(for prepared: Prepared, arguments: [String], log: FileHandle) -> Process {
         let exe = URL(filePath: prepared.game.executable)
         let process = Process()
         process.executableURL = prepared.wine.wine
-        process.arguments = [exe.path(percentEncoded: false)] + arguments
-        process.currentDirectoryURL = exe.deletingLastPathComponent()
+        if let client = prepared.client {
+            // Steam passes its own launch options on; the game's go after `-applaunch <id>`.
+            process.arguments = [client.url.path(percentEncoded: false)] + client.arguments + arguments
+            process.currentDirectoryURL = client.url.deletingLastPathComponent()
+        } else {
+            process.arguments = [exe.path(percentEncoded: false)] + arguments
+            process.currentDirectoryURL = exe.deletingLastPathComponent()
+        }
         process.environment = prepared.environment
         process.standardOutput = log
         process.standardError = log
         process.standardInput = FileHandle.nullDevice
-
-        let exit = ProcessExit()
-        process.terminationHandler = { exit.exited($0.terminationStatus) }
-        try process.run()
-        // Points on the Mac per pixel of the game: the DPI enlarging, or with Retina on, half a point per pixel.
-        let pointsPerPixel = retina ? 1 / GameScaling.backingScale() : prepared.scale
-        let session = GameSession(wine: prepared.wine, environment: prepared.environment,
-                                  processID: process.processIdentifier, scale: pointsPerPixel)
-        return RunningGame(prepared: prepared, session: session, startedAt: startedAt, process: exit) { [self] in
-            pruneLogs(for: $0)
-        }
+        return process
     }
 
     public func logsFolder(for game: GameID) -> URL { paths.logs(forGame: game) }
@@ -220,11 +263,19 @@ public struct GameSession: Sendable {
     /// below 1 with Retina on.
     public var scale: Double = 1
 
+    /// A store game's folder as Windows sees it: its processes, not the client's, are the game.
+    public var gameFolder: String?
+
     /// Wine's folder: any process running from inside it belongs to this game's session.
     public var wineRoot: URL { wine.root }
 
-    /// Ends everything in the game's bottle, like closing a hung game from Task Manager.
+    /// Ends everything in the game's bottle, like closing a hung game from Task Manager. For a store game only
+    /// the game's own processes: the client keeps running.
     public func stop() async {
+        if let gameFolder, let prefix = environment["WINEPREFIX"] {
+            await StoreGameWatch(bottle: URL(filePath: prefix, directoryHint: .isDirectory), folder: gameFolder).stop()
+            return
+        }
         _ = try? await ProcessRunner.run(wine.wineserver.path, ["-k"], environment: environment)
     }
 }

@@ -44,6 +44,15 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     public var environment: String?
     public var verboseLog: Bool?
 
+    /// The store the game is from: it runs in the store's bottle, through its client. Nil for a game from disc,
+    /// an installer or a folder.
+    public var store: Store?
+    /// The game's id in its store: Steam's app id, Epic's `namespace:item:app`, GOG's product id.
+    public var storeID: String?
+
+    /// The bottle the game runs in: its own, or its store's.
+    public var bottleID: GameID { store?.bottleID ?? id }
+
     public init(id: GameID, name: String, executable: String, folder: String, hasMarker: Bool,
                 fingerprint: String? = nil, windowsVersion: WindowsVersion = .default, addedAt: Date,
                 lastPlayed: Date? = nil, backend: GraphicsBackend? = nil, playTime: TimeInterval? = nil) {

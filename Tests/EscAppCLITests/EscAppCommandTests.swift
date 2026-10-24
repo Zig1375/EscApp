@@ -50,6 +50,18 @@ import Testing
         #expect(install.stderr.contains("--accept-rosetta-license"))
     }
 
+    @Test func storesStartUninstalled() async {
+        let home = EscAppCommand(
+            paths: AppPaths.standard(environment: ["ESCAPP_HOME": "/tmp/escapp-test-\(UUID().uuidString)"]))
+        let list = await home.run(["store", "list"])
+        #expect(list.status == 0)
+        #expect(list.stdout.contains("steam     Steam: not installed"))
+        #expect(list.stdout.contains("ea        EA app: not installed"))
+        #expect(await home.run(["store", "sync"]).stdout == "No store games installed.\n")
+        #expect(await home.run(["store", "install", "origin"]).status == 1)
+        #expect(await home.run(["store"]).status == 1)
+    }
+
     @Test func unknownInputFails() async {
         #expect(await command.run([]).status == 1)
         #expect(await command.run(["frobnicate"]).status == 1)

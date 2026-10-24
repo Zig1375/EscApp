@@ -49,8 +49,11 @@ public struct DiskUsage: Sendable, Equatable {
                 bottles += allocatedSize(of: bottle)
             }
         }
-        return DiskUsage(runtimes: runtimes, templates: templateSize, bottles: bottles,
-                         bottleCount: bottleFolders.count)
+        // Stores' bottles count in the size, but they aren't games.
+        let games = bottleFolders.filter { folder in
+            GameID(rawValue: folder.lastPathComponent).flatMap(Store.owning(bottle:)) == nil
+        }
+        return DiskUsage(runtimes: runtimes, templates: templateSize, bottles: bottles, bottleCount: games.count)
     }
 
     /// One game's Windows: what it really takes on disk (`unique`, beyond its template) and what Finder shows for

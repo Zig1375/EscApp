@@ -42,7 +42,20 @@ struct ProblemSheet: View {
     }
 
     @ViewBuilder private var buttons: some View {
-        if case let .needsDisc(id, _) = problem.kind {
+        if case let .needsSteam(id) = problem.kind {
+            Button("Run Anyway") {
+                library.problem = nil
+                if let game = library.game(id) { library.play(game) }
+            }
+            .keyboardShortcut(.cancelAction)
+            // Stores.dc.html, where installing Steam takes one button.
+            Button(library.installedStores.contains(.steam) ? "Show Stores" : "Install Steam") {
+                library.problem = nil
+                library.showsStores = true
+            }
+            .buttonStyle(BrandButtonStyle(kind: .primary, height: 32, radius: 8))
+            .keyboardShortcut(.defaultAction)
+        } else if case let .needsDisc(id, _) = problem.kind {
             Button("Cancel") { library.problem = nil }
                 .keyboardShortcut(.cancelAction)
             Button("Choose Disc Image…") { library.chooseDisc(for: id) }
@@ -61,17 +74,24 @@ struct ProblemSheet: View {
         case .dos: "terminal"
         case .notWindows: "doc.text"
         case .needsDisc: "opticaldisc"
+        case .needsSteam: "bag"
         }
     }
 
     private var iconBackground: Color {
-        if case .needsDisc = problem.kind { return .installerTag }
-        return .chip
+        switch problem.kind {
+        case .needsDisc: .installerTag
+        case .needsSteam: .warnBackground
+        default: .chip
+        }
     }
 
     private var iconColor: Color {
-        if case .needsDisc = problem.kind { return .installerTagText }
-        return .bodyText
+        switch problem.kind {
+        case .needsDisc: .installerTagText
+        case .needsSteam: .warnText
+        default: .bodyText
+        }
     }
 
     private var title: LocalizedStringKey {
@@ -80,6 +100,7 @@ struct ProblemSheet: View {
         case .dos: "A program for DOS"
         case .notWindows: "This isn't a Windows program"
         case .needsDisc: "The game asks for its disc"
+        case .needsSteam: "This game needs Steam"
         }
     }
 
@@ -105,6 +126,11 @@ struct ProblemSheet: View {
             Many old games check for their disc when they start. Choose its disc image (.iso, or .cue with its \
             .bin), and EscApp shows it to the game as drive D:.
             """
+        case let .needsSteam(id):
+            """
+            \(library.game(id)?.name ?? "The game") checks that Steam is running and closes without it. EscApp can \
+            install Steam: it lives on its own and won't get in the way of other games.
+            """
         }
     }
 
@@ -115,6 +141,7 @@ struct ProblemSheet: View {
         case .notWindows: "No PE header"
         case let .needsDisc(_, message?): "The game said: “\(message)”"
         case .needsDisc(_, nil): nil
+        case .needsSteam: "Found in the game's log: SteamAPI_Init() failed"
         }
     }
 }

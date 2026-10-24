@@ -82,8 +82,15 @@ extension LibraryModel {
                     Task { @MainActor in self.handle(event, for: game.id) }
                 }
                 if result.working == nil, let last = result.attempts.last, last.failure != nil {
+                    switch last.diagnosis.problem {
                     // A game that asked for its disc has already said so.
-                    if last.diagnosis.problem != .needsDisc { showFailure(result, runtime: runtime) }
+                    case .needsDisc?: break
+                    case .needsSteam? where game.store == nil:
+                        launch = nil
+                        problem = Problem(kind: .needsSteam(game.id))
+                        NSApp.activate()
+                    default: showFailure(result, runtime: runtime)
+                    }
                 }
             } catch is CancellationError {
                 // The player pressed Cancel.

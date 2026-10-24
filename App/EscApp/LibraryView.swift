@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 /// The main window, laid out as in the design (Main.dc.html): toolbar with search, "Open Game…" and settings;
 /// an update strip; "Games" with source filters and order; two columns of wide cards; a hint at the bottom.
 struct LibraryView: View {
-    enum Page: Hashable { case game(GameID), advanced(GameID) }
+    enum Page: Hashable { case game(GameID), advanced(GameID), stores }
 
     let components: ComponentsModel
     let library: LibraryModel
@@ -22,6 +22,8 @@ struct LibraryView: View {
                 GamePage(id: id, library: library, back: { page = nil }, advanced: { page = .advanced(id) })
             } else if case let .advanced(id)? = page {
                 AdvancedPage(id: id, library: library)
+            } else if page == .stores {
+                StoresPage(library: library)
             } else {
                 if components.catalog?.updateAvailable == true { UpdateStrip(components: components) }
                 if library.games.isEmpty {
@@ -66,6 +68,11 @@ struct LibraryView: View {
         }
         .installSheet(library)
         .problemSheet(library)
+        .onChange(of: library.showsStores, initial: true) {
+            guard library.showsStores else { return }
+            library.showsStores = false
+            page = .stores
+        }
         .alert(library.notice?.title ?? "", isPresented: Binding(get: { library.notice != nil },
                                                                  set: { if !$0 { library.notice = nil } }),
                presenting: library.notice) { notice in
@@ -121,7 +128,7 @@ struct LibraryView: View {
 
 /// "Games", the filters and order, the cards, and the hint line.
 private struct LibraryScreen: View {
-    enum Filter: Hashable { case all, disk }
+    enum Filter: Hashable { case all, disk, store(Store) }
 
     enum Order: String, CaseIterable, Identifiable {
         case recent, name, mostPlayed
@@ -171,7 +178,14 @@ private struct LibraryScreen: View {
                 .font(.system(size: 20, weight: .bold))
                 .padding(.trailing, 16)
             FilterChip(title: "All · \(library.games.count)", isOn: filter == .all) { filter = .all }
-            FilterChip(title: "From disk · \(library.games.count)", isOn: filter == .disk) { filter = .disk }
+            FilterChip(title: "From disk · \(library.games(from: nil).count)", isOn: filter == .disk) {
+                filter = .disk
+            }
+            // A store's filter shows once it has games (Main.dc.html: "Steam · 1", "GOG Galaxy · 1").
+            ForEach(Store.allCases.filter { !library.games(from: $0).isEmpty }) { store in
+                FilterChip(title: "\(store.name) · \(library.games(from: store).count)",
+                           isOn: filter == .store(store)) { filter = .store(store) }
+            }
             Spacer()
             Text("Order")
                 .font(.system(size: 13))
@@ -182,8 +196,12 @@ private struct LibraryScreen: View {
     }
 
     private var shown: [GameRecord] {
-        // Every game is "from disk" until stores arrive, so both filters show the same list for now.
-        let matching = library.games.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }
+        let source: [GameRecord] = switch filter {
+        case .all: library.games
+        case .disk: library.games(from: nil)
+        case let .store(store): library.games(from: store)
+        }
+        let matching = source.filter { search.isEmpty || $0.name.localizedCaseInsensitiveContains(search) }
         switch order {
         case .recent:
             return matching.sorted { ($0.lastPlayed ?? $0.addedAt) > ($1.lastPlayed ?? $1.addedAt) }
@@ -237,7 +255,10 @@ struct GameCard: View {
                     if case let .running(since)? = library.states[game.id] {
                         RunningBadge(since: since, now: library.now)
                     } else {
-                        if game.lastPlayed == nil {
+                        if let store = game.store {
+                            Pill(text: LocalizedStringKey(store.name), background: store.pillColors.background,
+                                 foreground: store.pillColors.text)
+                        } else if game.lastPlayed == nil {
                             Pill(text: "New", background: .newBackground, foreground: .newText)
                         }
                         Text(GameText.summary(game))
@@ -352,44 +373,6 @@ struct RunningBadge: View {
         }
         .font(.system(size: 12, weight: .semibold))
         .foregroundStyle(Color.okText)
-    }
-}
-
-struct Pill: View {
-    let text: LocalizedStringKey
-    let background: Color
-    let foreground: Color
-
-    var body: some View {
-        Text(text)
-            .font(.system(size: 11, weight: .bold))
-            .foregroundStyle(foreground)
-            .padding(.horizontal, 8)
-            .frame(height: 20)
-            .background(background, in: .capsule)
-    }
-}
-
-/// Wording shared by the card and the game page.
-enum GameText {
-    /// "Yesterday · 14 h 20 min in total · from disk", or "Not launched yet · from disk".
-    static func summary(_ game: GameRecord) -> String {
-        guard let last = game.lastPlayed else { return String(localized: "Not launched yet · from disk") }
-        return String(localized: "\(day(last)) · \(duration(game.playTime ?? 0)) in total · from disk")
-    }
-
-    /// "Today", "Yesterday", "3 days ago", "Last week".
-    static func day(_ date: Date) -> String {
-        if Calendar.current.isDateInToday(date) { return String(localized: "Today") }
-        var style = Date.RelativeFormatStyle(presentation: .named, unitsStyle: .wide)
-        style.allowedFields = [.year, .month, .week, .day]
-        let text = date.formatted(style)
-        return text.prefix(1).capitalized + text.dropFirst()
-    }
-
-    static func duration(_ seconds: TimeInterval) -> String {
-        if seconds < 60 { return String(localized: "under a minute") }
-        return Duration.seconds(seconds).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated))
     }
 }
 

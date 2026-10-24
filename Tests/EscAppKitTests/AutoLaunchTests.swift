@@ -311,3 +311,18 @@ extension AutoLaunchTests {
         #expect(result.working == nil)
     }
 }
+
+extension AutoLaunchTests {
+    @Test func aStoreGameGetsOneTryAndWaitsForItsWindow() async throws {
+        var steamGame = game
+        steamGame.store = .steam
+        steamGame.storeID = "400"
+        // Steam may sit at its sign-in for longer than a first window may take: no timeout, no other backend.
+        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.4, exitAt: 0.7), .dxmt: .works], logs: logs())
+        let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
+                                          measure: { _ in nil }, timing: timing)
+            .play(steamGame, runtime: runtime)
+        #expect(starter.started.map(\.0) == [.dxvk])
+        #expect(result.working == .dxvk)
+    }
+}

@@ -101,7 +101,10 @@ public struct AutoLaunch: Sendable {
             order = [override]
             control.stopRetrying()
         } else if case let .attempts(plan)? = info.map({ BackendPlan.forTraits($0.traits) }) {
-            order = BackendPlan.order(plan, remembered: game.backend, known: known?.preferredBackend)
+            let planned = BackendPlan.order(plan, remembered: game.backend, known: known?.preferredBackend)
+            // A store game gets one try: another backend means restarting the store's client, and its first start
+            // may sit behind the store's sign-in or an update for as long as those take.
+            order = game.store == nil ? planned : Array(planned.prefix(1))
         } else {
             // Unsupported or unreadable: `prepare` throws the reason.
             order = [game.backend ?? .dxvk]
@@ -154,7 +157,7 @@ public struct AutoLaunch: Sendable {
         context.events(.started(running.session, backend: backend, attempt: number, total: total))
 
         // A backend that worked before only fails by closing; one never seen working also by showing nothing.
-        let timeout = backend == game.backend ? nil : timing.firstWindowTimeout
+        let timeout = backend == game.backend || game.store != nil ? nil : timing.firstWindowTimeout
         var seen: GameScaling.LearnedWindow?
         let verdict = try await watch(running, game: game.id, timeout: timeout, context: context, seen: &seen)
         // The bottle only goes idle once the warm-up's helper is gone.

@@ -15,6 +15,8 @@ extension LibraryModel {
             case notWindows
             /// The game asked for its CD, with what its message box said.
             case needsDisc(GameID, message: String?)
+            /// The game quit because Steam wasn't running (`[S_API FAIL]` in its log).
+            case needsSteam(GameID)
         }
 
         let id = UUID()

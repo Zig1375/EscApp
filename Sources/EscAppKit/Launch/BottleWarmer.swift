@@ -133,8 +133,10 @@ struct WineWarmUp: WarmUpSteps {
     let host: [String: String]
 
     func canWarm(_ game: GameRecord, runtime: RuntimeManifest.Runtime) -> Bool {
-        // Warming a disc game would attach its image just for hovering over it.
-        game.disc == nil && BottleManager(paths: paths, host: host).bottleInfo(for: game.id)?.runtime == runtime.id
+        // Warming a disc game would attach its image just for hovering over it. A store game's bottle is its
+        // store's, started with the client.
+        game.disc == nil && game.store == nil
+            && BottleManager(paths: paths, host: host).bottleInfo(for: game.id)?.runtime == runtime.id
     }
 
     func boot(_ game: GameRecord, runtime: RuntimeManifest.Runtime) async -> WarmWine? {

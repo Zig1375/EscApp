@@ -35,7 +35,7 @@ public final class RunningGame: Sendable {
         }
         guard start else { return }
         Task {
-            await waitForServer()
+            if prepared.gameFolder == nil { await waitForServer() }
             idle.withLock { $0 = true }
         }
     }
@@ -44,8 +44,9 @@ public final class RunningGame: Sendable {
     public func finish() async -> GameLauncher.Outcome {
         let exitCode = await process.wait()
         let processDuration = (process.exitedAt ?? Date()).timeIntervalSince(startedAt)
-        // The game may live on after `wine` returns (launchers); it's over when the bottle's server is.
-        await waitForServer()
+        // The game may live on after `wine` returns (launchers); it's over when the bottle's server is. A store
+        // game's bottle keeps its client running: its own processes ending was the end.
+        if prepared.gameFolder == nil { await waitForServer() }
         idle.withLock { $0 = true }
 
         let duration = Date().timeIntervalSince(startedAt)

@@ -9,13 +9,14 @@ import Foundation
 public enum GameWindows {
     /// Processes of the game's session that have a window on screen, frontmost first.
     public static func owners(of session: GameSession) -> [pid_t] {
-        owners(under: session.wineRoot, prefix: session.environment["WINEPREFIX"])
+        owners(under: session.wineRoot, prefix: session.environment["WINEPREFIX"], folder: session.gameFolder)
     }
 
     /// Processes running Wine from inside `root`, and in the bottle `prefix` when given, that have a window on
     /// screen. Every game on one runtime runs the same Wine, so the folder alone can't tell two games apart:
     /// with two running, a crash in one looked like a window in the other.
-    public static func owners(under root: URL, prefix: String? = nil) -> [pid_t] {
+    /// - Parameter folder: only processes started from this Windows folder (`C:\…\Portal 2`).
+    public static func owners(under root: URL, prefix: String? = nil, folder: String? = nil) -> [pid_t] {
         let rootPath = root.resolvingSymlinksInPath().path(percentEncoded: false)
         let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
         guard let windows = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
@@ -27,7 +28,12 @@ public enum GameWindows {
             guard let layer = window[kCGWindowLayer as String] as? Int, isGameLayer(layer),
                   let pid = window[kCGWindowOwnerPID as String] as? pid_t, checked.insert(pid).inserted,
                   let path = executablePath(of: pid), path.hasPrefix(rootPath) else { continue }
-            if let prefix, environment(of: pid)["WINEPREFIX"] != prefix { continue }
+            if prefix != nil || folder != nil {
+                let process = procArguments(of: pid)
+                if let prefix, process.environment["WINEPREFIX"] != prefix { continue }
+                // A store game's bottle also holds the store's client, whose windows aren't the game's.
+                if let folder, !WineProcesses.runs(process.arguments.first ?? "", from: folder) { continue }
+            }
             result.append(pid)
         }
         return result
@@ -69,7 +75,12 @@ public enum GameWindows {
     }
 
     static func parseProcArgs(_ bytes: [UInt8]) -> [String: String] {
-        guard bytes.count > MemoryLayout<Int32>.size else { return [:] }
+        parseProcArguments(bytes).environment
+    }
+
+    /// The arguments and the environment from `KERN_PROCARGS2` bytes.
+    static func parseProcArguments(_ bytes: [UInt8]) -> (arguments: [String], environment: [String: String]) {
+        guard bytes.count > MemoryLayout<Int32>.size else { return ([], [:]) }
         let argc = bytes.prefix(4).withUnsafeBytes { Int($0.loadUnaligned(as: Int32.self)) }
         let strings = bytes.dropFirst(4).split(separator: 0, omittingEmptySubsequences: true)
             .map { String(bytes: $0, encoding: .utf8) ?? "" }
@@ -79,10 +90,19 @@ public enum GameWindows {
             guard let equals = entry.firstIndex(of: "=") else { continue }
             result[String(entry[..<equals])] = String(entry[entry.index(after: equals)...])
         }
-        return result
+        return (Array(strings.dropFirst().prefix(argc)), result)
     }
 
-    private static func executablePath(of pid: pid_t) -> String? {
+    static func procArguments(of pid: pid_t) -> (arguments: [String], environment: [String: String]) {
+        var mib: [Int32] = [CTL_KERN, KERN_PROCARGS2, pid]
+        var size = 0
+        guard sysctl(&mib, 3, nil, &size, nil, 0) == 0, size > MemoryLayout<Int32>.size else { return ([], [:]) }
+        var buffer = [UInt8](repeating: 0, count: size)
+        guard sysctl(&mib, 3, &buffer, &size, nil, 0) == 0 else { return ([], [:]) }
+        return parseProcArguments(Array(buffer.prefix(size)))
+    }
+
+    static func executablePath(of pid: pid_t) -> String? {
         var buffer = [CChar](repeating: 0, count: Int(MAXPATHLEN) * 4)
         guard proc_pidpath(pid, &buffer, UInt32(buffer.count)) > 0 else { return nil }
         let path = String(cString: buffer)

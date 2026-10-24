@@ -49,8 +49,8 @@ public struct EscAppCommand: Sendable {
             return await runtime(rest)
         case "game":
             return await game(rest)
-        case "inspect":
-            return inspect(rest)
+        case "inspect", "store":
+            return command == "inspect" ? inspect(rest) : await store(rest)
         case "run", "install":
             return command == "run" ? await runGame(rest) : await install(rest)
         default:
@@ -76,6 +76,11 @@ public struct EscAppCommand: Sendable {
                                            Identify the game and make its bottle (needs the runtime)
           game list                        List known games
           inspect <exe>                    Show what EscApp reads from an .exe: format, DirectX, name, icon
+          store list                       Show which stores are installed and running
+          store install|open|close|remove steam|epic|gog|ea|ubisoft
+                                           Install a store's client in its own bottle, open it, close it,
+                                           or remove it with its games
+          store sync                       Add the stores' installed games to the library and list them
           run <exe> [--backend dxvk|dxmt|wined3d] [--no-retry] [--verbose] [--scale auto|on|off]
               [--disc <image>]
                                            Launch a game like the app does, trying the next backend when it

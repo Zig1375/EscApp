@@ -3,8 +3,8 @@ import EscAppKit
 import SwiftUI
 
 /// Settings, as in the design (Settings.dc.html): a sidebar of sections and four cards — components, disk space,
-/// saves, general. Sections EscApp has nothing for yet (stores, about, auto-retry, the folder for new games) are
-/// left out.
+/// saves, general. "Stores" opens the Stores screen in the main window, as the design links it. Sections EscApp
+/// has nothing for yet (about, auto-retry, the folder for new games) are left out.
 struct SettingsView: View {
     enum Section: String, CaseIterable, Identifiable {
         case general, components, disk, saves
@@ -23,6 +23,7 @@ struct SettingsView: View {
     let components: ComponentsModel
     let library: LibraryModel
     @State private var section: Section = .general
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         HStack(spacing: 0) {
@@ -82,6 +83,17 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(section == item ? .isSelected : [])
             }
+            Button {
+                library.showsStores = true
+                openWindow(id: "library")
+            } label: {
+                Text("Stores")
+                    .font(.system(size: 14))
+                    .padding(.horizontal, 12)
+                    .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
+                    .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
             Spacer()
         }
         .padding(.horizontal, 12)

@@ -39,6 +39,13 @@ final class LibraryModel {
     private(set) var now = Date()
     /// Whether double-clicking an .exe in Finder opens EscApp.
     private(set) var isDefaultForExe = true
+    /// Stores whose client is installed (Stores.dc.html).
+    var installedStores: Set<Store> = []
+    /// Stores being installed, with how far each is.
+    var storeInstalls: [Store: StoreClient.Step] = [:]
+    var storeTasks: [Store: Task<Void, Never>] = [:]
+    /// Set to show the Stores screen in the main window, from Settings or a "needs Steam" message.
+    var showsStores = false
 
     let paths: AppPaths
     var sessions: [GameID: GameSession] = [:]
@@ -74,6 +81,7 @@ final class LibraryModel {
         startClock()
         reload()
         watchFocus()
+        watchStores()
         // Discs left attached when EscApp last quit or crashed.
         Task { [paths] in await DiscImage.detachAll(paths: paths) }
         let waiting = pending

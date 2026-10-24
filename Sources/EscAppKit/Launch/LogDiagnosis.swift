@@ -15,6 +15,8 @@ public struct LogDiagnosis: Sendable, Equatable {
         case crash
         /// The game asked for its CD in a message box ("Please insert the CD").
         case needsDisc
+        /// The game checks that Steam runs and quits without it (`[S_API FAIL] SteamAPI_Init() failed`).
+        case needsSteam
     }
 
     public var problem: Problem?
@@ -28,7 +30,7 @@ public struct LogDiagnosis: Sendable, Equatable {
 
     public static func retryHelps(_ problem: Problem?) -> Bool {
         switch problem {
-        case .missingFile, .antiCheat, .directX12, .needsDisc: false
+        case .missingFile, .antiCheat, .directX12, .needsDisc, .needsSteam: false
         case .graphics, .crash, nil: true
         }
     }
@@ -50,6 +52,8 @@ public struct LogDiagnosis: Sendable, Equatable {
         var found: (Problem, String)?
         if let line = lines.last(where: Self.asksForDisc) {
             found = (.needsDisc, line)
+        } else if let line = last("SteamAPI_Init() failed", "SteamAPI_IsSteamRunning() failed") {
+            found = (.needsSteam, line)
         } else if let line = last("Support for DirectX 12 is required", "D3D12CreateDevice failed") {
             found = (.directX12, line)
         } else if let name = Self.antiCheats.first(where: { last($0) != nil }), let line = last(name) {
@@ -75,6 +79,7 @@ public struct LogDiagnosis: Sendable, Equatable {
         var seen = Set<String>()
         excerpt = lines.filter { line in
             let interesting = line.hasPrefix("[EscApp]") || line.contains("err:") || line.contains("Unhandled")
+                || line.contains("[S_API FAIL]")
                 || line.contains(":msgbox:")
                 || line.contains("mvk-error") || line.localizedCaseInsensitiveContains("fail")
             return interesting && !line.hasPrefix("\t") && seen.insert(Self.trim(line)).inserted

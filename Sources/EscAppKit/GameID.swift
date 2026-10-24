@@ -12,7 +12,7 @@ public struct GameID: RawRepresentable, Hashable, Codable, Sendable, CustomStrin
         self.rawValue = rawValue
     }
 
-    private init(uuid: UUID) {
+    init(uuid: UUID) {
         rawValue = uuid.uuidString
     }
 

@@ -135,3 +135,46 @@ private struct StepCard: View {
         .accessibilityElement(children: .combine)
     }
 }
+
+struct Pill: View {
+    let text: LocalizedStringKey
+    let background: Color
+    let foreground: Color
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 11, weight: .bold))
+            .foregroundStyle(foreground)
+            .padding(.horizontal, 8)
+            .frame(height: 20)
+            .background(background, in: .capsule)
+    }
+}
+
+/// Wording shared by the card and the game page.
+enum GameText {
+    /// "Yesterday · 14 h 20 min in total · from disk", or "Not launched yet · from disk". A store game has the
+    /// store's label in front instead (Main.dc.html: "Steam  Today · 35 min").
+    static func summary(_ game: GameRecord) -> String {
+        if game.store != nil {
+            guard let last = game.lastPlayed else { return String(localized: "Not launched yet") }
+            return String(localized: "\(day(last)) · \(duration(game.playTime ?? 0))")
+        }
+        guard let last = game.lastPlayed else { return String(localized: "Not launched yet · from disk") }
+        return String(localized: "\(day(last)) · \(duration(game.playTime ?? 0)) in total · from disk")
+    }
+
+    /// "Today", "Yesterday", "3 days ago", "Last week".
+    static func day(_ date: Date) -> String {
+        if Calendar.current.isDateInToday(date) { return String(localized: "Today") }
+        var style = Date.RelativeFormatStyle(presentation: .named, unitsStyle: .wide)
+        style.allowedFields = [.year, .month, .week, .day]
+        let text = date.formatted(style)
+        return text.prefix(1).capitalized + text.dropFirst()
+    }
+
+    static func duration(_ seconds: TimeInterval) -> String {
+        if seconds < 60 { return String(localized: "under a minute") }
+        return Duration.seconds(seconds).formatted(.units(allowed: [.hours, .minutes], width: .abbreviated))
+    }
+}

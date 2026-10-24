@@ -10,16 +10,51 @@ struct LaunchSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             switch launch.phase {
+            case .preparing where !launch.firstTime: starting
             case .preparing: preparing
             case let .retrying(retry): retrying(retry)
             case let .failed(failure): failed(failure)
             }
         }
         .padding(22)
-        .frame(width: 520)
+        .frame(width: launch.phase == .preparing && !launch.firstTime ? 380 : 520)
         .background(Color.cardBackground)
         // A sheet is its own view tree: the window's setting doesn't reach it.
         .focusEffectDisabled()
+    }
+
+    // MARK: Starting a game that ran before
+
+    /// Its settings are known, so there is nothing to explain: the game, "Starting", a bar and Cancel. The steps
+    /// (Windows, graphics) only mean something on the first launch.
+    @ViewBuilder private var starting: some View {
+        VStack(spacing: 14) {
+            if let game = library.game(launch.id) {
+                GameIconTile(game: game, library: library, size: 72, iconSize: 54, radius: 18)
+            }
+            VStack(spacing: 4) {
+                Text("Starting \(launch.name)")
+                    .font(.system(size: 18, weight: .bold))
+                    .multilineTextAlignment(.center)
+                    .accessibilityAddTraits(.isHeader)
+                if launch.slow {
+                    Text("Taking longer than usual. This can happen after a Mac restart.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            ProgressView()
+                .progressViewStyle(.linear)
+                .tint(.brand)
+                .frame(maxWidth: 280)
+            Button("Cancel") { library.cancelLaunch() }
+                .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
+                .keyboardShortcut(.cancelAction)
+        }
+        .padding(.vertical, 8)
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: Getting ready

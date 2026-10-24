@@ -44,6 +44,39 @@ public struct RuntimeInstaller: Sendable {
         }
     }
 
+    /// Deletes every installed runtime but `current` (~1 GB each). An update replaces the old Wine rather than
+    /// sitting next to it: games don't need it any more, because a bottle moves to the new runtime at its next
+    /// launch and the move only needs the old *template* (`BottleManager.removeUnusedTemplates`). A runtime
+    /// something still runs from (a game, a store client) stays until the next call.
+    /// - Returns: the ids it removed.
+    @discardableResult
+    public func removeOlder(keeping current: String, busy: Set<String>? = nil) -> [String] {
+        let busy = busy ?? runningRuntimes()
+        let fileManager = FileManager.default
+        let entries = (try? fileManager.contentsOfDirectory(atPath: paths.runtimes.path)) ?? []
+        var removed: [String] = []
+        for name in Self.removable(entries, keeping: current, busy: busy)
+        where (try? fileManager.removeItem(at: paths.runtimes.appending(path: name))) != nil {
+            removed.append(name)
+        }
+        return removed
+    }
+
+    /// The runtime folders that can go: not hidden (staging, partial downloads), not `current`, not in use.
+    static func removable(_ entries: [String], keeping current: String, busy: Set<String>) -> [String] {
+        entries.filter { !$0.hasPrefix(".") && $0 != current && !busy.contains($0) }.sorted()
+    }
+
+    /// Runtimes some process on this Mac runs from: its executable lies inside `Runtime/<id>/`.
+    func runningRuntimes() -> Set<String> {
+        let root = paths.runtimes.resolvingSymlinksInPath().path(percentEncoded: false)
+        let prefix = root.hasSuffix("/") ? root : root + "/"
+        return Set(WineProcesses.allPIDs().compactMap { pid -> String? in
+            guard let path = GameWindows.executablePath(of: pid), path.hasPrefix(prefix) else { return nil }
+            return path.dropFirst(prefix.count).split(separator: "/").first.map(String.init)
+        })
+    }
+
     @discardableResult
     public func install(
         _ runtime: RuntimeManifest.Runtime,

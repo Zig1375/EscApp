@@ -19,7 +19,10 @@ struct EscAppApp: App {
             .frame(minWidth: 960, idealWidth: 1200, minHeight: 600, idealHeight: 780)
             .onChange(of: setup.phase, initial: true) {
                 components.reload()
-                if setup.phase == .ready { delegate.library.becameReady() }
+                if setup.phase == .ready {
+                    delegate.library.becameReady()
+                    components.removeOldRuntimes()
+                }
             }
             .task {
                 // Once an hour is plenty: the updater itself only goes to the network once a day.
@@ -67,6 +70,7 @@ private struct CheckForUpdatesButton: View {
 
     var body: some View {
         Button("Check for Component Updates…") {
+            UserDefaults.standard.set(SettingsView.Section.components.rawValue, forKey: SettingsView.sectionKey)
             openSettings()
             Task { await components.checkNow() }
         }

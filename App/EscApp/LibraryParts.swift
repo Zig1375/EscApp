@@ -4,6 +4,7 @@ import SwiftUI
 /// The blue strip under the toolbar when newer components are out.
 struct UpdateStrip: View {
     let components: ComponentsModel
+    @State private var showsDetails = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -15,8 +16,10 @@ struct UpdateStrip: View {
                 Button("Update") { Task { await components.installUpdate() } }
                     .buttonStyle(.plain)
                     .fontWeight(.semibold)
-                SettingsLink { Text("Details") }
+                // What changes, right here: it used to open Settings, which only repeated the versions.
+                Button("Details") { showsDetails = true }
                     .buttonStyle(.plain)
+                    .popover(isPresented: $showsDetails, arrowEdge: .bottom) { UpdateDetails(components: components) }
             }
         }
         .font(.system(size: 13))
@@ -34,8 +37,49 @@ struct UpdateStrip: View {
             .compactMap { change in change.newVersion.map { "\(change.kind.title) \($0)" } }
             .formatted(.list(type: .and))
         return String(localized: """
-            \(versions) is out. It installs next to the current version; games keep their saves and settings.
+            \(versions) is out. It replaces the current version; games keep their saves and settings.
             """)
+    }
+}
+
+/// The strip's "Details": each component from → to, the download size, and what happens to games.
+private struct UpdateDetails: View {
+    let components: ComponentsModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("What's New")
+                .font(.system(size: 15, weight: .bold))
+            if case let .updateAvailable(current, newest)? = components.catalog?.status {
+                Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 6) {
+                    ForEach(RuntimeCatalog.changes(from: current, to: newest), id: \.kind) { change in
+                        GridRow {
+                            Text(change.kind.title).fontWeight(.semibold)
+                            Text(verbatim: change.oldVersion ?? "—").foregroundStyle(Color.secondaryText)
+                            Image(systemName: "arrow.right").foregroundStyle(Color.secondaryText)
+                            Text(verbatim: change.newVersion ?? "—")
+                        }
+                    }
+                }
+                Text("Download: \(downloadSize(from: current, to: newest).formatted(.byteCount(style: .file)))")
+                    .foregroundStyle(Color.secondaryText)
+            }
+            Text("""
+                The old version is removed after the update. Each game moves to the new one by itself at its next \
+                launch; saves and settings stay.
+                """)
+                .font(.system(size: 12))
+                .foregroundStyle(Color.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .font(.system(size: 13))
+        .padding(16)
+        .frame(width: 380, alignment: .leading)
+    }
+
+    private func downloadSize(from current: RuntimeManifest.Runtime, to newest: RuntimeManifest.Runtime) -> Int64 {
+        let have = Set(current.components.map(\.sha256))
+        return newest.components.filter { !have.contains($0.sha256) }.map(\.size).reduce(0, +)
     }
 }
 
@@ -65,6 +109,8 @@ struct HintLine: View {
 }
 
 struct EmptyLibraryView: View {
+    let stores: () -> Void
+
     var body: some View {
         ZStack {
             WarmBackground()
@@ -93,6 +139,15 @@ struct EmptyLibraryView: View {
                 // Equal heights: each card fills the row, and the row is as tall as the tallest card.
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: 720)
+
+                HStack(spacing: 12) {
+                    StoreStack(size: 22)
+                    Text("Games in Steam, Epic or another store?")
+                        .foregroundStyle(Color.secondaryText)
+                    Button("Install a Store", action: stores)
+                        .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
+                }
+                .font(.system(size: 14))
             }
             .padding(40)
         }

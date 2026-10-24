@@ -457,16 +457,6 @@
         }
       }
     },
-    "%@ is out. It installs next to the current version; games keep their saves and settings.": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вышел %@. Он встанет рядом с текущей версией, сохранения и настройки игр останутся."
-          }
-        }
-      }
-    },
     "%@ · %@ in total · from disk": {
       "localizations": {
         "ru": {
@@ -3504,6 +3494,86 @@
           "stringUnit": {
             "state": "translated",
             "value": "Пробуем вариант %1$lld из %2$lld"
+          }
+        }
+      }
+    },
+    "%@ is out. It replaces the current version; games keep their saves and settings.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вышел %@. Он заменит текущую версию, сохранения и настройки игр останутся."
+          }
+        }
+      }
+    },
+    "Download: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скачать: %@"
+          }
+        }
+      }
+    },
+    "Games in Steam, Epic or another store?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игры в Steam, Epic или другом магазине?"
+          }
+        }
+      }
+    },
+    "Install a Store": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установить магазин"
+          }
+        }
+      }
+    },
+    "Starting %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запускаем %@"
+          }
+        }
+      }
+    },
+    "Taking longer than usual. This can happen after a Mac restart.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дольше обычного. Так бывает после перезагрузки Mac."
+          }
+        }
+      }
+    },
+    "The old version is removed after the update. Each game moves to the new one by itself at its next launch; saves and settings stay.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Старая версия удаляется после обновления. Каждая игра сама перейдёт на новую при следующем запуске, сохранения и настройки останутся."
+          }
+        }
+      }
+    },
+    "What's New": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что нового"
           }
         }
       }

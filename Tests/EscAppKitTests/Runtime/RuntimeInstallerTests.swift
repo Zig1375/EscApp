@@ -70,6 +70,19 @@ import Testing
         #expect(try FileManager.default.contentsOfDirectory(atPath: paths.runtimes.path) == ["r0"])
     }
 
+    @Test func anUpdateRemovesOlderRuntimesNothingRunsFrom() throws {
+        #expect(RuntimeInstaller.removable([".staging-r3", "r1", "r2", "r3", ".DS_Store"], keeping: "r3",
+                                           busy: ["r2"]) == ["r1"])
+
+        let (_, paths) = try setUp()
+        for id in ["r1", "r2", "r3"] {
+            try FileManager.default.createDirectory(at: paths.runtime(id).appending(path: "wine"),
+                                                    withIntermediateDirectories: true)
+        }
+        #expect(RuntimeInstaller(paths: paths).removeOlder(keeping: "r3", busy: []) == ["r1", "r2"])
+        #expect(try FileManager.default.contentsOfDirectory(atPath: paths.runtimes.path) == ["r3"])
+    }
+
     @Test func aFolderWithoutMarkerIsNotInstalled() throws {
         let (_, paths) = try setUp()
         let runtime = RuntimeManifest.Runtime(id: "test-3", minApp: version("0.1"), minMacOS: version("15"),

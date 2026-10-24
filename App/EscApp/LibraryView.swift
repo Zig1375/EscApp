@@ -27,7 +27,7 @@ struct LibraryView: View {
             } else {
                 if components.catalog?.updateAvailable == true { UpdateStrip(components: components) }
                 if library.games.isEmpty {
-                    EmptyLibraryView()
+                    EmptyLibraryView { page = .stores }
                 } else {
                     LibraryScreen(library: library, search: search) { page = .game($0) }
                 }
@@ -108,6 +108,14 @@ struct LibraryView: View {
                     .font(.system(size: 15, weight: .bold))
                 Spacer(minLength: 0)
                 SearchField(text: $search)
+                // Stores used to be reachable only from Settings, where players didn't look for them.
+                Button { page = .stores } label: {
+                    HStack(spacing: 8) {
+                        StoreStack()
+                        Text("Stores")
+                    }
+                }
+                .buttonStyle(BrandButtonStyle(height: 32))
                 Button { library.chooseGameFile() } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "plus").font(.system(size: 12, weight: .bold))

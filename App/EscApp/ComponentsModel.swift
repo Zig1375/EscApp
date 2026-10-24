@@ -62,11 +62,21 @@ final class ComponentsModel {
         reload()
     }
 
+    /// The daily check: a failure stays quiet (no network, GitHub down) and the next one simply tries again.
+    /// Only "Check for Updates" reports it.
+    private func checkQuietly() async {
+        guard !isChecking else { return }
+        isChecking = true
+        defer { isChecking = false }
+        try? await updater.check()
+        reload()
+    }
+
     /// Called on launch and every hour; checks at most once a day, and never if the user turned it off.
     func checkIfDue() async {
         guard autoCheck, ManifestUpdater.isDue(lastChecked: updater.cached()?.checkedAt) else { return }
-        await checkNow()
-        // The new runtime installs next to the current one; games move to it at their next launch.
+        await checkQuietly()
+        // The new runtime replaces the current one; games move to it at their next launch.
         if catalog?.updateAvailable == true { await installUpdate() }
     }
 
@@ -79,7 +89,7 @@ final class ComponentsModel {
         }
     }
 
-    /// Installs the newest runtime next to the current one. The old one stays until no game needs it.
+    /// Installs the newest runtime and removes the old one: games move to the new one at their next launch.
     func installUpdate() async {
         guard case let .updateAvailable(_, newest)? = catalog?.status, updating == nil else { return }
         updating = UpdateProgress(label: String(localized: "Preparing…"))
@@ -103,10 +113,22 @@ final class ComponentsModel {
                     }
                 }
             }
+            removeOldRuntimes(keeping: newest.id)
         } catch {
             updateError = String(describing: error)
         }
         updating = nil
         reload()
+    }
+
+    /// Deletes runtimes older than `current`, also on launch for an update that found something still running
+    /// from the old one. Off the main thread: a runtime is about a gigabyte of small files.
+    func removeOldRuntimes(keeping current: String? = nil) {
+        guard let current = current ?? catalog?.current?.id else { return }
+        let installer = installer
+        Task.detached(priority: .utility) {
+            guard !installer.removeOlder(keeping: current).isEmpty else { return }
+            await MainActor.run { self.reload() }
+        }
     }
 }

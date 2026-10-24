@@ -2,9 +2,9 @@ import AppKit
 import EscAppKit
 import SwiftUI
 
-/// Settings, as in the design (Settings.dc.html): a sidebar of sections and four cards — components, disk space,
-/// saves, general. "Stores" opens the Stores screen in the main window, as the design links it. Sections EscApp
-/// has nothing for yet (about, auto-retry, the folder for new games) are left out.
+/// Settings, as in the design (Settings.dc.html): a sidebar of sections, each showing its card — general,
+/// components, disk space, saves. "Stores" opens the Stores screen in the main window, as the design links it.
+/// Sections EscApp has nothing for yet (about, auto-retry, the folder for new games) are left out.
 struct SettingsView: View {
     enum Section: String, CaseIterable, Identifiable {
         case general, components, disk, saves
@@ -20,35 +20,32 @@ struct SettingsView: View {
         }
     }
 
+    static let sectionKey = "SettingsSection"
     let components: ComponentsModel
     let library: LibraryModel
-    @State private var section: Section = .general
+    /// Remembered, and set by "Check for Component Updates…" to land on Components.
+    @AppStorage(SettingsView.sectionKey) private var section: Section = .general
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         HStack(spacing: 0) {
             sidebar
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Settings")
-                            .font(.system(size: 22, weight: .bold))
-                        Grid(horizontalSpacing: 16, verticalSpacing: 16) {
-                            GridRow(alignment: .top) {
-                                ComponentsCard(components: components).id(Section.components)
-                                DiskCard(components: components).id(Section.disk)
-                            }
-                            GridRow(alignment: .top) {
-                                SavesCard(profile: components.paths.profile).id(Section.saves)
-                                GeneralCard(components: components, library: library).id(Section.general)
-                            }
-                        }
-                    }
-                    .padding(24)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            // One section at a time: scrolling a page that already fit on screen looked like a dead sidebar.
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(section.title)
+                        .font(.system(size: 22, weight: .bold))
+                        .accessibilityAddTraits(.isHeader)
+                    page
+                        .frame(maxWidth: 640, alignment: .leading)
                 }
-                .onChange(of: section) { withAnimation { proxy.scrollTo(section, anchor: .top) } }
+                .padding(.horizontal, 24)
+                // Level with the sidebar's first section, below the traffic lights.
+                .padding(.top, 48)
+                .padding(.bottom, 24)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .id(section)
         }
         .background(Color.windowBackground)
         // The design has no keyboard focus rings; macOS draws a blue one around the focused button.
@@ -62,6 +59,15 @@ struct SettingsView: View {
             components.reload()
             components.measureDisk()
             library.reload()
+        }
+    }
+
+    @ViewBuilder private var page: some View {
+        switch section {
+        case .general: GeneralCard(components: components, library: library)
+        case .components: ComponentsCard(components: components)
+        case .disk: DiskCard(components: components)
+        case .saves: SavesCard(profile: components.paths.profile)
         }
     }
 
@@ -106,18 +112,12 @@ struct SettingsView: View {
     }
 }
 
-/// A white card with an uppercase heading, 18/20 padding and 12-pt gaps.
+/// A white card, 18/20 padding and 12-pt gaps; the page above it has the section's name.
 private struct SettingsCard<Content: View>: View {
-    let title: LocalizedStringKey
     @ViewBuilder let content: Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.system(size: 13, weight: .bold))
-                .textCase(.uppercase)
-                .tracking(0.6)
-                .foregroundStyle(Color.secondaryText)
             content
         }
         .font(.system(size: 14))
@@ -146,7 +146,7 @@ private struct ComponentsCard: View {
     @State private var showsLicenses = false
 
     var body: some View {
-        SettingsCard(title: "Components") {
+        SettingsCard {
             if let current = components.catalog?.current {
                 ForEach(current.components, id: \.kind) { component in
                     HStack(spacing: 12) {
@@ -191,6 +191,7 @@ private struct ComponentsCard: View {
             Text("\(newer.version) available")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(Color.brand)
+                .fixedSize()
         } else {
             Text("Latest").font(.system(size: 12, weight: .semibold)).foregroundStyle(Color.okText)
         }
@@ -207,9 +208,11 @@ private struct ComponentsCard: View {
             }
             .buttonStyle(CompactButtonStyle())
             .disabled(components.isChecking)
+            Spacer(minLength: 0)
             Button("Licenses") { showsLicenses = true }
                 .buttonStyle(.plain)
                 .font(.system(size: 13))
+                .fixedSize()
                 .foregroundStyle(Color.brand)
                 .popover(isPresented: $showsLicenses, arrowEdge: .bottom) { licenses }
         }
@@ -247,7 +250,7 @@ private struct DiskCard: View {
     let components: ComponentsModel
 
     var body: some View {
-        SettingsCard(title: "Disk Space") {
+        SettingsCard {
             if let usage = components.diskUsage {
                 Text(usage.total.formatted(.byteCount(style: .file)))
                     .font(.system(size: 26, weight: .bold))
@@ -296,7 +299,7 @@ private struct SavesCard: View {
     let profile: URL
 
     var body: some View {
-        SettingsCard(title: "Saves") {
+        SettingsCard {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Shared by all games")
@@ -337,7 +340,7 @@ private struct GeneralCard: View {
 
     var body: some View {
         @Bindable var components = components
-        SettingsCard(title: "General") {
+        SettingsCard {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Language")

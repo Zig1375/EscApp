@@ -154,7 +154,8 @@ private struct StoreProgress: View {
     }
 }
 
-/// The store's square: its colour and initials (the design's placeholders for the real logos).
+/// The store's square: its logo in white on its brand colour. The logos are from Simple Icons (CC0); the marks
+/// themselves belong to their owners and only name the store, as in any launcher.
 struct StoreLogo: View {
     let store: Store
     var size: CGFloat = 48
@@ -164,22 +165,42 @@ struct StoreLogo: View {
             .fill(store.logoColor)
             .frame(width: size, height: size)
             .overlay {
-                Text(store.initials)
-                    .font(.system(size: size * 0.31, weight: .bold))
+                Image(store.logoAsset)
+                    .resizable()
+                    .scaledToFit()
                     .foregroundStyle(.white)
+                    .padding(size * 0.2)
             }
             .accessibilityHidden(true)
     }
 }
 
+/// The main window's "Stores" button: three store logos fanned like cards, so it reads as "the stores" at a glance.
+struct StoreStack: View {
+    var size: CGFloat = 18
+
+    var body: some View {
+        HStack(spacing: -size * 0.4) {
+            ForEach([Store.steam, .epic, .eaApp], id: \.self) { store in
+                StoreLogo(store: store, size: size)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: size / 4, style: .continuous)
+                            .strokeBorder(Color.cardBackground, lineWidth: 1.5)
+                    }
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
 extension Store {
-    var initials: String {
+    var logoAsset: String {
         switch self {
-        case .steam: "St"
-        case .epic: "Ep"
-        case .gog: "GG"
-        case .eaApp: "EA"
-        case .ubisoft: "Ub"
+        case .steam: "StoreSteam"
+        case .epic: "StoreEpic"
+        case .gog: "StoreGog"
+        case .eaApp: "StoreEa"
+        case .ubisoft: "StoreUbisoft"
         }
     }
 

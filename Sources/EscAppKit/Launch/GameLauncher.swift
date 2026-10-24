@@ -235,7 +235,9 @@ public struct GameLauncher: Sendable {
             let started = ProcessExit()
             process.terminationHandler = { started.exited($0.terminationStatus) }
             try process.run()
-            StoreGameWatch(bottle: prepared.bottle, folder: folder).watch(starter: started, game: exit)
+            let steamApp = prepared.game.store == .steam ? prepared.game.storeID : nil
+            StoreGameWatch(bottle: prepared.bottle, folder: folder, steamApp: steamApp)
+                .watch(starter: started, game: exit)
         } else {
             process.terminationHandler = { exit.exited($0.terminationStatus) }
             try process.run()

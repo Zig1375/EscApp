@@ -181,6 +181,11 @@ import Testing
         let games = [game("old", played: 100), game("never", played: nil), game("recent", played: 200)]
         #expect(WarmPolicy.lastPlayed(games)?.name == "recent")
         #expect(WarmPolicy.lastPlayed([game("never", played: nil)]) == nil)
+
+        // Played after "recent", but from Steam: its bottle is Steam's and isn't warmed.
+        var store = game("from Steam", played: 300)
+        store.store = .steam
+        #expect(WarmPolicy.lastPlayed(games + [store])?.name == "recent")
     }
 
     @Test func coolsAFewSecondsAfterFocusIsLost() {

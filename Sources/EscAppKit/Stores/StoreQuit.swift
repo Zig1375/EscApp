@@ -180,3 +180,34 @@ enum SteamLaunches {
         return inProgress(log: text, now: now)
     }
 }
+
+/// Steam downloading or updating a game: `logs/content_log.txt` says each game's state as it changes,
+/// `AppID 242920 state changed : Fully Installed,Update Queued,Update Running,`. On Windows a download goes on
+/// with the window closed; quitting Steam then would stop it.
+enum SteamDownloads {
+    static func file(in bottle: URL) -> URL {
+        bottle.appending(path: "drive_c/Program Files (x86)/Steam/logs/content_log.txt")
+    }
+
+    /// Whether the last state of some game, since Steam last started (`Client version: …`), has `Update Running`.
+    /// A download Steam was quit in the middle of stays so in the log, and doesn't count after a restart.
+    static func inProgress(log: String) -> Bool {
+        var running: [Substring: Bool] = [:]
+        for line in log.split(whereSeparator: \.isNewline) {
+            if line.contains("] Client version: ") {
+                running = [:]
+            } else if let app = line.range(of: "] AppID "), let state = line.range(of: " state changed : ") {
+                running[line[app.upperBound..<state.lowerBound]] = line[state.upperBound...]
+                    .contains("Update Running,")
+            }
+        }
+        return running.values.contains(true)
+    }
+
+    static func inProgress(in bottle: URL) -> Bool {
+        guard let data = try? Data(contentsOf: file(in: bottle)) else { return false }
+        // A long session's log grows by some kilobytes an hour; its end is what matters.
+        let tail = data.suffix(4 << 20)
+        return inProgress(log: String(bytes: tail, encoding: .utf8) ?? String(bytes: tail, encoding: .isoLatin1) ?? "")
+    }
+}

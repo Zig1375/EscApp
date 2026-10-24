@@ -176,3 +176,38 @@ import Testing
         #expect(!SteamLaunches.inProgress(log: log, now: now, timeZone: utc))
     }
 }
+
+@Suite struct SteamDownloadsTests {
+    let start = "[2026-10-24 22:30:43] Client version: 1792618285"
+
+    func state(_ app: Int, _ text: String) -> String {
+        "[2026-10-24 22:34:12] AppID \(app) state changed : \(text)"
+    }
+
+    @Test func downloadUnderWayCounts() {
+        let log = [start, state(242920, "Update Required,Update Queued,"),
+                   state(242920, "Update Required,Update Queued,Update Running,Update Started,"),
+                   "[2026-10-24 22:34:13] AppID 242920 App update changed : Running Update,Downloading,Staging,"]
+        #expect(SteamDownloads.inProgress(log: log.joined(separator: "\n")))
+    }
+
+    @Test func finishedOrQueuedDownloadDoesNot() {
+        let finished = [start, state(242920, "Fully Installed,Update Queued,Update Running,"),
+                        state(242920, "Fully Installed,Update Queued,"), state(242920, "Fully Installed,")]
+        let queued = [start, state(228980, "Update Required,Update Queued,")]
+        #expect(!SteamDownloads.inProgress(log: finished.joined(separator: "\n")))
+        #expect(!SteamDownloads.inProgress(log: queued.joined(separator: "\n")))
+        #expect(!SteamDownloads.inProgress(log: ""))
+    }
+
+    @Test func oneOfTwoGamesDownloading() {
+        let log = [start, state(228980, "Update Required,Update Queued,Update Running,"),
+                   state(242920, "Fully Installed,")]
+        #expect(SteamDownloads.inProgress(log: log.joined(separator: "\n")))
+    }
+
+    @Test func downloadCutShortBeforeARestartDoesNot() {
+        let log = [state(242920, "Update Required,Update Queued,Update Running,"), start]
+        #expect(!SteamDownloads.inProgress(log: log.joined(separator: "\n")))
+    }
+}

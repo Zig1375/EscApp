@@ -35,7 +35,7 @@ public actor StoreKeeper {
                 for pid in SteamHelperSweep.strays(SteamHelperSweep.helpers(in: processes)) { kill(pid, SIGKILL) }
             }
             let game = busy.contains(store) || processes.contains { !store.isClientProgram($0.program) }
-                || store == .steam && SteamLaunches.inProgress(in: bottle)
+                || store == .steam && (SteamLaunches.inProgress(in: bottle) || SteamDownloads.inProgress(in: bottle))
             let oldest = processes.compactMap(\.started).min() ?? Date()
             var quit = quits[store] ?? StoreQuit(used: Date().timeIntervalSince(oldest) > Self.settledAfter)
             // A client first seen with nothing on screen may be minimised: ask Wine once.

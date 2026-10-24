@@ -50,17 +50,26 @@ private final class CoverWindow: NSWindow {
 }
 
 /// The card in the middle of the cover.
+/// Simple by default: what is happening, in plain words, with a picture and a bar. "Details" shows every step and
+/// attempt, and is remembered for players who want to watch.
 struct TuningScreen: View {
     let library: LibraryModel
+    @AppStorage("TuningDetails") private var details = false
 
     var body: some View {
         ZStack {
             Color.windowBackground.ignoresSafeArea()
             if let launch = library.launch, let tuning = launch.tuning {
-                TuningCard(launch: launch, tuning: tuning, library: library)
-                    .frame(width: 560)
+                if details {
+                    TuningCard(launch: launch, tuning: tuning, library: library) { details = false }
+                        .frame(width: 600)
+                } else {
+                    SimpleTuningCard(launch: launch, tuning: tuning, library: library) { details = true }
+                        .frame(width: 600)
+                }
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: details)
         .focusEffectDisabled()
     }
 }
@@ -69,14 +78,22 @@ private struct TuningCard: View {
     let launch: LibraryModel.Launch
     let tuning: LibraryModel.Launch.Tuning
     let library: LibraryModel
+    let simpler: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("First launch · checking")
-                .font(.system(size: 12, weight: .bold))
-                .textCase(.uppercase)
-                .tracking(0.6)
-                .foregroundStyle(Color.secondaryText)
+            HStack {
+                Text("First launch · checking")
+                    .font(.system(size: 12, weight: .bold))
+                    .textCase(.uppercase)
+                    .tracking(0.6)
+                    .foregroundStyle(Color.secondaryText)
+                Spacer()
+                Button("Hide Details", action: simpler)
+                    .buttonStyle(.plain)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.brand)
+            }
             HStack(spacing: 14) {
                 if let game = library.game(launch.id) {
                     GameIconTile(game: game, library: library, size: 64, iconSize: 46, radius: 14)
@@ -274,7 +291,7 @@ private struct TryMark: View {
     }
 }
 
-private struct TuningHint: ViewModifier {
+struct TuningHint: ViewModifier {
     func body(content: Content) -> some View {
         content
             .font(.system(size: 12))

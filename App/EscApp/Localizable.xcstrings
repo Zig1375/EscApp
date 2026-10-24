@@ -3257,6 +3257,146 @@
           }
         }
       }
+    },
+    "Didn't work": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не подошло"
+          }
+        }
+      }
+    },
+    "Getting %@ ready for its first launch": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовим %@ к первому запуску"
+          }
+        }
+      }
+    },
+    "Hide Details": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скрыть подробности"
+          }
+        }
+      }
+    },
+    "Its window stays hidden meanwhile": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окно игры пока спрятано"
+          }
+        }
+      }
+    },
+    "Keeping the best": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запоминаем лучшее"
+          }
+        }
+      }
+    },
+    "Looking at the game": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изучаем игру"
+          }
+        }
+      }
+    },
+    "Next": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дальше"
+          }
+        }
+      }
+    },
+    "Only needed once": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это нужно только один раз"
+          }
+        }
+      }
+    },
+    "This game was made for Windows. EscApp tries it with different settings and checks that it opens and runs smoothly. The one that works is kept, so next time the game starts right away.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Эта игра сделана для Windows. EscApp пробует её с разными настройками и проверяет, что она открывается и работает без сбоев. Подходящие настройки сохранятся, и в следующий раз игра запустится сразу."
+          }
+        }
+      }
+    },
+    "Trying settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пробуем настройки"
+          }
+        }
+      }
+    },
+    "Trying…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пробуем…"
+          }
+        }
+      }
+    },
+    "Usually under a minute": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обычно меньше минуты"
+          }
+        }
+      }
+    },
+    "What it needs to run": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что ей нужно для работы"
+          }
+        }
+      }
+    },
+    "Works!": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Работает!"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

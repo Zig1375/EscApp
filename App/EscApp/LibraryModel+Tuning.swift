@@ -24,6 +24,8 @@ extension LibraryModel.Launch {
         /// "checking 12 of 15 s".
         var held: Int?
         var needed = Int(AttemptJudge.windowHolds)
+        /// When the search began: the simple screen's bar fills with time, not with attempts.
+        var startedAt = Date()
 
         var currentBackend: GraphicsBackend { order[min(current, order.count - 1)] }
     }

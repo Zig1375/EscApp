@@ -12,7 +12,8 @@ let package = Package(
     ],
     targets: [
         .target(name: "EscAppKit", resources: [.copy("Resources/runtime-manifest.json"),
-                                                .copy("Resources/chromium-helper.exe")]),
+                                                .copy("Resources/chromium-helper.exe"),
+                                                .copy("Resources/window-keeper.exe")]),
         // The CLI logic is a library so tests can drive it; `escapp` is only the entry point.
         .target(name: "EscAppCLI", dependencies: ["EscAppKit"]),
         .executableTarget(name: "escapp", dependencies: ["EscAppCLI"]),

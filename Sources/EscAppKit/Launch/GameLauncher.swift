@@ -233,6 +233,7 @@ public struct GameLauncher: Sendable {
         } else {
             process.terminationHandler = { exit.exited($0.terminationStatus) }
             try process.run()
+            WindowKeeper.start(for: prepared)
         }
         // Points on the Mac per pixel of the game: the DPI enlarging, or with Retina on, half a point per pixel.
         let pointsPerPixel = retina ? 1 / GameScaling.backingScale() : prepared.scale

@@ -123,10 +123,14 @@ import Testing
         game = try GameIdentifier(paths: paths).identify(executable: exe).record
     }
 
+    /// What the scripted game's window measures, as `GameWindows.learnWindow` would report it.
+    static let window = GameScaling.LearnedWindow(width: 640, height: 508, fullScreen: false)
+
     func play(_ starter: FakeStarter, backend: GraphicsBackend? = nil, knownGames: [KnownGame] = [],
               control: LaunchControl = LaunchControl(), warmer: FakeWarmer? = nil,
               events: @escaping @Sendable (AutoLaunch.Event) -> Void = { _ in }) async throws -> AutoLaunch.Result {
-        try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, timing: timing)
+        try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, measure: { _ in Self.window },
+                             timing: timing)
             .play(game, runtime: runtime, backend: backend, knownGames: knownGames, control: control,
                   warmer: warmer, events: events)
     }
@@ -150,6 +154,8 @@ import Testing
         #expect(learned.withLock { $0 } == false)
         #expect(try remembered() == .dxvk)
         #expect(try GameLibrary.load(from: paths.library)[game.id]?.launches == 1)
+        // Its window size is kept: it sets how much the game is enlarged next time.
+        #expect(try GameLibrary.load(from: paths.library)[game.id]?.window == Self.window)
     }
 
     @Test func aCrashMovesOnToTheNextBackendAndIsLearned() async throws {

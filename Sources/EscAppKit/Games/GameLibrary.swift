@@ -25,6 +25,10 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     /// The disc image the game was installed from, put in drive `D:` on every launch because the game checks
     /// for its CD.
     public var disc: String?
+    /// Enlarging a small game (`GameScaling`); nil is Auto.
+    public var scaling: GameScaling.Setting?
+    /// The game's window as seen on its last run, which sets how much it is enlarged.
+    public var window: GameScaling.LearnedWindow?
 
     public init(id: GameID, name: String, executable: String, folder: String, hasMarker: Bool,
                 fingerprint: String? = nil, windowsVersion: WindowsVersion = .default, addedAt: Date,

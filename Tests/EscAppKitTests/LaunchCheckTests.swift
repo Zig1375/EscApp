@@ -166,3 +166,11 @@ import Testing
         #expect(text.contains("~/Games/D2/Game.exe"))
     }
 }
+
+@Suite struct GameWindowLayerTests {
+    @Test func topmostFullScreenWindowsCountButTrayIconsDont() {
+        // A full-screen game made with WS_EX_TOPMOST sits at 21; it showed "no window" and was retried.
+        #expect(GameWindows.isGameLayer(0) && GameWindows.isGameLayer(21) && GameWindows.isGameLayer(1000))
+        #expect(!GameWindows.isGameLayer(24) && !GameWindows.isGameLayer(25))
+    }
+}

@@ -60,17 +60,18 @@ extension EscAppCommand {
         let backendValue = options.value("--backend")
         let verbose = options.flag("--verbose")
         let noRetry = options.flag("--no-retry")
+        let scaleValue = options.value("--scale")
         guard let path = options.positional() else { return failure("run needs the path to an .exe") }
         if let unknown = options.leftover { return failure("Unknown option: \(unknown)") }
-        let backend = backendValue.flatMap(GraphicsBackend.init(rawValue:))
-        if let backendValue, backend == nil { return failure("Unknown backend: \(backendValue)") }
 
         do {
+            let backend: GraphicsBackend? = try choice(backendValue, "backend")
+            let scaling: GameScaling.Setting? = try choice(scaleValue, "scaling")
             guard let runtime = try manifest().newest(forApp: Self.appVersion, macOS: Self.macOSVersion) else {
                 return failure("No runtime suits this Mac.")
             }
             let manifest = try manifest()
-            let game = try GameIdentifier(paths: paths).identify(executable: URL(filePath: path)).record
+            let game = try identified(path, scaling: scaling)
             let progress = progress
             let result = try await AutoLaunch(paths: paths, host: host).play(
                 game, runtime: runtime, backend: backend, knownGames: manifest.games ?? [], verboseLog: verbose,
@@ -88,15 +89,33 @@ extension EscAppCommand {
                     break
                 }
             }
-            let lines = result.attempts.map { Self.describe($0) } + [
-                result.working.map { "Works with \($0.displayName)." } ?? "Didn't start with any backend.",
-                "Log: \(result.log?.path ?? "-")",
-            ]
-            return result.working == nil ? failure(lines.joined(separator: "\n"))
-                : success(lines.joined(separator: "\n"))
+            // With --backend or --no-retry the run isn't judged: it ran unless it failed.
+            let ran = result.working != nil || (backend != nil || noRetry) && result.attempts.last?.failure == nil
+            let verdict = result.working.map { "Works with \($0.displayName)." }
+                ?? (ran ? "Ran without checking." : "Didn't start with any backend.")
+            let lines = result.attempts.map { Self.describe($0) } + [verdict, "Log: \(result.log?.path ?? "-")"]
+            return ran ? success(lines.joined(separator: "\n")) : failure(lines.joined(separator: "\n"))
         } catch {
             return failure("\(error)")
         }
+    }
+
+    /// An option's value as one of its choices; nil when the option wasn't given.
+    private func choice<Value: RawRepresentable>(_ value: String?, _ name: String) throws -> Value?
+        where Value.RawValue == String {
+        guard let value else { return nil }
+        guard let choice = Value(rawValue: value) else { throw CLIError("Unknown \(name): \(value)") }
+        return choice
+    }
+
+    /// The game the exe belongs to, with `--scale` kept for it like the app's setting.
+    private func identified(_ path: String, scaling: GameScaling.Setting?) throws -> GameRecord {
+        var game = try GameIdentifier(paths: paths).identify(executable: URL(filePath: path)).record
+        guard let scaling else { return game }
+        game.scaling = scaling == .auto ? nil : scaling
+        let record = game
+        try GameLibrary.modify(paths.library) { $0[record.id] = record }
+        return record
     }
 
     private func control(noRetry: Bool) -> LaunchControl {

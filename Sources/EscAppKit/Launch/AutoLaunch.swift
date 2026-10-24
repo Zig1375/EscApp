@@ -39,15 +39,19 @@ public struct AutoLaunch: Sendable {
     let starter: any AttemptStarter
     /// The game's window owners; injectable so the loop doesn't depend on the screen.
     let windows: @Sendable (GameSession) -> [Int32]
+    /// The game's window size once it works, which decides how much it is enlarged next time (`GameScaling`).
+    let measure: @Sendable (GameSession) -> GameScaling.LearnedWindow?
     let timing: Timing
 
     public init(paths: AppPaths, host: [String: String] = ProcessInfo.processInfo.environment,
                 starter: (any AttemptStarter)? = nil,
                 windows: @escaping @Sendable (GameSession) -> [Int32] = GameWindows.owners(of:),
+                measure: @escaping @Sendable (GameSession) -> GameScaling.LearnedWindow? = GameWindows.learnWindow(of:),
                 timing: Timing = .standard) {
         self.paths = paths
         self.starter = starter ?? GameLauncher(paths: paths, host: host)
         self.windows = windows
+        self.measure = measure
         self.timing = timing
     }
 
@@ -147,7 +151,8 @@ public struct AutoLaunch: Sendable {
 
         // A backend that worked before only fails by closing; one never seen working also by showing nothing.
         let timeout = backend == game.backend ? nil : timing.firstWindowTimeout
-        let verdict = try await watch(running, game: game.id, timeout: timeout, context: context)
+        var seen: GameScaling.LearnedWindow?
+        let verdict = try await watch(running, game: game.id, timeout: timeout, context: context, seen: &seen)
         // The bottle only goes idle once the warm-up's helper is gone.
         await context.warmer?.release(game.id)
         if case .failed = verdict { await running.stop() }
@@ -162,17 +167,21 @@ public struct AutoLaunch: Sendable {
         let attempt = LaunchAttempt(backend: backend, seconds: Int(outcome.processDuration), failure: failure,
                                     diagnosis: diagnosis, log: outcome.log)
         let worked = verdict == .working || (verdict == .ended && failure == nil)
+        // The window it last had sets how much the game is enlarged next time.
+        if worked || verdict == nil, let seen { try? update(game.id) { $0.window = seen } }
         return Ran(attempt: attempt, worked: worked, judged: verdict != nil, duration: outcome.duration)
     }
 
     /// Watches the attempt until it is decided, or until it ends when the player stopped the checking.
     /// Returns nil for an attempt that ran unjudged.
-    private func watch(_ running: any GameAttempt, game: GameID, timeout: TimeInterval?,
-                       context: Context) async throws -> AttemptJudge.Verdict? {
+    /// - Parameter seen: the game's window, measured while it is on screen.
+    private func watch(_ running: any GameAttempt, game: GameID, timeout: TimeInterval?, context: Context,
+                       seen: inout GameScaling.LearnedWindow?) async throws -> AttemptJudge.Verdict? {
         var judge = AttemptJudge(windowTimeout: timeout, windowHolds: timing.windowHolds)
         var announced = false
         while true {
             let owners = windows(running.session)
+            if !owners.isEmpty, let window = measure(running.session) { seen = window }
             if let owner = owners.first, !announced {
                 announced = true
                 context.events(.windowShown(pid: owner))

@@ -24,14 +24,37 @@ public enum GameWindows {
         var result: [pid_t] = []
         var checked: Set<pid_t> = []
         for window in windows {
-            // Normal windows, and the shielding level Wine puts a fullscreen game at; not menu bar items.
-            guard let layer = window[kCGWindowLayer as String] as? Int, layer == 0 || layer >= 1000,
+            guard let layer = window[kCGWindowLayer as String] as? Int, isGameLayer(layer),
                   let pid = window[kCGWindowOwnerPID as String] as? pid_t, checked.insert(pid).inserted,
                   let path = executablePath(of: pid), path.hasPrefix(rootPath) else { continue }
             if let prefix, environment(of: pid)["WINEPREFIX"] != prefix { continue }
             result.append(pid)
         }
         return result
+    }
+
+    /// Window levels a game's window can have: normal ones, "always on top" ones (21: Wine's level for a
+    /// `WS_EX_TOPMOST` window, which full-screen games use) and the shielding level of a captured display. Not the
+    /// menu bar's (24) or its status items' (25), where a Wine program's tray icon would be.
+    static func isGameLayer(_ layer: Int) -> Bool {
+        (0..<24).contains(layer) || layer >= 1000
+    }
+
+    /// The game's own size, from the largest window of its session on screen (`GameScaling.learn`).
+    public static func learnWindow(of session: GameSession) -> GameScaling.LearnedWindow? {
+        let owners = Set(owners(of: session))
+        guard !owners.isEmpty,
+              let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements],
+                                                       kCGNullWindowID) as? [[String: Any]] else { return nil }
+        let frames = windows.compactMap { window -> CGRect? in
+            guard let pid = window[kCGWindowOwnerPID as String] as? pid_t, owners.contains(pid),
+                  let layer = window[kCGWindowLayer as String] as? Int, isGameLayer(layer),
+                  let bounds = window[kCGWindowBounds as String] as? NSDictionary else { return nil }
+            return CGRect(dictionaryRepresentation: bounds)
+        }
+        guard let largest = frames.max(by: { $0.width * $0.height < $1.width * $1.height }) else { return nil }
+        let display = CGDisplayBounds(CGMainDisplayID())
+        return GameScaling.learn(frame: largest, display: display, scale: session.scale)
     }
 
     /// Another process's environment, from `KERN_PROCARGS2` (readable for the user's own processes): an int

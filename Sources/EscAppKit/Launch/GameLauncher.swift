@@ -15,6 +15,8 @@ public struct GameLauncher: Sendable {
         public var wine: Wine
         public var environment: [String: String]
         public var log: URL
+        /// How many times larger Wine draws the game's window (`GameScaling`).
+        public var scale: Double = 1
     }
 
     public struct Outcome: Sendable, Equatable {
@@ -80,13 +82,26 @@ public struct GameLauncher: Sendable {
         // Retina only for games that say they handle high DPI; others would draw a tiny interface.
         try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\Mac Driver"#, name: "RetinaMode",
                                             value: info.dpiAware ? "y" : "n")
+        let scale = try applyScaling(for: game, dpiAware: info.dpiAware, bottle: bottle)
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
         try BackendTree.prepareBottle(bottle, for: backend, wine: wine)
         try await insertDisc(of: game, into: bottle)
         let environment = WineEnvironment.make(host: host, bottle: bottle.path, verboseLog: verboseLog)
         progress(.starting)
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
-                        environment: environment, log: newLogFile(for: game.id))
+                        environment: environment, log: newLogFile(for: game.id), scale: scale)
+    }
+
+    /// Full-screen games get an emulated display mode, small windowed ones a system DPI that enlarges them
+    /// (`GameScaling`). The key is the X11 driver's by name, but Wine's core reads it for every driver.
+    private func applyScaling(for game: GameRecord, dpiAware: Bool, bottle: URL) throws -> Double {
+        try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\X11 Driver"#, name: "EmulateModeset",
+                                            value: "y")
+        let scale = GameScaling.scale(setting: game.scaling ?? .auto, learned: game.window, dpiAware: dpiAware,
+                                      screen: GameScaling.availableScreen())
+        try BottleManager.setRegistryDWord(bottle: bottle, key: #"Control Panel\Desktop"#, name: "LogPixels",
+                                           value: UInt32(GameScaling.dpi(for: scale)))
+        return scale
     }
 
     /// A game installed from a CD that checks for it gets its disc image in drive `D:`; any other game an empty
@@ -126,6 +141,7 @@ public struct GameLauncher: Sendable {
             "[EscApp] Backend \(prepared.backend.rawValue)",
             "[EscApp] Windows \(prepared.game.windowsVersion.wineValue)",
             "[EscApp] Retina \(prepared.info.dpiAware ? "on" : "off")",
+            "[EscApp] Scale \(prepared.scale.formatted(.number.precision(.fractionLength(0...2))))x",
             "[EscApp] Wine \(prepared.wine.root.path(percentEncoded: false))",
             "[EscApp] WINEDEBUG=\(prepared.environment["WINEDEBUG"] ?? "")",
         ]
@@ -145,7 +161,7 @@ public struct GameLauncher: Sendable {
         process.terminationHandler = { exit.exited($0.terminationStatus) }
         try process.run()
         let session = GameSession(wine: prepared.wine, environment: prepared.environment,
-                                  processID: process.processIdentifier)
+                                  processID: process.processIdentifier, scale: prepared.scale)
         return RunningGame(prepared: prepared, session: session, startedAt: startedAt, process: exit) { [self] in
             pruneLogs(for: $0)
         }
@@ -183,6 +199,8 @@ public struct GameSession: Sendable {
     /// The `wine` process started for the game. The game's own windows may belong to it or to processes it
     /// starts, all running Wine's binaries.
     public let processID: Int32
+    /// How many times larger Wine draws the game, to tell its own size from its window on the Mac.
+    public var scale: Double = 1
 
     /// Wine's folder: any process running from inside it belongs to this game's session.
     public var wineRoot: URL { wine.root }
@@ -220,6 +238,17 @@ extension BottleManager {
         let key = #"Software\Wine\WineDbg"#
         guard !WineRegistry.contains(text, key: key, entry: #""ShowCrashDialog"=dword:00000000"#) else { return }
         try WineRegistry.setDWord(in: text, key: key, name: "ShowCrashDialog", value: 0)
+            .write(to: userReg, atomically: true, encoding: .utf8)
+    }
+
+    /// Sets a DWORD in the bottle's `user.reg`, writing only if it changes. Only while the bottle is idle.
+    static func setRegistryDWord(bottle: URL, key: String, name: String, value: UInt32) throws {
+        let userReg = bottle.appending(path: "user.reg")
+        let text = try String(contentsOf: userReg, encoding: .utf8)
+        let hex = String(value, radix: 16)
+        let entry = "\"\(name)\"=dword:\(String(repeating: "0", count: 8 - hex.count))\(hex)"
+        guard !WineRegistry.contains(text, key: key, entry: entry) else { return }
+        try WineRegistry.setDWord(in: text, key: key, name: name, value: value)
             .write(to: userReg, atomically: true, encoding: .utf8)
     }
 

@@ -76,7 +76,7 @@ public struct EscAppCommand: Sendable {
                                            Identify the game and make its bottle (needs the runtime)
           game list                        List known games
           inspect <exe>                    Show what EscApp reads from an .exe: format, DirectX, name, icon
-          run <exe> [--backend dxvk|dxmt|wined3d] [--no-retry] [--verbose]
+          run <exe> [--backend dxvk|dxmt|wined3d] [--no-retry] [--verbose] [--scale auto|on|off]
                                            Launch a game like the app does, trying the next backend when it
                                            fails at start, and wait until it closes
           install <setup.exe|.msi|.iso> [--folder <path>] [--name <name>] [--program <exe>] [--eject]

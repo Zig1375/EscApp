@@ -22,5 +22,6 @@ i686-w64-mingw32-windres setup.rc -O coff -o setup.res
 i686-w64-mingw32-gcc -municode -O2 -s -static -o setup-x86.exe setupprobe.c setup.res -lole32 -luuid -lshell32
 i686-w64-mingw32-gcc -municode -DNSIS_STYLE -O2 -s -static -o nsis-x86.exe setupprobe.c -lole32 -luuid -lshell32
 rm setup.res
+i686-w64-mingw32-gcc -O2 -s -static -o lowres-x86.exe lowresprobe.c -ld3d9 -lgdi32
 rm probe.ico
 ls -l *.exe

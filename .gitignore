@@ -4,3 +4,7 @@
 *.xcodeproj/
 DerivedData/
 App/EscApp/Info.plist
+
+# Left by running the probes in place
+Tests/Fixtures/probes/.escapp
+*.dxvk-cache

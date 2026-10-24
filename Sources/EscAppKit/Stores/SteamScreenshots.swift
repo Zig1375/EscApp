@@ -55,6 +55,16 @@ public enum SteamScreenshots {
         paths.artwork.appending(path: "steam-\(appID)", directoryHint: .isDirectory)
     }
 
+    /// Removes the kept pictures of Steam games no longer in the library: deleted in EscApp, uninstalled in Steam,
+    /// or gone with Steam itself. Run with each store sync, which is where all of those are noticed.
+    public static func prune(keeping appIDs: Set<String>, paths: AppPaths) {
+        let fileManager = FileManager.default
+        for name in (try? fileManager.contentsOfDirectory(atPath: paths.artwork.path)) ?? []
+        where name.hasPrefix("steam-") && !appIDs.contains(String(name.dropFirst("steam-".count))) {
+            try? fileManager.removeItem(at: paths.artwork.appending(path: name, directoryHint: .isDirectory))
+        }
+    }
+
     /// The list kept from last time, however old.
     public static func cached(appID: String, paths: AppPaths) -> [Shot]? {
         let file = folder(appID: appID, paths: paths).appending(path: "screenshots.json")

@@ -208,9 +208,14 @@ extension StoreLibrary {
             let bottle = paths.bottle(forGame: store.bottleID)
             found[store] = store.client(in: bottle) == nil ? [] : games(of: store, bottle: bottle)
         }
-        return try GameLibrary.modify(paths.library) { library in
-            merge(found, into: &library, now: now)
+        var steamApps: Set<String> = []
+        let changed = try GameLibrary.modify(paths.library) { library in
+            let changed = merge(found, into: &library, now: now)
+            steamApps = Set(library.games.filter { $0.store == .steam }.compactMap(\.storeID))
+            return changed
         }
+        SteamScreenshots.prune(keeping: steamApps, paths: paths)
+        return changed
     }
 
     /// The pure part of `sync`.

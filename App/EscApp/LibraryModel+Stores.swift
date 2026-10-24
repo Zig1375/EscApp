@@ -109,14 +109,23 @@ extension LibraryModel {
         }
     }
 
-    /// The confirmed "Delete" of a Steam or Epic game.
+    /// The confirmed "Delete" of a Steam or Epic game. A running client keeps its games in memory: Steam went on
+    /// showing a deleted game as installed, and writes its records back when it quits. So the client is closed
+    /// first and opened again after, and reads that the game is gone.
     func deleteStoreGame(_ game: GameRecord) {
-        do {
-            try StoreUninstall.remove(game, paths: paths)
-            reload()
-        } catch {
-            notice = Notice(title: String(localized: "Couldn't delete \(game.name)"),
-                            message: String(describing: error))
+        guard let store = game.store else { return }
+        Task {
+            let client = StoreClient(paths: paths)
+            let wasRunning = client.isRunning(store)
+            if wasRunning { await client.shutDown(store) }
+            do {
+                try StoreUninstall.remove(game, paths: paths)
+                reload()
+            } catch {
+                notice = Notice(title: String(localized: "Couldn't delete \(game.name)"),
+                                message: String(describing: error))
+            }
+            if wasRunning { openStore(store) }
         }
     }
 

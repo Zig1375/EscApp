@@ -82,8 +82,8 @@ struct LibraryView: View {
             }
         } message: { game in
             Text("""
-                The game folder goes to the Trash, and \(game.store?.name ?? "") will show it as not installed. \
-                You can install it again from the store. Saves stay.
+                The game folder goes to the Trash, and \(game.store?.name ?? "") will show it as not installed \
+                (if it's open, it restarts). You can install it again from the store. Saves stay.
                 """)
         }
         .installSheet(library)

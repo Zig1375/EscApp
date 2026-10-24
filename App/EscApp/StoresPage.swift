@@ -168,7 +168,8 @@ struct StoreCard: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            StoreLogo(store: store, size: 84)
+            // As on a game's card: Open, or Stop while it runs, on the logo under the pointer.
+            TileAction(action: tileAction, radius: 21) { StoreLogo(store: store, size: 84) }
             VStack(alignment: .leading, spacing: 6) {
                 Text(store.name)
                     .font(.system(size: 16, weight: .semibold))
@@ -176,18 +177,6 @@ struct StoreCard: View {
                 status
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            if isRunning {
-                // Closing a client's window only hides it, and on a Mac there is no tray icon to quit it from.
-                Button {
-                    library.quitStore(store)
-                } label: {
-                    Label("Stop", systemImage: "stop.fill")
-                        .font(.system(size: 13, weight: .medium))
-                }
-                .buttonStyle(BrandButtonStyle(height: 34))
-                .disabled(isStopping || library.isPlaying(from: store))
-                .help(library.isPlaying(from: store) ? String(localized: "A game from \(store.name) is running") : "")
-            }
             Button {
                 library.openStore(store)
             } label: {
@@ -213,6 +202,17 @@ struct StoreCard: View {
             }
             Button("Stores…") { library.shownPage = .stores }
         }
+    }
+
+    /// Closing a client's window only hides it, and on a Mac there is no tray icon to quit it from: Stop is on the
+    /// logo. Not while one of its games runs, which quitting would end, nor while it is stopping.
+    private var tileAction: TileAction<StoreLogo>.Action? {
+        if isStopping { return nil }
+        if isRunning {
+            return library.isPlaying(from: store) ? nil
+                : .init(symbol: "stop.fill", label: "Stop", primary: false) { library.quitStore(store) }
+        }
+        return .init(symbol: "arrow.up.forward", label: "Open", primary: true) { library.openStore(store) }
     }
 
     private var isRunning: Bool { library.runningStores.contains(store) }

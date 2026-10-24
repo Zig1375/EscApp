@@ -287,6 +287,7 @@ struct RunningBadge: View {
         HStack(spacing: 6) {
             Circle().fill(Color.green).frame(width: 8, height: 8)
             Text("Running · \(GameText.duration(max(now, Date()).timeIntervalSince(since)))")
+                .lineLimit(1)
         }
         .font(.system(size: 12, weight: .semibold))
         .foregroundStyle(Color.okText)

@@ -3789,16 +3789,6 @@
           }
         }
       }
-    },
-    "A game from %@ is running": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Идёт игра из %@"
-          }
-        }
-      }
     }
   },
   "version": "1.0"

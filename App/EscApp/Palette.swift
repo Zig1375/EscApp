@@ -53,6 +53,8 @@ struct BrandButtonStyle: ButtonStyle {
     var square = false
     /// Main.dc.html uses 9, Game.dc.html 8.
     var radius: CGFloat = 9
+    /// As wide as it is given, label centred: the game card's two buttons, one above the other.
+    var fill = false
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -61,6 +63,7 @@ struct BrandButtonStyle: ButtonStyle {
             .font(.system(size: small ? 12 : 13, weight: .medium))
             .foregroundStyle(foreground)
             .padding(.horizontal, square ? 0 : small ? 10 : 14)
+            .frame(maxWidth: fill ? .infinity : nil)
             .frame(height: small ? 26 : height)
             .background(background.opacity(configuration.isPressed ? 0.85 : 1),
                         in: .rect(cornerRadius: small ? 7 : radius, style: .continuous))

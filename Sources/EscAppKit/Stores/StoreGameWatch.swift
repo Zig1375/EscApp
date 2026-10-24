@@ -1,5 +1,6 @@
 import Darwin
 import Foundation
+import Synchronization
 
 /// Follows a game started through its store's client. The `wine` EscApp starts only hands `-applaunch` to the
 /// client (or becomes the client, when it wasn't running) and the game appears later as a process of its own,
@@ -40,22 +41,24 @@ struct StoreGameWatch: Sendable {
             var seen = false
             var missing = 0
             var steam = SteamGameLog.State()
+            var stoppedQuiet = 0
             while true {
                 steamLog?.read(into: &steam)
+                if let since = Self.stoppedSince(bottle: bottle, folder: folder) {
+                    if endStopped(since: since, quiet: &stoppedQuiet) { return game.exited(steam.lastExit ?? 0) }
+                    try? await Task.sleep(for: .seconds(1))
+                    continue
+                }
                 let running = !WineProcesses.game(in: bottle, folder: folder).isEmpty
                 if running || steam.running {
                     seen = true
                     missing = 0
-                } else if !seen, steamApp != nil, !restarted, let restart,
-                          SteamStartCheck.stuck(in: bottle, startedAt: started) {
+                } else if !seen, steamApp != nil, SteamStartCheck.stuck(in: bottle, startedAt: started) {
+                    // Restarted once; stuck again (or no restart), the launch ends rather than wait half an hour.
+                    guard !restarted, let again = await restart?() else { return game.exited(1) }
                     restarted = true
-                    if let again = await restart() {
-                        starter = again
-                        started = Date()
-                    }
-                } else if !seen, steamApp != nil, restarted, SteamStartCheck.stuck(in: bottle, startedAt: started) {
-                    // Stuck again after a restart: the launch ends rather than wait for half an hour.
-                    return game.exited(1)
+                    starter = again
+                    started = Date()
                 } else if seen {
                     missing += 1
                     let limit = (steam.lastExit ?? 0) != 0 ? Self.goneAfterErrorFor : Self.goneFor
@@ -70,8 +73,42 @@ struct StoreGameWatch: Sendable {
         }
     }
 
-    /// Ends the game's processes, asking first; the client keeps running.
+    /// One look at a stopped game: its processes are ended, also when the client starts it only now. True once
+    /// it has stayed gone (and Steam has nothing launching) for a moment, or after `stoppedFor`.
+    private func endStopped(since: Date, quiet: inout Int) -> Bool {
+        let pids = WineProcesses.game(in: bottle, folder: folder)
+        for pid in pids { kill(pid, SIGKILL) }
+        let launching = steamApp != nil && SteamLaunches.inProgress(in: bottle)
+        quiet = pids.isEmpty && !launching ? quiet + 1 : 0
+        guard quiet >= Self.goneFor || Date().timeIntervalSince(since) > Self.stoppedFor else { return false }
+        Self.forgetStop(bottle: bottle, folder: folder)
+        return true
+    }
+
+    /// Games stopped or whose launch was cancelled, by bottle and folder, with when. Cancelling a Steam game
+    /// before it appeared ended nothing: Steam had the launch already and started Banished a few seconds after its
+    /// launch window had gone. The watch ends such a game whenever it appears, for up to `stoppedFor`, and until
+    /// then a game the client is still starting (`SteamLaunches`) counts as coming.
+    private static let stopped = Mutex<[String: Date]>([:])
+    static let stoppedFor: TimeInterval = 120
+
+    private static func key(_ bottle: URL, _ folder: String) -> String {
+        bottle.standardizedFileURL.path(percentEncoded: false) + "|" + folder.lowercased()
+    }
+
+    static func stoppedSince(bottle: URL, folder: String) -> Date? {
+        stopped.withLock { $0[key(bottle, folder)] }
+    }
+
+    /// A new launch of the game: an earlier stop doesn't end it.
+    static func forgetStop(bottle: URL, folder: String) {
+        _ = stopped.withLock { $0.removeValue(forKey: key(bottle, folder)) }
+    }
+
+    /// Ends the game's processes, asking first; the client keeps running. A watch of the game goes on ending it
+    /// if the client starts it after all.
     func stop() async {
+        Self.stopped.withLock { $0[Self.key(bottle, folder)] = Date() }
         for pid in WineProcesses.game(in: bottle, folder: folder) { kill(pid, SIGTERM) }
         try? await Task.sleep(for: .seconds(3))
         for pid in WineProcesses.game(in: bottle, folder: folder) { kill(pid, SIGKILL) }

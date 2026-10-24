@@ -89,3 +89,18 @@ import Testing
         #expect(stuck(log: -3600, at: 50))
     }
 }
+
+@Suite struct StoreGameStopTests {
+    let bottle = URL(filePath: "/tmp/escapp-stop-test/bottle", directoryHint: .isDirectory)
+
+    @Test func aStopIsRememberedUntilTheNextLaunch() async {
+        let folder = #"C:\Program Files (x86)\Steam\steamapps\common\Banished"#
+        await StoreGameWatch(bottle: bottle, folder: folder).stop()
+        // Steam may still start the game: its watch ends it when it appears.
+        #expect(StoreGameWatch.stoppedSince(bottle: bottle, folder: folder) != nil)
+        #expect(StoreGameWatch.stoppedSince(bottle: bottle, folder: folder.uppercased()) != nil)
+        // Played again: that launch isn't ended by the old stop.
+        StoreGameWatch.forgetStop(bottle: bottle, folder: folder)
+        #expect(StoreGameWatch.stoppedSince(bottle: bottle, folder: folder) == nil)
+    }
+}

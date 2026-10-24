@@ -235,6 +235,7 @@ public struct GameLauncher: Sendable {
             let started = ProcessExit()
             process.terminationHandler = { started.exited($0.terminationStatus) }
             try process.run()
+            StoreGameWatch.forgetStop(bottle: prepared.bottle, folder: folder)
             let steamApp = prepared.game.store == .steam ? prepared.game.storeID : nil
             StoreGameWatch(bottle: prepared.bottle, folder: folder, steamApp: steamApp)
                 .watch(starter: started, game: exit) { [self] in await restartStuckSteam(prepared, arguments) }

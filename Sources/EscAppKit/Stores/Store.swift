@@ -83,6 +83,17 @@ public enum Store: String, Codable, CaseIterable, Sendable, Identifiable {
         return clientPaths.map { drive.appending(path: $0) }.first { fileManager.fileExists(atPath: $0.path) }
     }
 
+    /// The store whose client `program` is, when someone installed the store with its own installer and opened
+    /// its client like a game: it then gets what EscApp does for the store's client anywhere (`StoreClient`).
+    public static func clientProgram(_ program: URL, in bottle: URL) -> Store? {
+        let wanted = program.standardizedFileURL.resolvingSymlinksInPath().path(percentEncoded: false).lowercased()
+        return allCases.first { store in
+            store.client(in: bottle).map {
+                $0.standardizedFileURL.resolvingSymlinksInPath().path(percentEncoded: false).lowercased() == wanted
+            } ?? false
+        }
+    }
+
     /// The EA app keeps each version in `EA Desktop\<version>\EA Desktop\EADesktop.exe` and points a junction,
     /// `EA Desktop\EA Desktop`, at the newest. Wine leaves that junction an empty folder, so the newest version
     /// is found by its folder name.

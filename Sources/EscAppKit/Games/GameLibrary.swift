@@ -19,6 +19,9 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     public var lastPlayed: Date?
     /// The backend that ran this game last time; tried first from now on.
     public var backend: GraphicsBackend?
+    /// How a Chromium program's window gets its picture (`ChromiumApp`), once a launch found out; nil decides
+    /// from the program's files.
+    public var chromium: ChromiumApp.Mode?
     /// Total seconds played.
     public var playTime: TimeInterval?
     public var launches: Int?

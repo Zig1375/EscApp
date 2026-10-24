@@ -62,6 +62,7 @@ extension LibraryModel {
         guard states[game.id] == nil else { return }
         states[game.id] = .starting
         launch = Launch(id: game.id, name: game.name, firstTime: (game.launches ?? 0) == 0)
+        Self.askForWindowPictures(firstLaunchOf: game)
         let control = LaunchControl()
         launchControl = control
         let paths = paths

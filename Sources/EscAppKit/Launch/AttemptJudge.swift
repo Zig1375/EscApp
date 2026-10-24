@@ -18,6 +18,8 @@ public struct AttemptJudge: Sendable, Equatable {
         case closed(exitCode: Int32)
         /// No window appeared in time.
         case noWindow
+        /// The window stayed one flat colour the whole time it was checked (`WindowPicture`).
+        case blankPicture
     }
 
     /// How long the window has to stay up. A crash later than this is the game's, not the backend's.
@@ -29,6 +31,18 @@ public struct AttemptJudge: Sendable, Equatable {
     let windowTimeout: TimeInterval?
     let windowHolds: TimeInterval
     private(set) var windowSince: TimeInterval?
+    /// Whether to fail a window that only ever showed a flat colour: for Chromium programs, whose blank window
+    /// says the picture is lost. Other games may sit on a black loading screen for longer than the check.
+    var checksPicture = false
+    private(set) var blankSamples = 0
+    private(set) var sawPicture = false
+    /// Looks needed before a window counts as blank.
+    static let blankSamplesNeeded = 4
+    /// How long a Chromium window may stay blank before that counts: a cold start under Wine draws Electron's
+    /// first page after about 20 s.
+    static let blankPatience: TimeInterval = 40
+    /// Scaled with `windowHolds`, so tests with short holds stay short.
+    var blankAfter: TimeInterval { max(windowHolds, Self.blankPatience * windowHolds / Self.windowHolds) }
 
     public init(windowTimeout: TimeInterval?, windowHolds: TimeInterval = Self.windowHolds) {
         self.windowTimeout = windowTimeout
@@ -48,10 +62,21 @@ public struct AttemptJudge: Sendable, Equatable {
     ///   - exitCode: the game's process's exit code, once it exited. A launcher may exit 0 and leave the game
     ///     running, so 0 alone decides nothing.
     ///   - idle: whether everything in the bottle has stopped.
-    public mutating func observe(elapsed: TimeInterval, window: Bool, exitCode: Int32?, idle: Bool) -> Verdict? {
+    /// - Parameter blank: what a look at the window showed now: flat (true), a picture (false), or nothing.
+    public mutating func observe(elapsed: TimeInterval, window: Bool, exitCode: Int32?, idle: Bool,
+                                 blank: Bool? = nil) -> Verdict? {
         if window, windowSince == nil { windowSince = elapsed }
+        if window, let blank {
+            if blank { blankSamples += 1 } else { sawPicture = true }
+        }
         if let exitCode, exitCode != 0 { return .failed(.closed(exitCode: exitCode)) }
-        if let windowSince, elapsed - windowSince >= windowHolds { return .working }
+        if let windowSince, elapsed - windowSince >= windowHolds {
+            // A Chromium window that hasn't drawn yet gets longer; one that has works.
+            guard checksPicture, !sawPicture else { return .working }
+            if elapsed - windowSince >= blankAfter {
+                return blankSamples >= Self.blankSamplesNeeded ? .failed(.blankPicture) : .working
+            }
+        }
         if idle { return .ended }
         if windowSince == nil, let windowTimeout, elapsed >= windowTimeout { return .failed(.noWindow) }
         return nil

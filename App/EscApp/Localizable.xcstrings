@@ -3457,6 +3457,46 @@
           }
         }
       }
+    },
+    "Its picture didn't reach the window. Starting it again, drawn another way": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Картинка не дошла до окна. Запускаем ещё раз, с другим способом отрисовки"
+          }
+        }
+      }
+    },
+    "Its window stayed blank": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окно осталось пустым"
+          }
+        }
+      }
+    },
+    "Its window stays blank.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Её окно остаётся пустым."
+          }
+        }
+      }
+    },
+    "the window stayed blank": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "окно осталось пустым"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

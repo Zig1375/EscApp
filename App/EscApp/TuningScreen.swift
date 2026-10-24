@@ -204,7 +204,8 @@ private struct TuningCard: View {
 
     private func failedText(_ failed: LibraryModel.Launch.Tuning.Try) -> Text {
         let name = Text(failed.backend.displayName).fontWeight(.semibold)
-        let what: Text = failed.reason == .noWindow ? Text("no window after \(failed.seconds) s")
+        let what: Text = failed.reason == .blankPicture ? Text("the window stayed blank")
+            : failed.reason == .noWindow ? Text("no window after \(failed.seconds) s")
             : Text("closed after \(failed.seconds) s")
         return name + Text(verbatim: " — ") + what
     }

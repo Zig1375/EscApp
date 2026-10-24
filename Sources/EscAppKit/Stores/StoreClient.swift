@@ -74,9 +74,9 @@ public struct StoreClient: Sendable {
     /// each ending with Steam restarting itself: an older 32-bit client first, then the current 64-bit one.
     /// Once the second round is in, Steam is stopped before its window opens: that start would run its web
     /// helper unwrapped and show a black window. The next "Open Steam" starts it wrapped.
-    private func updateSteam(_ client: URL, wine: Wine, environment: [String: String],
-                             progress: @escaping @Sendable (Step) -> Void) async throws {
-        let bottle = bottle(for: .steam)
+    func updateSteam(_ client: URL, wine: Wine, environment: [String: String], in bottle: URL? = nil,
+                     progress: @escaping @Sendable (Step) -> Void) async throws {
+        let bottle = bottle ?? self.bottle(for: .steam)
         let log = Self.steamBootstrapLog(bottle)
         let starter = Task {
             try await Self.run(wine, [client.path(percentEncoded: false), "-silent"]

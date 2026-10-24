@@ -21,6 +21,10 @@ public struct GameLauncher: Sendable {
         public var client: (url: URL, arguments: [String])?
         /// A store game's folder as Windows sees it, which tells its processes from the client's.
         public var gameFolder: String?
+        /// Chromium's switches for a program built on it (`ChromiumApp`).
+        public var chromium: ChromiumApp.Mode?
+        /// The store whose client this program is, installed by its own installer rather than from Stores.
+        public var storeClient: Store?
     }
 
     public struct Outcome: Sendable, Equatable {
@@ -107,9 +111,15 @@ public struct GameLauncher: Sendable {
         let folder = game.store.map { _ in
             WindowsPath.windowsPath(of: URL(filePath: game.folder, directoryHint: .isDirectory), inBottle: bottle)
         }
+        let storeClient = game.store == nil ? Store.clientProgram(exe, in: bottle) : nil
+        if let storeClient { try await StoreClient(paths: paths, host: host).prepareClientProgram(storeClient,
+                                                                                                    in: bottle,
+                                                                                                    wine: wine) }
+        let chromium = game.store != nil ? nil
+            : game.chromium ?? (info.chromium ? .inProcessGPU : nil)
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
                         environment: environment, log: newLogFile(for: game.id), scale: scale, client: client,
-                        gameFolder: folder)
+                        gameFolder: folder, chromium: chromium, storeClient: storeClient)
     }
 
     /// Ends what still runs in a game's bottle with msync the other way: the game would exit at once in it.
@@ -200,8 +210,11 @@ public struct GameLauncher: Sendable {
             "[EscApp] Wine \(prepared.wine.root.path(percentEncoded: false))",
             "[EscApp] WINEDEBUG=\(prepared.environment["WINEDEBUG"] ?? "")",
             "[EscApp] msync \(WineEnvironment.msyncIsOn(prepared.environment) ? "on" : "off")",
+            "[EscApp] Chromium \(prepared.chromium?.rawValue ?? "no")",
         ]
-        let arguments = GameSettings.arguments(prepared.game.arguments ?? "")
+        let ready = prepared.storeClient != .steam || StoreClient.steamReady(prepared.bottle)
+        let arguments = (prepared.storeClient?.clientArguments(clientReady: ready) ?? [])
+            + GameSettings.arguments(prepared.game.arguments ?? "") + (prepared.chromium?.arguments ?? [])
         var extra = arguments.isEmpty ? [] : ["[EscApp] Arguments \(arguments.joined(separator: " "))"]
         if let store = prepared.game.store {
             extra.append("[EscApp] Store \(store.name) \(prepared.game.storeID ?? "")")

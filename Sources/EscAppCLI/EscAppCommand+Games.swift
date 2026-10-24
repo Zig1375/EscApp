@@ -46,6 +46,7 @@ extension EscAppCommand {
                 "Name: \(info.productName ?? "-")",
                 "DirectX: \(directX.isEmpty ? "-" : directX.joined(separator: ", "))",
                 "High DPI: \(info.dpiAware ? "yes" : "no")",
+                "Chromium: \(info.chromium ? "yes" : "no")",
                 "Icon: \(info.icon.map { "\($0.count) bytes" } ?? "-")",
                 "Graphics plan: \(plan)",
                 "Imports: \(info.imports.sorted().joined(separator: " "))",
@@ -140,6 +141,7 @@ extension EscAppCommand {
         case nil: "worked"
         case let .closed(code)?: "closed after \(attempt.seconds) s (exit \(code))"
         case .noWindow?: "showed no window in \(attempt.seconds) s"
+        case .blankPicture?: "its window stayed blank"
         }
         let problem = attempt.diagnosis.problem.map { " — \($0)" } ?? ""
         return "\(attempt.backend.displayName): \(result)\(attempt.failure == nil ? "" : problem)"

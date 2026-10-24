@@ -69,10 +69,13 @@ struct LaunchSheet: View {
 
     @ViewBuilder private func retrying(_ retry: LibraryModel.Launch.Retry) -> some View {
         caption("The game failed — EscApp is trying again")
-        gameRow(retry.reason == .noWindow ? "No window after \(retry.seconds) s"
+        gameRow(retry.reason == .blankPicture ? "Its window stayed blank"
+                    : retry.reason == .noWindow ? "No window after \(retry.seconds) s"
                     : "Closed \(retry.seconds) s after starting")
         Callout(tone: .warning) {
-            Text("\(retry.failed.displayName) doesn't seem to suit this game. Starting with \(retry.next.displayName)")
+            (retry.reason == .blankPicture && retry.failed == retry.next
+                ? Text("Its picture didn't reach the window. Starting it again, drawn another way")
+                : otherBackend(retry))
                 + Text(verbatim: " ")
                 + Text("(attempt \(retry.attempt) of \(retry.total))").font(.system(size: 12))
                 .foregroundStyle(Color.secondaryText)
@@ -88,6 +91,10 @@ struct LaunchSheet: View {
         }
         .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
         .padding(.top, 8)
+    }
+
+    private func otherBackend(_ retry: LibraryModel.Launch.Retry) -> Text {
+        Text("\(retry.failed.displayName) doesn't seem to suit this game. Starting with \(retry.next.displayName)")
     }
 
     // MARK: Nothing helped
@@ -133,7 +140,9 @@ struct LaunchSheet: View {
         case .needsSteam?:
             Text("It needs Steam running.")
         case nil:
-            if case let .closed(code)? = failure.reason {
+            if failure.reason == .blankPicture {
+                Text("Its window stays blank.")
+            } else if case let .closed(code)? = failure.reason {
                 Text("It closes right after starting (code \(String(code))).")
             } else {
                 Text("Its window never appeared.")

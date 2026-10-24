@@ -73,8 +73,8 @@ extension StoreClient {
     }
 
     /// Runs the launcher's own install step for the downloaded update, as the player.
-    func applyEpicUpdate(wine: Wine) async {
-        let bottle = bottle(for: .epic)
+    func applyEpicUpdate(wine: Wine, in bottle: URL? = nil) async {
+        let bottle = bottle ?? self.bottle(for: .epic)
         guard let client = Store.epic.client(in: bottle) else { return }
         let environment = WineEnvironment.make(host: host, bottle: bottle.path, extra: Store.epic.environment,
                                                msync: WineEnvironment.msync(for: nil, wine: wine))
@@ -111,5 +111,20 @@ extension StoreClient {
     static func isWaitingUpdater(_ process: WineProcesses.Process) -> Bool {
         let name = process.program.replacingOccurrences(of: "\\", with: "/").split(separator: "/").last ?? ""
         return name.lowercased() == "epicgamesupdater.exe" && process.arguments.first?.lowercased() == "start"
+    }
+
+    /// A store client opened like a game, in a bottle of its own: what Stores does for it happens there too. Its
+    /// Chromium helpers are wrapped; Steam fresh from its own installer first downloads its client (its helper
+    /// arrives with it, and would run unwrapped, black, the first time); Epic installs a downloaded update. Only
+    /// while nothing runs in the bottle.
+    func prepareClientProgram(_ store: Store, in bottle: URL, wine: Wine) async throws {
+        guard WineProcesses.running(in: bottle).isEmpty else { return }
+        if store == .steam, !Self.steamReady(bottle), let client = store.client(in: bottle) {
+            let environment = WineEnvironment.make(host: host, bottle: bottle.path,
+                                                   msync: WineEnvironment.msync(for: nil, wine: wine))
+            try await updateSteam(client, wine: wine, environment: environment, in: bottle) { _ in }
+        }
+        try ChromiumHelper.wrap(store, in: bottle)
+        if store == .epic, Self.epicHasStagedUpdate(bottle) { await applyEpicUpdate(wine: wine, in: bottle) }
     }
 }

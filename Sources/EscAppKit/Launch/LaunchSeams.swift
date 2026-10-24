@@ -58,6 +58,8 @@ extension AutoLaunch {
         public var firstWindowTimeout: TimeInterval = AttemptJudge.firstWindowTimeout
         /// A game still showing no window by then has connected to its warm bottle's Wine anyway.
         public var handOverAfter: TimeInterval = 10
+        /// How often a Chromium program's window is looked at while it is checked (`WindowPicture`).
+        public var pictureEvery: TimeInterval = 1
 
         public static let standard = Timing()
     }

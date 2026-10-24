@@ -24,6 +24,8 @@ public struct ExecutableInfo: Sendable, Equatable {
     public var versionStrings: [String: String] = [:]
     /// The embedded application manifest.
     public var manifest: String?
+    /// A Chromium program (`ChromiumApp`), known from the files beside it when read from disk.
+    public var chromium = false
 
     public var directX: Set<ExecutableTraits.DirectX> {
         var result = Set<ExecutableTraits.DirectX>()
@@ -34,7 +36,8 @@ public struct ExecutableInfo: Sendable, Equatable {
                 || name.hasPrefix("d3dx11") {
                 result.insert(.d3d11)
             }
-            if name == "d3d12.dll" { result.insert(.d3d12) }
+            // Chromium links d3d12.dll for WebGPU and draws through Direct3D 11 (Electron 33 does).
+            if name == "d3d12.dll", !chromium { result.insert(.d3d12) }
         }
         return result
     }
@@ -50,7 +53,9 @@ public struct ExecutableInfo: Sendable, Equatable {
 
     public static func read(_ url: URL) throws -> ExecutableInfo {
         let data = try Data(contentsOf: url, options: .alwaysMapped)
-        return try PEReader(data: data).read()
+        var info = try PEReader(data: data).read()
+        info.chromium = ChromiumApp.isChromium(executable: url, imports: info.imports)
+        return info
     }
 }
 

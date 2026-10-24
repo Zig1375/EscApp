@@ -50,17 +50,21 @@ public struct AutoLaunch: Sendable {
     let windows: @Sendable (GameSession) -> [Int32]
     /// The game's window size once it works, which decides how much it is enlarged next time (`GameScaling`).
     let measure: @Sendable (GameSession) -> GameScaling.LearnedWindow?
+    /// Whether the window of these processes shows one flat colour (`WindowPicture`); nil when it can't be told.
+    let picture: @Sendable ([Int32]) async -> Bool?
     let timing: Timing
 
     public init(paths: AppPaths, host: [String: String] = ProcessInfo.processInfo.environment,
                 starter: (any AttemptStarter)? = nil,
                 windows: @escaping @Sendable (GameSession) -> [Int32] = GameWindows.owners(of:),
                 measure: @escaping @Sendable (GameSession) -> GameScaling.LearnedWindow? = GameWindows.learnWindow(of:),
+                picture: @escaping @Sendable ([Int32]) async -> Bool? = WindowPicture.isBlank(windowOf:),
                 timing: Timing = .standard) {
         self.paths = paths
         self.starter = starter ?? GameLauncher(paths: paths, host: host)
         self.windows = windows
         self.measure = measure
+        self.picture = picture
         self.timing = timing
     }
 
@@ -77,9 +81,11 @@ public struct AutoLaunch: Sendable {
         // The CD goes back out once the game is over, or didn't start.
         let disc = game.disc.map { URL(filePath: $0) }
         do {
+            let chromium = (try? ExecutableInfo.read(URL(filePath: game.executable)))?.chromium ?? false
             let result = try await attempts(game, runtime: runtime, backend: override, knownGames: knownGames,
                                             context: Context(runtime: runtime, verboseLog: verboseLog,
-                                                             control: control, warmer: warmer, events: events))
+                                                             control: control, warmer: warmer, events: events,
+                                                             chromiumProgram: chromium))
             if let disc { await DiscImage.detach(image: disc, paths: paths) }
             return result
         } catch {
@@ -119,8 +125,18 @@ public struct AutoLaunch: Sendable {
         if Self.isTuning(game, order: order, retrying: control.retrying) { events(.tuning(order)) }
         var attempts: [LaunchAttempt] = []
         for (index, backend) in order.enumerated() {
-            let ran = try await attempt(backend, of: game, number: index + 1, of: order.count, context: context)
+            var ran = try await attempt(backend, of: game, number: index + 1, of: order.count, context: context)
             attempts.append(ran.attempt)
+            // A Chromium window that stayed blank: the same graphics again, with Chromium drawing another way.
+            while ran.attempt.failure == .blankPicture, control.retrying,
+                  let mode = Self.nextChromium(after: game.chromium
+                                                   ?? (context.chromiumProgram ? .inProcessGPU : nil)) {
+                game.chromium = mode
+                events(.retrying(ran.attempt, next: backend, attempt: index + 1, total: order.count))
+                ran = try await attempt(backend, of: game, number: index + 1, of: order.count, context: context)
+                attempts.append(ran.attempt)
+            }
+            if ran.worked, let mode = game.chromium { try update(game.id) { $0.chromium = mode } }
             let last = index == order.count - 1 || !ran.attempt.diagnosis.retryHelps || !control.retrying
             if ran.worked || !ran.judged || last {
                 // A run that wasn't judged (the player said not to retry) only teaches its play time.
@@ -147,6 +163,13 @@ public struct AutoLaunch: Sendable {
         let control: LaunchControl
         let warmer: (any WarmBottles)?
         let events: @Sendable (Event) -> Void
+        /// The program is Chromium by its files (`ChromiumApp`).
+        let chromiumProgram: Bool
+    }
+
+    /// The Chromium drawing to try after `current` (nil: none was asked for).
+    static func nextChromium(after current: ChromiumApp.Mode?) -> ChromiumApp.Mode? {
+        current.map(\.next) ?? .inProcessGPU
     }
 
     /// How one attempt went, to the end of the game.
@@ -173,7 +196,9 @@ public struct AutoLaunch: Sendable {
         // A backend that worked before only fails by closing; one never seen working also by showing nothing.
         let timeout = backend == game.backend || game.store != nil ? nil : timing.firstWindowTimeout
         var seen: GameScaling.LearnedWindow?
-        let verdict = try await watch(running, game: game.id, timeout: timeout, context: context, seen: &seen)
+        var judge = AttemptJudge(windowTimeout: timeout, windowHolds: timing.windowHolds)
+        judge.checksPicture = game.chromium != nil || context.chromiumProgram
+        let verdict = try await watch(running, game: game.id, judge: judge, context: context, seen: &seen)
         // The bottle only goes idle once the warm-up's helper is gone.
         await context.warmer?.release(game.id)
         if case .failed = verdict { await running.stop() }
@@ -199,9 +224,11 @@ public struct AutoLaunch: Sendable {
     /// Watches the attempt until it is decided, or until it ends when the player stopped the checking.
     /// Returns nil for an attempt that ran unjudged.
     /// - Parameter seen: the game's window, measured while it is on screen.
-    private func watch(_ running: any GameAttempt, game: GameID, timeout: TimeInterval?, context: Context,
+    /// - Parameter judge: set up for this attempt; it checks the picture of a program known to be Chromium.
+    private func watch(_ running: any GameAttempt, game: GameID, judge start: AttemptJudge, context: Context,
                        seen: inout GameScaling.LearnedWindow?) async throws -> AttemptJudge.Verdict? {
-        var judge = AttemptJudge(windowTimeout: timeout, windowHolds: timing.windowHolds)
+        var judge = start
+        var looks = PictureLooks(picture: picture, every: timing.pictureEvery)
         var announced = false
         var held: Int?
         // An old game asking for its CD shows a message box and waits: its window counts as the game's, so the
@@ -218,6 +245,7 @@ public struct AutoLaunch: Sendable {
             if let owner = owners.first, !announced {
                 announced = true
                 context.events(.windowShown(pid: owner))
+                judge.checksPicture = judge.checksPicture || PictureLooks.chromiumRuns(for: running.session)
             }
             // A warm bottle's helper goes once the game surely holds the bottle itself: dropping it earlier
             // would shut down the services the game is about to use.
@@ -230,8 +258,9 @@ public struct AutoLaunch: Sendable {
                 // Not judging any more: the game just runs; `finish` waits for its end.
                 return nil
             }
+            let blank = judge.checksPicture ? await looks.look(at: owners, elapsed: elapsed) : nil
             if let verdict = judge.observe(elapsed: elapsed, window: !owners.isEmpty, exitCode: running.exitCode,
-                                           idle: running.isIdle) {
+                                           idle: running.isIdle, blank: blank) {
                 return verdict
             }
             if let seconds = judge.held(at: elapsed).map({ Int($0) }), seconds != held {
@@ -258,6 +287,31 @@ public struct AutoLaunch: Sendable {
             change(&game)
             library[id] = game
         }
+    }
+}
+
+/// Looks at a Chromium program's window about once a second while it is up (`WindowPicture`).
+struct PictureLooks {
+    let picture: @Sendable ([Int32]) async -> Bool?
+    let every: TimeInterval
+    private var last: TimeInterval = -.infinity
+
+    init(picture: @escaping @Sendable ([Int32]) async -> Bool?, every: TimeInterval) {
+        self.picture = picture
+        self.every = every
+    }
+
+    /// Whether the window is blank now; nil between looks, without a window, or when it can't be told.
+    mutating func look(at owners: [Int32], elapsed: TimeInterval) async -> Bool? {
+        guard !owners.isEmpty, elapsed - last >= every else { return nil }
+        last = elapsed
+        return await picture(owners)
+    }
+
+    /// A Chromium GPU process in the game's bottle: Chromium after all, unpacked or started by a launcher.
+    static func chromiumRuns(for session: GameSession) -> Bool {
+        guard let bottle = session.environment["WINEPREFIX"] else { return false }
+        return ChromiumApp.runsGPUProcess(in: URL(filePath: bottle, directoryHint: .isDirectory))
     }
 }
 

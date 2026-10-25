@@ -48,6 +48,9 @@ struct GameTitle: View {
     // optional back to nil while the field was still being laid out.
     @State private var isEditing = false
     @State private var draft = ""
+    @State private var isHovered = false
+    /// One line of the 26-pt title with a little room above and below.
+    private static let boxHeight: CGFloat = 40
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -56,7 +59,7 @@ struct GameTitle: View {
                 .textFieldStyle(.plain)
                 .font(.system(size: 26, weight: .bold))
                 .padding(.horizontal, 8)
-                .padding(.vertical, 2)
+                .frame(maxWidth: .infinity, minHeight: Self.boxHeight, alignment: .leading)
                 .background(Color.cardBackground, in: .rect(cornerRadius: 8, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.brand, lineWidth: 2)
@@ -71,30 +74,48 @@ struct GameTitle: View {
                 .onSubmit(save)
                 .onExitCommand { isEditing = false }
                 .onChange(of: focused) { if !focused { save() } }
-        } else {
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
+        } else if game.canRename {
+            // The name itself is the control: under the pointer it gets the field's frame, a click makes it the
+            // field. The pencil after it says so before the pointer gets there.
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
                 Text(game.name)
                     .font(.system(size: 26, weight: .bold))
                     .lineLimit(2)
-                    .textSelection(.enabled)
-                // A store game keeps the name its store gives it.
-                if game.canRename {
-                    Button {
-                        draft = game.name
-                        isEditing = true
-                    } label: {
-                        Image(systemName: "pencil")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(Color.secondaryText)
-                            .frame(width: 26, height: 26)
-                            .contentShape(.rect)
-                    }
-                    .buttonStyle(.plain)
-                    .help("Rename")
-                    .accessibilityLabel("Rename")
-                }
+                Image(systemName: "pencil")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(isHovered ? Color.primary : Color.secondaryText)
+                    .accessibilityHidden(true)
             }
+            .padding(.horizontal, 8)
+            // The same box as the field, so the frame doesn't jump or change size on click.
+            .frame(maxWidth: .infinity, minHeight: Self.boxHeight, alignment: .leading)
+            .overlay {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(isHovered ? Color.buttonBorder : .clear, lineWidth: 2)
+            }
+            .padding(.horizontal, -8)
+            .contentShape(.rect)
+            .onHover { isHovered = $0 }
+            .pointerStyle(.horizontalText)
+            .onTapGesture(perform: edit)
+            .help("Click to rename")
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint("Rename")
+            .accessibilityAction { edit() }
+        } else {
+            // A store game keeps the name its store gives it.
+            Text(game.name)
+                .font(.system(size: 26, weight: .bold))
+                .lineLimit(2)
+                .textSelection(.enabled)
         }
+    }
+
+    private func edit() {
+        draft = game.name
+        isHovered = false
+        isEditing = true
     }
 
     private func save() {

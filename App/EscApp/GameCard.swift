@@ -19,8 +19,13 @@ struct GameCard: View {
             Text(game.name)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(isHovered ? Color.brand : .primary)
-                .lineLimit(1)
-                .truncationMode(.tail)
+                // Two lines, cut in the middle: on one line cut at the end, "Ru_Daughter_For_Dessert Ch1" and
+                // "…Ch2" both read "Ru_Daughter_For_De…". Every card keeps room for two, so the rows line up.
+                .lineLimit(2, reservesSpace: true)
+                .truncationMode(.middle)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .help(game.name)
         }
         .contentShape(.rect)
         .onTapGesture(perform: showDetails)

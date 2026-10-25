@@ -4075,6 +4075,16 @@
           }
         }
       }
+    },
+    "Click to rename": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите, чтобы переименовать"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

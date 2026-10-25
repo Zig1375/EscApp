@@ -100,6 +100,7 @@ public struct AutoLaunch: Sendable {
         let events = context.events
         var game = game
         let exe = URL(filePath: game.executable)
+        try noticeUpdate(of: &game, exe: exe)
         let info = try? ExecutableInfo.read(exe)
         let known = KnownGame.find(in: knownGames, executable: exe, productName: info?.productName)
         if (game.launches ?? 0) == 0, let windows = known?.windowsVersion, windows != game.windowsVersion {
@@ -291,6 +292,20 @@ public struct AutoLaunch: Sendable {
                 _ = await running.finish()
                 throw error
             }
+        }
+    }
+
+    /// An exe whose size or date changed since the last launch was updated: settings found for the old one may
+    /// not suit it (a remembered backend waits for a window without a limit), so they are looked for again. A store
+    /// game isn't: its client updates it, and it gets one try anyway.
+    private func noticeUpdate(of game: inout GameRecord, exe: URL) throws {
+        guard game.store == nil, let stamp = GameRecord.ExeStamp(of: exe), stamp != game.exeStamp else { return }
+        let updated = game.exeStamp != nil
+        if updated { game.forgetLaunchSettings() }
+        game.exeStamp = stamp
+        try update(game.id) { record in
+            if updated { record.forgetLaunchSettings() }
+            record.exeStamp = stamp
         }
     }
 

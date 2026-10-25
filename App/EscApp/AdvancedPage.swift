@@ -52,6 +52,7 @@ struct AdvancedPage: View {
                      : "This game is installed inside its own Windows: a reset would delete it.")
                     .modifier(Hint())
                     .padding(.top, -6)
+                if game.store == nil { LaunchSettingsCard(game: game, library: library) }
             }
             .padding(.horizontal, 32)
             .padding(.vertical, 24)

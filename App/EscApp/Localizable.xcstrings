@@ -3915,6 +3915,46 @@
           }
         }
       }
+    },
+    "Launch settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Параметры запуска"
+          }
+        }
+      }
+    },
+    "Found by EscApp: %@. What you set here stays.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подобраны EscApp: %@. То, что вы задали здесь, сохранится."
+          }
+        }
+      }
+    },
+    "Looked for at the next launch, as at the first.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Будут подобраны при следующем запуске, как при первом."
+          }
+        }
+      }
+    },
+    "Find Launch Settings Again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подобрать заново"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

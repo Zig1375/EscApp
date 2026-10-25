@@ -31,6 +31,9 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     public var scaling: GameScaling.Setting?
     /// The game's window as seen on its last run, which sets how much it is enlarged.
     public var window: GameScaling.LearnedWindow?
+    /// The exe's size and date at the last launch. When they change the game was updated, and what EscApp found
+    /// for the old exe is forgotten (`forgetLaunchSettings`).
+    public var exeStamp: ExeStamp?
 
     // Advanced settings (`GameSettings`). Nil is Auto, or off.
     /// Graphics picked by hand: the game always starts with it and isn't retried with others.
@@ -57,6 +60,35 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
 
     /// The bottle the game runs in: its own, or its store's.
     public var bottleID: GameID { store?.bottleID ?? id }
+
+    /// An exe's size and modification time, in whole seconds as Games.json keeps dates.
+    public struct ExeStamp: Codable, Sendable, Equatable {
+        public var size: Int64
+        public var modified: Int64
+
+        public init(size: Int64, modified: Int64) {
+            self.size = size
+            self.modified = modified
+        }
+
+        public init?(of exe: URL) {
+            guard let values = try? exe.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey]),
+                  let size = values.fileSize, let date = values.contentModificationDate else { return nil }
+            self.init(size: Int64(size), modified: Int64(date.timeIntervalSince1970.rounded(.down)))
+        }
+    }
+
+    /// What EscApp found out by launching the game: the graphics that worked, its window, how a Chromium program
+    /// draws. Forgotten after an update, or with Advanced → "Find Launch Settings Again", so the next launch looks
+    /// for them as the first did. What the player set in Advanced stays.
+    public mutating func forgetLaunchSettings() {
+        backend = nil
+        window = nil
+        chromium = nil
+    }
+
+    /// Whether anything is left for `forgetLaunchSettings` to forget.
+    public var hasLaunchSettings: Bool { backend != nil || window != nil || chromium != nil }
 
     public init(id: GameID, name: String, executable: String, folder: String, hasMarker: Bool,
                 fingerprint: String? = nil, windowsVersion: WindowsVersion = .default, addedAt: Date,

@@ -10,6 +10,8 @@ struct GameCard: View {
     let library: LibraryModel
     let showDetails: () -> Void
     @State private var isHovered = false
+    /// Under the pointer About takes the click, not the card, so the play symbol steps aside.
+    @State private var isAboutHovered = false
 
     private var state: LibraryModel.PlayState? { library.states[game.id] }
 
@@ -92,9 +94,11 @@ struct GameCard: View {
                     .offset(x: 2)
                     .frame(width: 52, height: 52)
                     .background(Color.brand, in: .circle)
-                    .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
+                    // A white ring keeps the amber circle apart from a brown or orange cover.
+                    .overlay { Circle().strokeBorder(.white.opacity(0.9), lineWidth: 2) }
+                    .shadow(color: .black.opacity(0.4), radius: 10, y: 3)
                     .scaleEffect(isHovered ? 1 : 0.85)
-                    .opacity(isHovered && state == nil ? 1 : 0)
+                    .opacity(isHovered && !isAboutHovered && state == nil ? 1 : 0)
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
             }
@@ -162,13 +166,17 @@ struct GameCard: View {
                 .foregroundStyle(.white)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, minHeight: 34)
-                .background(.white.opacity(0.18), in: .rect(cornerRadius: 9, style: .continuous))
+                .background(.white.opacity(isAboutHovered ? 0.32 : 0.18),
+                            in: .rect(cornerRadius: 9, style: .continuous))
                 .overlay {
-                    RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(.white.opacity(0.28))
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .strokeBorder(.white.opacity(isAboutHovered ? 0.5 : 0.28))
                 }
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
+        .onHover { isAboutHovered = $0 }
+        .animation(.easeOut(duration: 0.12), value: isAboutHovered)
     }
 }
 

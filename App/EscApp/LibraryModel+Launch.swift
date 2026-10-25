@@ -10,6 +10,16 @@ extension LibraryModel {
     struct Launch: Identifiable, Equatable {
         enum StepState: Equatable { case waiting, active, done }
 
+        struct GameFiles: Equatable {
+            var received: Int64
+            var total: Int64
+
+            /// "12 MB of 190 MB".
+            var amounts: (received: String, total: String) {
+                (received.formatted(.byteCount(style: .file)), total.formatted(.byteCount(style: .file)))
+            }
+        }
+
         enum Phase: Equatable {
             case preparing
             case retrying(Retry)
@@ -44,6 +54,8 @@ extension LibraryModel {
         var windowsState: StepState = .active
         var graphics: String?
         var startState: StepState = .waiting
+        /// Files the game needs being downloaded (RPG Maker's packages): bytes so far and in all.
+        var gameFiles: GameFiles?
         /// Set after a while without a game window, to say that this can take a minute.
         var slow = false
         /// A first launch looking for its settings (FirstRun.dc.html), shown over the game's windows.
@@ -207,8 +219,11 @@ extension LibraryModel {
             current.windows = version
             current.windowsFirstTime = firstTime
             current.windowsState = .active
+        case let .gameFiles(received, total):
+            current.gameFiles = .init(received: received, total: total)
         case let .graphics(backend, directX):
             current.windowsState = .done
+            current.gameFiles = nil
             let api: String? = switch directX {
             case .legacy?: "DirectDraw"
             case .d3d9?: "DirectX 9"

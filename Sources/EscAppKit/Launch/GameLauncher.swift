@@ -27,6 +27,10 @@ public struct GameLauncher: Sendable {
         public var chromium: ChromiumApp.Mode?
         /// The store whose client this program is, installed by its own installer rather than from Stores.
         public var storeClient: Store?
+        /// The language Windows has for the game when it isn't the Mac's (`GameLanguage`).
+        public var locale: String?
+        /// RPG Maker packages linked into the bottle, as `engine/name` (`RTPInstaller`).
+        public var rtps: [String] = []
     }
 
     public struct Outcome: Sendable, Equatable {
@@ -59,6 +63,8 @@ public struct GameLauncher: Sendable {
         /// Making the game's Windows; `firstTime` when the runtime's template must be built first (~30 s, once).
         case windows(WindowsVersion, firstTime: Bool)
         case graphics(GraphicsBackend, directX: ExecutableTraits.DirectX?)
+        /// Downloading files the game needs and Windows doesn't have (RPG Maker's packages), in bytes.
+        case gameFiles(received: Int64, total: Int64)
         /// Everything is ready; Wine is being started.
         case starting
     }
@@ -74,8 +80,11 @@ public struct GameLauncher: Sendable {
         return (idle, try stores.playCommand(store, storeID: id))
     }
 
+    /// - Parameter fetchGameFiles: false leaves out downloads (`gameFiles`): warming a bottle on hover mustn't
+    ///   start a 200 MB download. What is installed already is linked either way.
     public func prepare(_ game: GameRecord, runtime: RuntimeManifest.Runtime,
                         backend override: GraphicsBackend? = nil, verboseLog: Bool = false,
+                        fetchGameFiles: Bool = true,
                         progress: @Sendable (Step) -> Void = { _ in }) async throws -> Prepared {
         let exe = URL(filePath: game.executable)
         guard FileManager.default.fileExists(atPath: exe.path) else { throw LaunchError.missingExecutable(exe.path) }
@@ -96,6 +105,7 @@ public struct GameLauncher: Sendable {
         // A store game shares its store's bottle, and its Windows version.
         let bottle = try await bottles.ensureBottle(for: game.bottleID, runtime: runtime,
                                                     windows: game.store == nil ? game.windowsVersion : .default)
+        let files = try await gameFiles(for: game, runtime: runtime, fetch: fetchGameFiles, progress: progress)
         progress(.graphics(backend, directX: info.directX.max()))
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
         // Retina only for games that say they handle high DPI; others would draw a tiny interface.
@@ -106,14 +116,15 @@ public struct GameLauncher: Sendable {
         // With the store's client already running in the right Wine, its registry can't be written: the game
         // keeps the settings the bottle had when the client started.
         let scale = idle ? try Self.configure(bottle: bottle, for: game, retina: retina,
-                                              screen: GameScaling.availableScreen()) : 1
+                                              screen: GameScaling.availableScreen(), predicted: files.window) : 1
+        try files.link(into: bottle, registry: idle)
         try BackendTree.prepareBottle(bottle, for: backend, wine: wine)
         try await insertDisc(of: game, into: bottle)
         let environment = WineEnvironment.make(host: host, bottle: bottle.path,
                                                extra: (game.store?.environment ?? [:])
                                                    .merging(GameSettings.environment(of: game)) { _, user in user },
                                                verboseLog: verboseLog || game.verboseLog == true,
-                                               fastSync: fastSync)
+                                               fastSync: fastSync, locale: files.locale)
         progress(.starting)
         let folder = game.store.map { _ in
             WindowsPath.windowsPath(of: URL(filePath: game.folder, directoryHint: .isDirectory), inBottle: bottle)
@@ -127,7 +138,8 @@ public struct GameLauncher: Sendable {
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
                         environment: environment, log: newLogFile(for: game.id), scale: scale, retina: retina,
                         client: client,
-                        gameFolder: folder, chromium: chromium, storeClient: storeClient)
+                        gameFolder: folder, chromium: chromium, storeClient: storeClient, locale: files.locale,
+                        rtps: files.rtps.map { "\($0.rtp.engine)/\($0.rtp.name)" })
     }
 
     /// Ends what still runs in a game's bottle with osync the other way: the running wineserver decides, so the
@@ -152,11 +164,14 @@ public struct GameLauncher: Sendable {
 
     /// Writes the game's settings into its bottle before a launch, each value only when it changes. Returns how
     /// many times larger Wine will draw the game. Only while the bottle's Wine is down (see `WineRegistry`).
-    static func configure(bottle: URL, for game: GameRecord, retina: Bool,
-                          screen: GameScaling.Size) throws -> Double {
+    /// - Parameter predicted: the game's window known before it ever ran (`GameFiles.window`); what was seen on a
+    ///   launch wins over it.
+    static func configure(bottle: URL, for game: GameRecord, retina: Bool, screen: GameScaling.Size,
+                          predicted: GameScaling.LearnedWindow? = nil) throws -> Double {
         // Wine's own "the program has crashed" dialog (winedbg) would pop up over the Mac; EscApp reports
         // crashes itself, from the log.
         try BottleManager.disableCrashDialog(bottle: bottle)
+        try WindowsFonts.replaceJapaneseFonts(bottle: bottle)
         let macDriver = #"Software\Wine\Mac Driver"#
         try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: "RetinaMode",
                                             value: retina ? "y" : "n")
@@ -167,8 +182,8 @@ public struct GameLauncher: Sendable {
         // Full-screen games get an emulated display mode, small windowed ones a system DPI that enlarges them
         // (`GameScaling`), and fixed-size windows can be stretched.
         try BottleManager.enableScaling(bottle: bottle)
-        let scale = GameScaling.scale(setting: game.scaling ?? .auto, learned: game.window, dpiAware: retina,
-                                      screen: screen)
+        let scale = GameScaling.scale(setting: game.scaling ?? .auto, learned: game.window ?? predicted,
+                                      dpiAware: retina, screen: screen)
         try BottleManager.setRegistryDWord(bottle: bottle, key: #"Control Panel\Desktop"#, name: "LogPixels",
                                            value: UInt32(GameScaling.dpi(for: scale)))
         return scale
@@ -205,23 +220,12 @@ public struct GameLauncher: Sendable {
 
         let startedAt = Date()
         let retina = prepared.retina
-        let header = [
-            "[EscApp] Launch \(ISO8601DateFormatter().string(from: startedAt))",
-            "[EscApp] Game \(prepared.game.name) (\(prepared.game.id))",
-            "[EscApp] Executable \(prepared.game.executable)",
-            "[EscApp] Backend \(prepared.backend.rawValue)",
-            "[EscApp] Windows \(prepared.game.windowsVersion.wineValue)",
-            "[EscApp] Retina \(retina ? "on" : "off")",
-            "[EscApp] Scale \(prepared.scale.formatted(.number.precision(.fractionLength(0...2))))x",
-            "[EscApp] Wine \(prepared.wine.root.path(percentEncoded: false))",
-            "[EscApp] WINEDEBUG=\(prepared.environment["WINEDEBUG"] ?? "")",
-            "[EscApp] osync \(WineEnvironment.fastSyncIsOn(prepared.environment) ? "on" : "off")",
-            "[EscApp] Chromium \(prepared.chromium?.rawValue ?? "no")",
-        ]
+        let header = Self.header(for: prepared, retina: retina, startedAt: startedAt)
         let ready = prepared.storeClient != .steam || StoreClient.steamReady(prepared.bottle)
         let arguments = (prepared.storeClient?.clientArguments(clientReady: ready) ?? [])
             + GameSettings.arguments(prepared.game.arguments ?? "") + (prepared.chromium?.arguments ?? [])
         var extra = arguments.isEmpty ? [] : ["[EscApp] Arguments \(arguments.joined(separator: " "))"]
+        if !prepared.rtps.isEmpty { extra.append("[EscApp] RPG Maker \(prepared.rtps.joined(separator: ", "))") }
         if let store = prepared.game.store {
             extra.append("[EscApp] Store \(store.name) \(prepared.game.storeID ?? "")")
         }
@@ -251,6 +255,24 @@ public struct GameLauncher: Sendable {
         return RunningGame(prepared: prepared, session: session, startedAt: startedAt, process: exit) { [self] in
             pruneLogs(for: $0)
         }
+    }
+
+    /// The log's first lines: what this launch is made of.
+    private static func header(for prepared: Prepared, retina: Bool, startedAt: Date) -> [String] {
+        [
+            "[EscApp] Launch \(ISO8601DateFormatter().string(from: startedAt))",
+            "[EscApp] Game \(prepared.game.name) (\(prepared.game.id))",
+            "[EscApp] Executable \(prepared.game.executable)",
+            "[EscApp] Backend \(prepared.backend.rawValue)",
+            "[EscApp] Windows \(prepared.game.windowsVersion.wineValue)",
+            "[EscApp] Retina \(retina ? "on" : "off")",
+            "[EscApp] Scale \(prepared.scale.formatted(.number.precision(.fractionLength(0...2))))x",
+            "[EscApp] Wine \(prepared.wine.root.path(percentEncoded: false))",
+            "[EscApp] WINEDEBUG=\(prepared.environment["WINEDEBUG"] ?? "")",
+            "[EscApp] osync \(WineEnvironment.fastSyncIsOn(prepared.environment) ? "on" : "off")",
+            "[EscApp] Chromium \(prepared.chromium?.rawValue ?? "no")",
+            "[EscApp] Language \(prepared.locale ?? "Mac's")",
+        ]
     }
 
     /// Steam stuck at start (`SteamStartCheck`): closed, everything in its bottle killed, and the game started
@@ -352,49 +374,5 @@ public enum LaunchError: Error, Equatable, CustomStringConvertible {
         case .dosProgram:
             "This is a DOS program. It needs DOSBox rather than Windows."
         }
-    }
-}
-
-extension BottleManager {
-    /// `EmulateModeset` lets a game switch to a low resolution without touching the Mac's display.
-    /// `StretchWindows` (EscApp's Wine) lets the player drag the corner of a game window that can't be resized:
-    /// a Unity game with a fixed 1440×800 window was half the screen on a Retina Mac and couldn't be made bigger.
-    /// The window keeps its size for the game and Wine scales the picture and the mouse. Both keys are the X11
-    /// driver's by name, but Wine's core reads them for every driver.
-    static func enableScaling(bottle: URL) throws {
-        let key = #"Software\Wine\X11 Driver"#
-        try setRegistryString(bottle: bottle, key: key, name: "EmulateModeset", value: "y")
-        try setRegistryString(bottle: bottle, key: key, name: "StretchWindows", value: "y")
-    }
-
-    static func disableCrashDialog(bottle: URL) throws {
-        let userReg = bottle.appending(path: "user.reg")
-        let text = try String(contentsOf: userReg, encoding: .utf8)
-        let key = #"Software\Wine\WineDbg"#
-        guard !WineRegistry.contains(text, key: key, entry: #""ShowCrashDialog"=dword:00000000"#) else { return }
-        try WineRegistry.setDWord(in: text, key: key, name: "ShowCrashDialog", value: 0)
-            .write(to: userReg, atomically: true, encoding: .utf8)
-    }
-
-    /// Sets a DWORD in the bottle's `user.reg`, writing only if it changes. Only while the bottle is idle.
-    static func setRegistryDWord(bottle: URL, key: String, name: String, value: UInt32) throws {
-        let userReg = bottle.appending(path: "user.reg")
-        let text = try String(contentsOf: userReg, encoding: .utf8)
-        let hex = String(value, radix: 16)
-        let entry = "\"\(name)\"=dword:\(String(repeating: "0", count: 8 - hex.count))\(hex)"
-        guard !WineRegistry.contains(text, key: key, entry: entry) else { return }
-        try WineRegistry.setDWord(in: text, key: key, name: name, value: value)
-            .write(to: userReg, atomically: true, encoding: .utf8)
-    }
-
-    /// Sets a string in the bottle's `user.reg` (or `system.reg`, for keys under HKLM), writing only if it
-    /// changes. Only while the bottle is idle.
-    static func setRegistryString(bottle: URL, key: String, name: String, value: String,
-                                  file: String = "user.reg") throws {
-        let userReg = bottle.appending(path: file)
-        let text = try String(contentsOf: userReg, encoding: .utf8)
-        guard WineRegistry.string(in: text, key: key, name: name) != value else { return }
-        try WineRegistry.setString(in: text, key: key, name: name, value: value)
-            .write(to: userReg, atomically: true, encoding: .utf8)
     }
 }

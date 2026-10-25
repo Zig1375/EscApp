@@ -15,6 +15,8 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
     /// The game database: settings known to work for particular games. Optional, so manifests without it and
     /// older apps reading one with it both still work.
     public var games: [KnownGame]?
+    /// RPG Maker's Run Time Packages, which games made with it need (`RPGMakerGame`). Optional like `games`.
+    public var rtps: [RTP]?
 
     public struct Runtime: Codable, Sendable, Equatable, Identifiable {
         /// Names the runtime folder and template bottle, so it must be a plain path component.
@@ -50,6 +52,33 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
         public var features: [String]?
     }
 
+    /// One Run Time Package: the publisher's own installer, from the publisher's own server. Its license allows
+    /// no redistribution, so it can't be repackaged on GitHub like the runtimes; `RTPInstaller` runs the
+    /// installer once, silently, and keeps what it installed.
+    public struct RTP: Codable, Sendable, Equatable {
+        /// `RGSS`, `RGSS2` or `RGSS3` (`RPGMakerGame.Engine`). A string, so an engine this app doesn't know is
+        /// skipped instead of making the manifest unreadable.
+        public var engine: String
+        /// What games call it in `Game.ini`: `Standard`, `RPGVX`, `RPGVXAce`.
+        public var name: String
+        public var version: String
+        public var url: URL
+        /// Lowercase hex.
+        public var sha256: String
+        public var size: Int64
+        /// Shown in the app's licenses screen.
+        public var license: String
+        /// The installer inside the downloaded zip; empty when the download is the installer itself.
+        public var setup: String
+
+        public var engineValue: RPGMakerGame.Engine? { RPGMakerGame.Engine(rawValue: engine) }
+    }
+
+    /// The package a game names, for its engine.
+    public func rtp(_ name: String, engine: RPGMakerGame.Engine) -> RTP? {
+        rtps?.first { $0.engineValue == engine && $0.name.caseInsensitiveCompare(name) == .orderedSame }
+    }
+
     public static func decode(_ data: Data) throws -> RuntimeManifest {
         let manifest = try JSONDecoder().decode(RuntimeManifest.self, from: data)
         guard manifest.format <= supportedFormat else { throw ManifestError.newerFormat(manifest.format) }
@@ -80,18 +109,29 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
             }
             for component in runtime.components {
                 let label = "\(runtime.id)/\(component.kind.rawValue)"
-                guard component.url.scheme == "https" || component.url.isFileURL else {
-                    throw ManifestError.invalidEntry("\(label): only https downloads are allowed")
-                }
-                guard component.sha256.count == 64,
-                      component.sha256.allSatisfy({ $0.isHexDigit && !$0.isUppercase })
-                else { throw ManifestError.invalidEntry("\(label): sha256") }
-                guard component.size > 0 else { throw ManifestError.invalidEntry("\(label): size") }
+                try Self.checkPin(component, label: label)
                 guard Self.isSafeRelativePath(component.into, allowEmpty: false),
                       Self.isSafeRelativePath(component.from, allowEmpty: true)
                 else { throw ManifestError.invalidEntry("\(label): from or into") }
             }
         }
+        for rtp in rtps ?? [] {
+            let label = "rtp \(rtp.engine)/\(rtp.name)"
+            try Self.checkPin(rtp, label: label)
+            // Both name folders on disk; `setup` is a path inside the archive.
+            guard Self.isSafeComponent(rtp.engine), Self.isSafeComponent(rtp.name),
+                  Self.isSafeRelativePath(rtp.setup, allowEmpty: true)
+            else { throw ManifestError.invalidEntry("\(label): engine, name or setup") }
+        }
+    }
+
+    private static func checkPin(_ download: some PinnedDownload, label: String) throws {
+        guard download.url.scheme == "https" || download.url.isFileURL else {
+            throw ManifestError.invalidEntry("\(label): only https downloads are allowed")
+        }
+        guard download.sha256.count == 64, download.sha256.allSatisfy({ $0.isHexDigit && !$0.isUppercase })
+        else { throw ManifestError.invalidEntry("\(label): sha256") }
+        guard download.size > 0 else { throw ManifestError.invalidEntry("\(label): size") }
     }
 
     private static func isSafeRelativePath(_ path: String, allowEmpty: Bool) -> Bool {

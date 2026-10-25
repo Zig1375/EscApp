@@ -41,6 +41,12 @@ extension EscAppCommand {
             case let .unsupported(reason): "not supported (\(reason))"
             }
             let directX = info.directX.sorted().map { $0 == .legacy ? "DirectDraw/D3D8" : "D3D\($0.rawValue)" }
+            let folder = URL(filePath: path).deletingLastPathComponent()
+            let rpgMaker = RPGMakerGame.read(folder: folder).map { game in
+                let rtps = game.rtps.isEmpty ? "no package" : game.rtps.joined(separator: ", ")
+                let screen = game.screen.map { "\($0.width)×\($0.height)" } ?? "size unknown"
+                return "\(game.engine.rawValue), \(rtps), \(screen)"
+            }
             return success([
                 "Format: \(info.format.rawValue)",
                 "Name: \(info.productName ?? "-")",
@@ -49,6 +55,8 @@ extension EscAppCommand {
                 "Chromium: \(info.chromium ? "yes" : "no")",
                 "Icon: \(info.icon.map { "\($0.count) bytes" } ?? "-")",
                 "Graphics plan: \(plan)",
+                "RPG Maker: \(rpgMaker ?? "-")",
+                "Language: \(GameLanguage.locale(forGameIn: folder) ?? "the Mac's")",
                 "Imports: \(info.imports.sorted().joined(separator: " "))",
             ].joined(separator: "\n"))
         } catch {

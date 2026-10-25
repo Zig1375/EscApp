@@ -9,7 +9,8 @@ import CoreGraphics
 ///   whole screen, keeping its proportions. EscApp turns that on for every game.
 /// - **A small window.** Wine draws a DPI-unaware program larger when the system DPI is above 96, as Windows does
 ///   on a high-DPI screen, and maps the mouse back. EscApp sets the DPI from the size the game's window had last
-///   time (`LearnedWindow`): the size isn't known before the first run, and the DPI must be set before a launch.
+///   time (`LearnedWindow`): the DPI must be set before a launch. Before the first run the size is known only for
+///   games that say it in their files (RPG Maker, `RGSSArchive`); others start at their own size once.
 ///   Games that declare high-DPI support draw for Retina themselves and are left alone.
 public enum GameScaling {
     public enum Setting: String, CaseIterable, Codable, Sendable {

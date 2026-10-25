@@ -44,6 +44,12 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
   by the newest Direct3D (11 → DXVK, DXMT, WineD3D; 9 and older → WineD3D; none found → DXVK, WineD3D);
   `GameLauncher` prepares the bottle and runs `wine <exe>` from the backend's own Wine tree (`BackendTree`: APFS clone of `wine` with DXVK/DXMT builtin DLLs in `lib/wine`;
   Wine won't take those DLLs from a bottle). Logs go to `Logs/<game-id>/`. `escapp inspect|run` do the same.
+- RPG Maker XP/VX/VX Ace: `RPGMakerGame` reads `Game.ini`; the Run Time Package it names (`rtps` in the manifest,
+  the publisher's own Inno Setup installer from its own server, which is the only place it may come from) is
+  installed once by `RTPInstaller` into `EscApp/RTP` and linked into each bottle that needs it, with its registry
+  value. `GameLanguage` starts Japanese games with `LC_ALL=ja_JP.UTF-8` (code page 932); `WindowsFonts` maps
+  Japanese Windows font names to Arial Unicode MS. `RGSSArchive` reads the game's scripts out of its archive for
+  `Graphics.resize_screen`, so the first launch is enlarged like later ones.
 - `Tests/Fixtures/probes`: tiny D3D9/D3D11 test programs (32/64-bit) with sources and `build.sh` (mingw-w64).
   They are PE fixtures for unit tests and print `PROBE … OK` when they render on real Wine.
 - Wine is EscApp's own build (Wine 11.20, built and released by the sibling repo `../EscApp-Runtime`), with

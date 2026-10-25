@@ -39,6 +39,8 @@ public struct AppPaths: Sendable, Equatable {
     /// AppData and Saved Games shared by every bottle, so saves survive a new bottle or runtime.
     public var profile: URL { folder("Profile") }
     public var logs: URL { folder("Logs") }
+    /// RPG Maker's Run Time Packages, installed once and linked into the bottles of games that need them.
+    public var rtps: URL { folder("RTP") }
     /// Partial downloads, named by SHA-256 so an interrupted download resumes even if the URL changed.
     public var downloads: URL { folder("Downloads") }
     public var screenshots: URL { folder("Screenshots") }
@@ -51,6 +53,10 @@ public struct AppPaths: Sendable, Equatable {
     public func runtime(_ id: String) -> URL { runtimes.appending(path: id, directoryHint: .isDirectory) }
     public func template(forRuntime id: String) -> URL { templates.appending(path: id, directoryHint: .isDirectory) }
     public func bottle(forGame id: GameID) -> URL { bottles.appending(path: id.rawValue, directoryHint: .isDirectory) }
+    /// One package: `RTP/RGSS2/RPGVX`.
+    public func rtp(engine: String, name: String) -> URL {
+        rtps.appending(path: engine, directoryHint: .isDirectory).appending(path: name, directoryHint: .isDirectory)
+    }
     public func logs(forGame id: GameID) -> URL { logs.appending(path: id.rawValue, directoryHint: .isDirectory) }
 
     private func folder(_ name: String) -> URL { root.appending(path: name, directoryHint: .isDirectory) }

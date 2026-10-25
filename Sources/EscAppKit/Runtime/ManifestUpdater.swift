@@ -3,8 +3,9 @@ import Foundation
 /// Keeps the component list current. The copy inside the app always works offline; a newer list is fetched
 /// from the repository (the same file, on `main`) about once a day and cached in `EscApp/Manifest.json`.
 ///
-/// A fetched list may only point at downloads on GitHub. The SHA-256 pins protect against a damaged or
-/// swapped file, and the host rule keeps a tampered list from sending EscApp to some other server.
+/// A fetched list may only point at downloads on GitHub, and RPG Maker's packages at their publishers' servers.
+/// The SHA-256 pins protect against a damaged or swapped file, and the host rule keeps a tampered list from
+/// sending EscApp to some other server.
 public struct ManifestUpdater: Sendable {
     static let manifestPath = "Zig1375/EscApp/main/Sources/EscAppKit/Resources/runtime-manifest.json"
     // A constant, well-formed URL; failing here would be a typo caught by the first test run.
@@ -12,6 +13,9 @@ public struct ManifestUpdater: Sendable {
     public static let defaultURL = URL(string: "https://raw.githubusercontent.com/\(manifestPath)")!
     public static let checkInterval: TimeInterval = 24 * 60 * 60
     static let allowedDownloadHosts: Set<String> = ["github.com"]
+    /// Where Gotcha Gotcha Games (English) and Kadokawa (Japanese) publish the Run Time Packages, which may not be
+    /// hosted anywhere else.
+    static let allowedRTPHosts: Set<String> = ["assets.rpgmakerweb.com", "cdn.tkool.jp"]
 
     /// What was last fetched, and when.
     public struct Cache: Codable, Sendable, Equatable {
@@ -93,6 +97,11 @@ public struct ManifestUpdater: Sendable {
                 else {
                     throw ManifestError.invalidEntry("\(runtime.id)/\(component.kind.rawValue): download host")
                 }
+            }
+        }
+        for rtp in manifest.rtps ?? [] {
+            guard rtp.url.scheme == "https", let host = rtp.url.host(), allowedRTPHosts.contains(host) else {
+                throw ManifestError.invalidEntry("rtp \(rtp.engine)/\(rtp.name): download host")
             }
         }
     }

@@ -83,20 +83,34 @@ public enum WineRegistry {
         return (name, value)
     }
 
-    /// Reads a quoted, backslash-escaped string at the start of `text`; returns it and what follows.
+    /// Reads a quoted, backslash-escaped string at the start of `text`; returns it and what follows. `\x30b4` is
+    /// a UTF-16 unit, the way Wine writes everything outside ASCII.
     private static func readQuoted(_ text: Substring) -> (String, Substring)? {
         guard text.first == "\"" else { return nil }
         var result = ""
+        var units: [UInt16] = []
+        func flush() {
+            result += String(decoding: units, as: UTF16.self)
+            units = []
+        }
         var index = text.index(after: text.startIndex)
         while index < text.endIndex {
             let character = text[index]
             if character == "\\" {
                 index = text.index(after: index)
                 guard index < text.endIndex else { return nil }
+                if text[index] == "x", let (unit, end) = hexEscape(text, after: index) {
+                    units.append(unit)
+                    index = end
+                    continue
+                }
+                flush()
                 result.append(text[index])
             } else if character == "\"" {
+                flush()
                 return (result, text[text.index(after: index)...])
             } else {
+                flush()
                 result.append(character)
             }
             index = text.index(after: index)
@@ -104,8 +118,31 @@ public enum WineRegistry {
         return nil
     }
 
+    /// The up to four hex digits after the `x` at `index`, and where they end.
+    private static func hexEscape(_ text: Substring, after index: Substring.Index) -> (UInt16, Substring.Index)? {
+        var end = text.index(after: index)
+        var digits = ""
+        while end < text.endIndex, digits.count < 4, text[end].isHexDigit {
+            digits.append(text[end])
+            end = text.index(after: end)
+        }
+        return UInt16(digits, radix: 16).map { ($0, end) }
+    }
+
+    /// Escapes as Wine does, so Wine reads non-ASCII names back (Japanese font names): four hex digits per UTF-16
+    /// unit, always four, so a hex digit that follows can't be taken into the escape.
     private static func quote(_ string: String) -> String {
-        "\"" + string.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"") + "\""
+        var result = "\""
+        for unit in string.utf16 {
+            switch unit {
+            case 0x5C: result += "\\\\"
+            case 0x22: result += "\\\""
+            case 0x20..<0x7F: result.append(Character(Unicode.Scalar(UInt8(unit))))
+            default: result += "\\x" + String(repeating: "0", count: 4 - String(unit, radix: 16).count)
+                + String(unit, radix: 16)
+            }
+        }
+        return result + "\""
     }
 
     /// Key paths store each backslash doubled: `Software\Wine` is written `[Software\\Wine]`.

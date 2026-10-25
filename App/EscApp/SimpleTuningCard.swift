@@ -38,7 +38,12 @@ struct SimpleTuningCard: View {
             .fixedSize(horizontal: false, vertical: true)
             VStack(spacing: 8) {
                 TimeBar(startedAt: tuning.startedAt)
-                Text("Usually under a minute").modifier(TuningHint())
+                if let files = launch.gameFiles {
+                    Text("Downloading files this game needs: \(files.amounts.received) of \(files.amounts.total)")
+                        .modifier(TuningHint())
+                } else {
+                    Text("Usually under a minute").modifier(TuningHint())
+                }
             }
             HStack {
                 Button("Cancel") { library.cancelLaunch() }

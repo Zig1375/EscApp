@@ -79,5 +79,37 @@
       ]
     }
   ],
-  "games": []
+  "games": [],
+  "rtps": [
+    {
+      "engine": "RGSS",
+      "name": "Standard",
+      "version": "1.04 (English, with the Japanese engines)",
+      "url": "https://assets.rpgmakerweb.com/xp_rtp104e.exe",
+      "sha256": "b3bd20ad7f413b40ac233aafd2e061de1dc429c2eadb59d0b3157ba3c47f16b2",
+      "size": 22994937,
+      "license": "Enterbrain RTP EULA",
+      "setup": ""
+    },
+    {
+      "engine": "RGSS2",
+      "name": "RPGVX",
+      "version": "2.02 (Japanese, with the English engine)",
+      "url": "https://cdn.tkool.jp/updata/rtp/vx_rtp202.zip",
+      "sha256": "ac668cd1ea09abd6fcd66fc67f8203a2ae8a0c4e696389241549973dcdde42d0",
+      "size": 36819395,
+      "license": "Enterbrain RTP EULA",
+      "setup": "RPGVX_RTP202/setup.exe"
+    },
+    {
+      "engine": "RGSS3",
+      "name": "RPGVXAce",
+      "version": "1.00",
+      "url": "https://assets.rpgmakerweb.com/RPGVXAce_RTP.zip",
+      "sha256": "7e93d0ead93a686218b7c671bf099ef42f09f536083bd0b2f0fa6423a39fc19b",
+      "size": 194690591,
+      "license": "Enterbrain RTP EULA",
+      "setup": "RTP100/Setup.exe"
+    }
+  ]
 }

@@ -36,7 +36,13 @@ struct LaunchSheet: View {
                     .font(.system(size: 18, weight: .bold))
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
-                if launch.slow {
+                if let files = launch.gameFiles {
+                    Text("Downloading files this game needs: \(files.amounts.received) of \(files.amounts.total)")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else if launch.slow {
                     Text(launch.firstTime ? "The first launch can take up to a minute."
                                           : "Taking longer than usual. This can happen after a Mac restart.")
                         .font(.system(size: 12))

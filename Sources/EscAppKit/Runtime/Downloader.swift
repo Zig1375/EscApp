@@ -17,7 +17,18 @@ public enum DownloadError: Error, Equatable, CustomStringConvertible {
     }
 }
 
-/// Downloads one manifest component into `folder`, checking its SHA-256 as the bytes arrive.
+/// A download the manifest pins: where it is, its SHA-256 and its size.
+public protocol PinnedDownload: Sendable {
+    var url: URL { get }
+    /// Lowercase hex.
+    var sha256: String { get }
+    var size: Int64 { get }
+}
+
+extension RuntimeManifest.Component: PinnedDownload {}
+extension RuntimeManifest.RTP: PinnedDownload {}
+
+/// Downloads one manifest entry into `folder`, checking its SHA-256 as the bytes arrive.
 ///
 /// The partial file is named by its hash and kept when the connection drops, so the next attempt asks the
 /// server only for the missing part (HTTP `Range`). A file that fails the check is deleted.
@@ -31,7 +42,7 @@ public struct Downloader: Sendable {
     /// - Parameter progress: bytes received so far, including what an earlier attempt already had.
     /// - Returns: the verified file, `<folder>/<sha256>`.
     public func fetch(
-        _ component: RuntimeManifest.Component,
+        _ component: some PinnedDownload,
         into folder: URL,
         progress: @escaping @Sendable (Int64) -> Void = { _ in }
     ) async throws -> URL {

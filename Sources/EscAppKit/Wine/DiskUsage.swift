@@ -6,7 +6,7 @@ import Foundation
 /// of its blocks with the template, and the backend trees (`wine-dxvk`, `wine-dxmt`) share theirs with `wine`.
 /// Here a clone only counts the files that differ from what it was cloned from.
 public struct DiskUsage: Sendable, Equatable {
-    /// Wine and the graphics components.
+    /// Wine, the graphics components and RPG Maker's packages.
     public var runtimes: Int64
     /// The clean Windows every game bottle is cloned from.
     public var templates: Int64
@@ -34,6 +34,7 @@ public struct DiskUsage: Sendable, Equatable {
                 }
             }
         }
+        runtimes += allocatedSize(of: paths.rtps)
 
         let templates = folders(in: paths.templates)
         let templateSize = templates.reduce(Int64(0)) { $0 + allocatedSize(of: $1) }

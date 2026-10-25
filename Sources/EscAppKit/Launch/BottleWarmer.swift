@@ -148,7 +148,8 @@ struct WineWarmUp: WarmUpSteps {
     }
 
     func boot(_ game: GameRecord, runtime: RuntimeManifest.Runtime) async -> WarmWine? {
-        guard let prepared = try? await GameLauncher(paths: paths, host: host).prepare(game, runtime: runtime) else {
+        guard let prepared = try? await GameLauncher(paths: paths, host: host).prepare(game, runtime: runtime,
+                                                                                         fetchGameFiles: false) else {
             return nil
         }
         // Starts the server and Windows' services, and the desktop process the first window waits for.

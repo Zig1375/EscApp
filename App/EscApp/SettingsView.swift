@@ -215,6 +215,11 @@ private struct ComponentsCard: View {
                     Text(component.license).foregroundStyle(Color.secondaryText)
                 }
             }
+            // Downloaded only for games made with RPG Maker that need them (`RTPInstaller`).
+            HStack {
+                Text("RPG Maker Run Time Packages").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Enterbrain").foregroundStyle(Color.secondaryText)
+            }
             HStack {
                 Text("Rosetta 2").frame(maxWidth: .infinity, alignment: .leading)
                 Text("Apple").foregroundStyle(Color.secondaryText)

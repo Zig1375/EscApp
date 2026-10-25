@@ -58,6 +58,31 @@ public enum WindowsFonts {
         }
     }
 
+    /// Japanese Windows' fonts, which old Japanese games ask for by name, and the family drawn instead.
+    ///
+    /// RPG Maker XP writes its menus in `ＭＳ Ｐゴシック` and reads the font file itself (`GetFontData`): without
+    /// it the title menu of RJ080230 had no text at all, and Hiragino, which Wine finds on the Mac, gave none
+    /// either (OpenType collections, which that reader doesn't take). Arial Unicode is a plain TrueType file with
+    /// the Japanese glyphs, linked into every bottle above.
+    static let japaneseReplacement = "Arial Unicode MS"
+    static let japaneseFonts = [
+        "ＭＳ Ｐゴシック", "ＭＳ ゴシック", "ＭＳ Ｐ明朝", "ＭＳ 明朝", "MS PGothic", "MS Gothic", "MS PMincho", "MS Mincho",
+        "MS UI Gothic",
+    ]
+    static let replacementsKey = #"Software\Wine\Fonts\Replacements"#
+
+    /// Points the Japanese font names at `japaneseReplacement`, leaving any the player set otherwise. Writes
+    /// `user.reg`, so only while the bottle's Wine is down (`WineRegistry`).
+    static func replaceJapaneseFonts(bottle: URL) throws {
+        let userReg = bottle.appending(path: "user.reg")
+        let original = try String(contentsOf: userReg, encoding: .utf8)
+        var text = original
+        for name in japaneseFonts where WineRegistry.string(in: text, key: replacementsKey, name: name) == nil {
+            text = WineRegistry.setString(in: text, key: replacementsKey, name: name, value: japaneseReplacement)
+        }
+        if text != original { try text.write(to: userReg, atomically: true, encoding: .utf8) }
+    }
+
     private static func isOurs(_ destination: String, macFonts: URL) -> Bool {
         destination.hasPrefix(macFonts.path + "/")
     }

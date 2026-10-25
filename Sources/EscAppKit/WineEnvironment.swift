@@ -13,15 +13,19 @@ public enum WineEnvironment {
     ///     wineserver every time (EscApp's Wine 11.20 build 3 onwards, `Wine.supportsFastSync`). The bottle's
     ///     wineserver decides, from the environment it starts with, and its processes follow it; so a bottle's
     ///     processes all take the setting from the same place, `fastSync(for:wine:)`.
+    ///   - locale: the language Windows has for the game instead of the Mac's (`GameLanguage`). `LC_ALL`, since it
+    ///     outranks whatever `LANG` the Mac has, and Wine takes its code page from it.
     public static func make(
         host: [String: String],
         bottle: String,
         extra: [String: String] = [:],
         verboseLog: Bool = false,
-        fastSync: Bool = false
+        fastSync: Bool = false,
+        locale: String? = nil
     ) -> [String: String] {
         var env = host.filter { hostAllowlist.contains($0.key) }
         env["WINEPREFIX"] = bottle
+        if let locale { env["LC_ALL"] = locale }
         // Without fixme lines, so a long session doesn't write gigabytes of them, but with errors: they are what
         // `LogDiagnosis` reads to tell a missing game file from a graphics failure. The verbose log adds
         // exceptions and DLL loads, which is what diagnosing a crash at start needs. Both keep the text of the

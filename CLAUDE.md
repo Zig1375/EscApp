@@ -28,6 +28,8 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 - `App/EscApp`: the SwiftUI app. It depends on EscAppKit through the local package. Strings go in
   `Localizable.xcstrings` with English and Russian from the start; CI fails on an untranslated string.
   Use `Color.brand` for the brand colour (`Color.accentColor` follows the user's system accent).
+  `GameCard` (library grid): a click on the card plays the game (or shows it while running); hover shows a play
+  symbol and an About button; everything else is in the context menu.
 - Components: `RuntimeManifest` (bundled `Sources/EscAppKit/Resources/runtime-manifest.json`, every download pinned
   by SHA-256), `ManifestUpdater` (daily fetch of the same file from `main`), `RuntimeInstaller` (staging folder,
   `RUNTIME.json` marker written last), `RuntimeCatalog` (installed vs. newest). `escapp runtime status|install`
@@ -38,13 +40,15 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 - Games: `GameIdentifier` finds the game for an exe by the `.escapp` file in its root folder, and by nothing else; an
   exe without one is a new game. `GameLibrary` is `Games.json`. `escapp game identify|prepare|list` exercises both.
 - Launching: `ExecutableInfo` reads an exe (format, imports → DirectX, name, icon, DPI) with a bounds-checked
-  PE reader; `BackendPlan` orders backends; `GameLauncher` prepares the bottle and runs `wine <exe>` from the
-  backend's own Wine tree (`BackendTree`: APFS clone of `wine` with DXVK/DXMT builtin DLLs in `lib/wine`;
+  PE reader (`unityplayer.dll` counts as Direct3D 11: Unity loads it at run time); `BackendPlan` orders backends
+  by the newest Direct3D (11 → DXVK, DXMT, WineD3D; 9 and older → WineD3D; none found → DXVK, WineD3D);
+  `GameLauncher` prepares the bottle and runs `wine <exe>` from the backend's own Wine tree (`BackendTree`: APFS clone of `wine` with DXVK/DXMT builtin DLLs in `lib/wine`;
   Wine won't take those DLLs from a bottle). Logs go to `Logs/<game-id>/`. `escapp inspect|run` do the same.
 - `Tests/Fixtures/probes`: tiny D3D9/D3D11 test programs (32/64-bit) with sources and `build.sh` (mingw-w64).
   They are PE fixtures for unit tests and print `PROBE … OK` when they render on real Wine.
-- Wine is WhiskyWine 3.1.1 (Wine 11.0) for now: DXMT needs `macdrv_functions` exported from `winemac.so`,
-  which Gcenx builds lack. EscApp's own Wine build is planned.
+- Wine is EscApp's own build (Wine 11.20, built and released by the sibling repo `../EscApp-Runtime`), with
+  WhiskyWine 3.1.1 (Wine 11.0) still in the manifest as the older runtime. DXMT needs `macdrv_functions` exported
+  from `winemac.so`, which stock and Gcenx builds lack; EscApp's build patches it in.
 - `AppPaths` is the only place that builds paths under `~/Library/Application Support/EscApp` (`ESCAPP_HOME` overrides).
 
 ## Rules

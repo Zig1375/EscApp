@@ -3,7 +3,8 @@ import SwiftUI
 
 /// One game as a 3:4 cover with its name under it (Main.dc.html in the main-screen canvas). Steam games show
 /// Steam's cover; games the player installed themselves usually have none, only the .exe icon, which then sits on
-/// a tint of its own colour. Under the pointer the card lifts and a bar with Play and "…" (About) slides up.
+/// a tint of its own colour. A click on the card starts the game (or brings a running one forward): that's what a
+/// player expects from a cover, so under the pointer a play symbol sits in the middle and only About slides up below.
 struct GameCard: View {
     let game: GameRecord
     let library: LibraryModel
@@ -28,7 +29,7 @@ struct GameCard: View {
                 .help(game.name)
         }
         .contentShape(.rect)
-        .onTapGesture(perform: showDetails)
+        .onTapGesture(perform: activate)
         .onHover {
             isHovered = $0
             library.hovering(game, $0)
@@ -36,7 +37,11 @@ struct GameCard: View {
         .animation(.easeOut(duration: 0.18), value: isHovered)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(Text(game.name))
+        .accessibilityAction(named: Text("Play"), activate)
         .contextMenu {
+            if state == nil {
+                Button("Play") { library.play(game) }
+            }
             Button("About", action: showDetails)
             if case .running? = state {
                 Button("Stop") { library.stop(game) }
@@ -57,6 +62,14 @@ struct GameCard: View {
         }
     }
 
+    private func activate() {
+        switch state {
+        case nil: library.play(game)
+        case .running?: library.showGame(game)
+        case .starting?: break
+        }
+    }
+
     private var cover: some View {
         GameCoverArt(game: game, library: library)
             .overlay(alignment: .topTrailing) {
@@ -71,6 +84,19 @@ struct GameCard: View {
                                startPoint: .top, endPoint: .bottom)
                     .opacity(isHovered || state != nil ? 1 : 0)
                     .allowsHitTesting(false)
+            }
+            .overlay {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(.white)
+                    .offset(x: 2)
+                    .frame(width: 52, height: 52)
+                    .background(Color.brand, in: .circle)
+                    .shadow(color: .black.opacity(0.3), radius: 8, y: 3)
+                    .scaleEffect(isHovered ? 1 : 0.85)
+                    .opacity(isHovered && state == nil ? 1 : 0)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
             }
             .overlay(alignment: .bottom) { bar.padding(8) }
             .clipShape(.rect(cornerRadius: 12, style: .continuous))
@@ -110,10 +136,7 @@ struct GameCard: View {
                 runningButtons { Image(systemName: "arrow.up.forward.app") }
             }
         case nil:
-            ViewThatFits(in: .horizontal) {
-                playButtons { Label("Play", systemImage: "play.fill") }
-                playButtons { Image(systemName: "play.fill") }
-            }
+            aboutButton
             .opacity(isHovered ? 1 : 0)
             .offset(y: isHovered ? 0 : 8)
             .allowsHitTesting(isHovered)
@@ -131,13 +154,21 @@ struct GameCard: View {
         }
     }
 
-    private func playButtons(@ViewBuilder label: () -> some View) -> some View {
-        HStack(spacing: 6) {
-            Button { library.play(game) } label: { label() }
-                .buttonStyle(BrandButtonStyle(kind: .primary, height: 34, fill: true))
-                .accessibilityLabel("Play")
-            CoverButton(symbol: "ellipsis", label: "About", action: showDetails)
+    /// The game's page, as wide as the card, frosted like the cover's square buttons.
+    private var aboutButton: some View {
+        Button(action: showDetails) {
+            Label("About", systemImage: "info.circle")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, minHeight: 34)
+                .background(.white.opacity(0.18), in: .rect(cornerRadius: 9, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 9, style: .continuous).strokeBorder(.white.opacity(0.28))
+                }
+                .contentShape(.rect)
         }
+        .buttonStyle(.plain)
     }
 }
 

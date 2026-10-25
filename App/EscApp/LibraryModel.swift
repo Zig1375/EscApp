@@ -206,6 +206,10 @@ final class LibraryModel {
         Task {
             let types = [UTType("com.microsoft.windows-executable"), UTType(filenameExtension: "msi")]
                 .compactMap { $0 }
+            // Launch Services picks among copies with this bundle id, and kept picking a day-old development
+            // build in DerivedData: double-clicking an .exe opened that copy, with its old first-launch screen.
+            // Registering this copy first makes it the one chosen.
+            LSRegisterURL(Bundle.main.bundleURL as CFURL, true)
             for type in types {
                 try? await NSWorkspace.shared.setDefaultApplication(at: Bundle.main.bundleURL, toOpen: type)
             }
@@ -218,7 +222,8 @@ final class LibraryModel {
     }
 
     /// By bundle id, not path: with two copies of EscApp on the Mac (a development build in DerivedData and one
-    /// elsewhere) Launch Services names the other copy, and the switch in Settings stayed off after it was approved.
+    /// elsewhere) Launch Services may name the other copy, and the switch in Settings stayed off after it was
+    /// approved. `makeDefaultForExe` registers this copy first so that it is the one that opens.
     func refreshDefaultHandler() {
         guard let type = UTType("com.microsoft.windows-executable"),
               let handler = NSWorkspace.shared.urlForApplication(toOpen: type) else {

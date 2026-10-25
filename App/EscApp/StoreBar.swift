@@ -295,8 +295,12 @@ struct StoreLogo: View {
     var size: CGFloat = 48
 
     var body: some View {
+        // Steam's navy and Epic's charcoal vanished on the dark window: a lighter top and a light edge, as on
+        // macOS app icons, lift every tile off the background without changing the brand colours.
         RoundedRectangle(cornerRadius: size / 4, style: .continuous)
-            .fill(store.logoColor)
+            .fill(LinearGradient(colors: [store.logoColor.mix(with: .white, by: 0.16), store.logoColor],
+                                 startPoint: .top, endPoint: .bottom))
+            .strokeBorder(.white.opacity(0.18), lineWidth: max(1, size / 48))
             .frame(width: size, height: size)
             .overlay {
                 Image(store.logoAsset)

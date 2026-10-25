@@ -184,6 +184,8 @@ import Testing
         // A full-screen game made with WS_EX_TOPMOST sits at 21; it showed "no window" and was retried.
         #expect(GameWindows.isGameLayer(0) && GameWindows.isGameLayer(21) && GameWindows.isGameLayer(1000))
         #expect(!GameWindows.isGameLayer(24) && !GameWindows.isGameLayer(25))
+        // Wine's level for a full-screen window of the active game (FallenFlower), floating or not.
+        #expect(GameWindows.isGameLayer(26) && GameWindows.isGameLayer(27))
     }
 }
 

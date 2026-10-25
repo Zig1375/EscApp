@@ -7,17 +7,28 @@ import SwiftUI
 /// cover goes and the game comes to the front.
 ///
 /// An ordinary window rather than one above everything: a search can take minutes, and the Mac stays usable.
+/// The game can't simply stay under it, though: Wine makes the game the active app when its window opens, and a
+/// full-screen window of the active game goes above the menu bar, over the cover (FallenFlower came out halfway
+/// through its check). So whenever the game takes the front, the player gets back the app they were in, and the
+/// cover goes right over the game's window, which keeps it under the player's own windows.
 @MainActor
 final class TuningCover {
     private var windows: [NSWindow] = []
+    private var watcher: NSObjectProtocol?
+    /// The app the player was in last, other than the game: the one they get back.
+    private var playersApp: NSRunningApplication?
 
     func update(showing: Bool, library: LibraryModel) {
         if !showing {
             windows.forEach { $0.orderOut(nil) }
             windows = []
+            if let watcher { NSWorkspace.shared.notificationCenter.removeObserver(watcher) }
+            watcher = nil
+            playersApp = nil
             return
         }
         guard windows.isEmpty else { return }
+        watch(library)
         let main = NSScreen.main ?? NSScreen.screens.first
         for screen in NSScreen.screens {
             let window = CoverWindow(contentRect: screen.frame, styleMask: [.borderless], backing: .buffered,
@@ -41,6 +52,49 @@ final class TuningCover {
         }
         windows.forEach { $0.orderFrontRegardless() }
         NSApp.activate()
+        playersApp = .current
+    }
+
+    /// The game's process took the front, or its window just opened: the player's app comes back, and the cover
+    /// goes over the game's windows.
+    func keepOver(_ pid: pid_t) {
+        if let app = playersApp, !app.isTerminated, app != .current {
+            app.activate()
+        } else {
+            NSApp.activate()
+        }
+        cover(pid)
+        // Wine lowers the window of a game that is no longer active a moment later, and that can bring it up
+        // again within the normal level.
+        Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(400))
+            self?.cover(pid)
+        }
+    }
+
+    private func cover(_ pid: pid_t) {
+        guard let top = GameWindows.windowNumbers(of: pid).first else { return }
+        windows.forEach { $0.order(.above, relativeTo: top) }
+    }
+
+    private func watch(_ library: LibraryModel) {
+        guard watcher == nil else { return }
+        watcher = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
+        ) { [weak self, weak library] note in
+            guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication else {
+                return
+            }
+            let pid = app.processIdentifier
+            MainActor.assumeIsolated {
+                guard let self, let library, !self.windows.isEmpty else { return }
+                if library.isCheckedGame(pid) {
+                    self.keepOver(pid)
+                } else {
+                    self.playersApp = app
+                }
+            }
+        }
     }
 }
 

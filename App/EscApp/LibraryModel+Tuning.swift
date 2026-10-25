@@ -56,9 +56,10 @@ extension LibraryModel {
             tuning.windowOwner = nil
             tuning.held = nil
         case let .windowShown(pid):
-            // EscApp stays in front: a game that grabs the mouse would otherwise keep it from the buttons.
+            // The game doesn't stay in front: a game that grabs the mouse would otherwise keep it from the buttons,
+            // and its full-screen window would cover the cover.
             tuning.windowOwner = pid
-            NSApp.activate()
+            tuningCover.keepOver(pid)
         case let .checking(held, needed):
             tuning.held = held
             tuning.needed = needed
@@ -82,6 +83,13 @@ extension LibraryModel {
         }
         launch?.tuning = tuning
         return true
+    }
+
+    /// Whether a process is the game being checked: its window's owner, or any of its session's with a window.
+    func isCheckedGame(_ pid: pid_t) -> Bool {
+        guard let launch, launch.tuning != nil else { return false }
+        if launch.tuning?.windowOwner == pid { return true }
+        return sessions[launch.id].map { GameWindows.owners(of: $0).contains(pid) } ?? false
     }
 
     /// Whether the player chose the detailed first-launch screen (`TuningScreen`).

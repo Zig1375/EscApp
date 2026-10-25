@@ -50,10 +50,23 @@ public enum GameWindows {
     }
 
     /// Window levels a game's window can have: normal ones, "always on top" ones (21: Wine's level for a
-    /// `WS_EX_TOPMOST` window, which full-screen games use) and the shielding level of a captured display. Not the
-    /// menu bar's (24) or its status items' (25), where a Wine program's tray icon would be.
+    /// `WS_EX_TOPMOST` window, which full-screen games use), a full-screen window while the game is the active app
+    /// (26 and 27: Wine puts it above the status items so the menu bar can't cover it; FallenFlower's sat there and
+    /// counted as no window) and the shielding level of a captured display. Not the menu bar's (24) or its status
+    /// items' (25), where a Wine program's tray icon would be.
     static func isGameLayer(_ layer: Int) -> Bool {
-        (0..<24).contains(layer) || layer >= 1000
+        (0..<24).contains(layer) || (26...27).contains(layer) || layer >= 1000
+    }
+
+    /// The on-screen windows of a process, front to back, as window numbers `NSWindow.order(_:relativeTo:)` takes.
+    public static func windowNumbers(of pid: pid_t) -> [Int] {
+        guard let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements],
+                                                       kCGNullWindowID) as? [[String: Any]] else { return [] }
+        return windows.compactMap { window in
+            guard window[kCGWindowOwnerPID as String] as? pid_t == pid,
+                  let layer = window[kCGWindowLayer as String] as? Int, isGameLayer(layer) else { return nil }
+            return window[kCGWindowNumber as String] as? Int
+        }
     }
 
     /// The game's own size, from the largest window of its session on screen (`GameScaling.learn`).

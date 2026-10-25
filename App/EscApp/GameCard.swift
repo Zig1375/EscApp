@@ -123,21 +123,40 @@ struct GameCard: View {
             .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
             .padding(.leading, 4)
         case .running?:
-            HStack(spacing: 6) {
-                Button { library.showGame(game) } label: { Text("Show Game") }
-                    .buttonStyle(BrandButtonStyle(kind: .primary, height: 34, fill: true))
-                CoverButton(symbol: "stop.fill", label: "Stop") { library.stop(game) }
-                CoverButton(symbol: "ellipsis", label: "About", action: showDetails)
+            // "Показать игру" next to two square buttons is wider than a 150-pt card: it ran off both edges.
+            // Where the words don't fit, the button keeps only its symbol.
+            ViewThatFits(in: .horizontal) {
+                runningButtons { Text("Show Game") }
+                runningButtons { Image(systemName: "arrow.up.forward.app") }
             }
         case nil:
-            HStack(spacing: 6) {
-                Button { library.play(game) } label: { Label("Play", systemImage: "play.fill") }
-                    .buttonStyle(BrandButtonStyle(kind: .primary, height: 34, fill: true))
-                CoverButton(symbol: "ellipsis", label: "About", action: showDetails)
+            ViewThatFits(in: .horizontal) {
+                playButtons { Label("Play", systemImage: "play.fill") }
+                playButtons { Image(systemName: "play.fill") }
             }
             .opacity(isHovered ? 1 : 0)
             .offset(y: isHovered ? 0 : 8)
             .allowsHitTesting(isHovered)
+        }
+    }
+
+    private func runningButtons(@ViewBuilder label: () -> some View) -> some View {
+        HStack(spacing: 6) {
+            Button { library.showGame(game) } label: { label() }
+                .buttonStyle(BrandButtonStyle(kind: .primary, height: 34, fill: true))
+                .help("Show Game")
+                .accessibilityLabel("Show Game")
+            CoverButton(symbol: "stop.fill", label: "Stop") { library.stop(game) }
+            CoverButton(symbol: "ellipsis", label: "About", action: showDetails)
+        }
+    }
+
+    private func playButtons(@ViewBuilder label: () -> some View) -> some View {
+        HStack(spacing: 6) {
+            Button { library.play(game) } label: { label() }
+                .buttonStyle(BrandButtonStyle(kind: .primary, height: 34, fill: true))
+                .accessibilityLabel("Play")
+            CoverButton(symbol: "ellipsis", label: "About", action: showDetails)
         }
     }
 }

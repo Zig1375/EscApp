@@ -16,7 +16,8 @@ struct EscAppApp: App {
                     SetupView(setup: setup)
                 }
             }
-            .frame(minWidth: 960, idealWidth: 1200, minHeight: 600, idealHeight: 780)
+            // The default size is also the smallest: the library's header and card grid are laid out for it.
+            .frame(minWidth: 1200, minHeight: 780)
             .onChange(of: setup.phase, initial: true) {
                 components.reload()
                 if setup.phase == .ready {
@@ -33,6 +34,7 @@ struct EscAppApp: App {
             }
         }
         .defaultSize(width: 1200, height: 780)
+        .windowResizability(.contentMinSize)
         // The header is drawn by the app (see WindowChrome); no system title bar or its glass on top of it.
         .windowStyle(.hiddenTitleBar)
         .commands {

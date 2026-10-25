@@ -3,9 +3,11 @@ import Foundation
 /// A game's Advanced settings (Advanced.dc.html), and what "Auto" would do for it, so the screen can say why.
 /// Usually nothing here needs changing: every setting starts at Auto or off.
 public enum GameSettings {
-    /// Retina: games that declare high-DPI support draw for it; others would get a tiny interface.
-    public static func retina(_ setting: GameScaling.Setting?, dpiAware: Bool) -> Bool {
-        switch setting ?? .auto {
+    /// Retina: games that declare high-DPI support draw for it; others would get a tiny interface. Turned off
+    /// for every game in Settings (`SharedSettings.retinaOff`), it is off whatever the game's own setting.
+    public static func retina(_ setting: GameScaling.Setting?, dpiAware: Bool, offForAll: Bool) -> Bool {
+        if offForAll { return false }
+        return switch setting ?? .auto {
         case .auto: dpiAware
         case .on: true
         case .off: false

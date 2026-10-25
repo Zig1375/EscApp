@@ -73,6 +73,7 @@ struct AdvancedPage: View {
                 Segmented(selection: setting(game, \.retina), options: GameScaling.Setting.allCases,
                           title: Self.settingTitle)
                     .frame(width: 190)
+                    .disabled(library.retinaOffForAll)
             }
             SettingRow(title: "Enlarge low resolutions", detail: scalingHint(game)) {
                 Segmented(selection: setting(game, \.scaling), options: GameScaling.Setting.allCases,
@@ -105,6 +106,7 @@ struct AdvancedPage: View {
     }
 
     private func retinaHint(_ game: GameRecord) -> LocalizedStringKey {
+        if library.retinaOffForAll { return "Off for all games in Settings" }
         let dpiAware = library.infos[game.id]?.dpiAware ?? false
         switch game.retina ?? .auto {
         case .auto:
@@ -121,7 +123,8 @@ struct AdvancedPage: View {
         case .off: return "The game's window keeps its own size. Full-screen games still fill the screen."
         case .auto: break
         }
-        let retina = GameSettings.retina(game.retina, dpiAware: library.infos[game.id]?.dpiAware ?? false)
+        let retina = GameSettings.retina(game.retina, dpiAware: library.infos[game.id]?.dpiAware ?? false,
+                                         offForAll: library.retinaOffForAll)
         switch GameSettings.autoScaling(for: game, retina: retina) {
         case .notSeenYet:
             return "Auto: decided after the first launch, from the size of the game's window"

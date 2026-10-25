@@ -4105,6 +4105,46 @@
           }
         }
       }
+    },
+    "Turn off Retina in all games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выключить Retina во всех играх"
+          }
+        }
+      }
+    },
+    "Every game draws at its own size, whatever its Advanced settings say": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все игры рисуются в своём размере, что бы ни стояло в их дополнительных настройках"
+          }
+        }
+      }
+    },
+    "Off for all games in Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выключено для всех игр в настройках"
+          }
+        }
+      }
+    },
+    "Couldn't save the setting": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось сохранить настройку"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

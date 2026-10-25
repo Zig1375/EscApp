@@ -25,10 +25,23 @@ import Testing
     }
 
     @Test func retinaFollowsTheGameUnlessChosen() {
-        #expect(GameSettings.retina(nil, dpiAware: true))
-        #expect(!GameSettings.retina(.auto, dpiAware: false))
-        #expect(GameSettings.retina(.on, dpiAware: false))
-        #expect(!GameSettings.retina(.off, dpiAware: true))
+        #expect(GameSettings.retina(nil, dpiAware: true, offForAll: false))
+        #expect(!GameSettings.retina(.auto, dpiAware: false, offForAll: false))
+        #expect(GameSettings.retina(.on, dpiAware: false, offForAll: false))
+        #expect(!GameSettings.retina(.off, dpiAware: true, offForAll: false))
+    }
+
+    @Test func retinaOffForAllWinsOverTheGame() {
+        #expect(!GameSettings.retina(nil, dpiAware: true, offForAll: true))
+        #expect(!GameSettings.retina(.on, dpiAware: true, offForAll: true))
+    }
+
+    @Test func sharedSettingsSurviveASaveAndDefaultWithoutAFile() throws {
+        let file = FileManager.default.temporaryDirectory.appending(path: "escapp-settings-\(UUID()).json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        #expect(SharedSettings.load(from: file) == SharedSettings())
+        try SharedSettings(retinaOff: true).save(to: file)
+        #expect(SharedSettings.load(from: file).retinaOff == true)
     }
 
     @Test func autoSaysWhichBackendAndWhy() {
@@ -90,7 +103,7 @@ import Testing
     }
 
     @Test func aPlainGameGetsTheDefaults() throws {
-        let scale = try GameLauncher.configure(bottle: bottle, for: game(), dpiAware: false, screen: screen)
+        let scale = try GameLauncher.configure(bottle: bottle, for: game(), retina: false, screen: screen)
         #expect(scale == 1)
         #expect(try value(#"Software\Wine\Mac Driver"#, "RetinaMode") == "n")
         #expect(try value(#"Software\Wine\Mac Driver"#, "LeftCommandIsCtrl") == "n")
@@ -103,24 +116,23 @@ import Testing
         var record = game()
         record.commandAsControl = true
         record.window = GameScaling.LearnedWindow(width: 640, height: 480, fullScreen: false)
-        let scale = try GameLauncher.configure(bottle: bottle, for: record, dpiAware: false, screen: screen)
+        let scale = try GameLauncher.configure(bottle: bottle, for: record, retina: false, screen: screen)
         #expect(scale == 2)
         #expect(try userReg().contains(#""LogPixels"=dword:000000c0"#))
         #expect(try value(#"Software\Wine\Mac Driver"#, "RightCommandIsCtrl") == "y")
 
         // Retina on: the game draws for it, nothing is enlarged.
-        record.retina = .on
-        #expect(try GameLauncher.configure(bottle: bottle, for: record, dpiAware: false, screen: screen) == 1)
+        #expect(try GameLauncher.configure(bottle: bottle, for: record, retina: true, screen: screen) == 1)
         #expect(try value(#"Software\Wine\Mac Driver"#, "RetinaMode") == "y")
         #expect(try userReg().contains(#""LogPixels"=dword:00000060"#))
     }
 
     @Test func anUnchangedBottleIsntRewritten() throws {
         let record = game()
-        _ = try GameLauncher.configure(bottle: bottle, for: record, dpiAware: true, screen: screen)
+        _ = try GameLauncher.configure(bottle: bottle, for: record, retina: true, screen: screen)
         let file = bottle.appending(path: "user.reg")
         let before = try file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
-        _ = try GameLauncher.configure(bottle: bottle, for: record, dpiAware: true, screen: screen)
+        _ = try GameLauncher.configure(bottle: bottle, for: record, retina: true, screen: screen)
         #expect(try file.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate == before)
     }
 }

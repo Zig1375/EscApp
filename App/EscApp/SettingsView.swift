@@ -3,7 +3,7 @@ import EscAppKit
 import SwiftUI
 
 /// Settings, as in the design (Settings.dc.html): a sidebar of sections, each showing its card — general,
-/// components, disk space, saves. "Stores" opens the Stores screen in the main window, as the design links it.
+/// components, disk space, saves. Stores have their own screen in the main window, not a section here.
 /// Sections EscApp has nothing for yet (about, auto-retry, the folder for new games) are left out.
 struct SettingsView: View {
     enum Section: String, CaseIterable, Identifiable {
@@ -25,7 +25,6 @@ struct SettingsView: View {
     let library: LibraryModel
     /// Remembered, and set by "Check for Component Updates…" to land on Components.
     @AppStorage(SettingsView.sectionKey) private var section: Section = .general
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         HStack(spacing: 0) {
@@ -89,17 +88,6 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(section == item ? .isSelected : [])
             }
-            Button {
-                library.shownPage = .stores
-                openWindow(id: "library")
-            } label: {
-                Text("Stores")
-                    .font(.system(size: 14))
-                    .padding(.horizontal, 12)
-                    .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
-                    .contentShape(.rect)
-            }
-            .buttonStyle(.plain)
             Spacer()
         }
         .padding(.horizontal, 12)
@@ -359,6 +347,19 @@ private struct GeneralCard: View {
                     .disabled(library.isDefaultForExe)
                     // Another app may have taken .exe since EscApp started (chosen in Finder).
                     .onAppear { library.refreshDefaultHandler() }
+            }
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Turn off Retina in all games")
+                    Text("Every game draws at its own size, whatever its Advanced settings say")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.secondaryText)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Toggle("", isOn: Binding(get: { library.retinaOffForAll }, set: { library.setRetinaOffForAll($0) }))
+                    .toggleStyle(.switch)
+                    .tint(.brand)
+                    .labelsHidden()
             }
             HStack(spacing: 12) {
                 Text("Update components automatically").frame(maxWidth: .infinity, alignment: .leading)

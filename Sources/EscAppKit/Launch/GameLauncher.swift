@@ -17,6 +17,8 @@ public struct GameLauncher: Sendable {
         public var log: URL
         /// How many times larger Wine draws the game's window (`GameScaling`).
         public var scale: Double = 1
+        /// Whether Wine draws the game in Retina mode (`GameSettings.retina`).
+        public var retina = false
         /// A store game: the store's client and what makes it start the game. Nil starts the exe itself.
         public var client: (url: URL, arguments: [String])?
         /// A store game's folder as Windows sees it, which tells its processes from the client's.
@@ -63,11 +65,10 @@ public struct GameLauncher: Sendable {
 
     /// A store game's client, made ready for it, and the command that starts the game through the client.
     /// Returns whether the bottle was idle; always for a game without a store.
-    private func prepareStore(for game: GameRecord, wine: Wine, dpiAware: Bool) async throws
+    private func prepareStore(for game: GameRecord, wine: Wine, retina: Bool) async throws
         -> (idle: Bool, client: (url: URL, arguments: [String])?) {
         guard let store = game.store else { return (true, nil) }
         let stores = StoreClient(paths: paths, host: host)
-        let retina = GameSettings.retina(game.retina, dpiAware: dpiAware)
         let idle = try await stores.prepareForGame(store, wine: wine, retina: retina)
         guard store.launchesGames, let id = game.storeID else { return (idle, nil) }
         return (idle, try stores.playCommand(store, storeID: id))
@@ -97,12 +98,15 @@ public struct GameLauncher: Sendable {
                                                     windows: game.store == nil ? game.windowsVersion : .default)
         progress(.graphics(backend, directX: info.directX.max()))
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
-        let (idle, client) = try await prepareStore(for: game, wine: wine, dpiAware: info.dpiAware)
+        // Retina only for games that say they handle high DPI; others would draw a tiny interface.
+        let retina = GameSettings.retina(game.retina, dpiAware: info.dpiAware,
+                                         offForAll: SharedSettings.load(from: paths.settings).retinaOff == true)
+        let (idle, client) = try await prepareStore(for: game, wine: wine, retina: retina)
         let fastSync = WineEnvironment.fastSync(for: game, wine: wine)
         if game.store == nil { await Self.stopWine(in: bottle, unless: fastSync) }
         // With the store's client already running in the right Wine, its registry can't be written: the game
         // keeps the settings the bottle had when the client started.
-        let scale = idle ? try Self.configure(bottle: bottle, for: game, dpiAware: info.dpiAware,
+        let scale = idle ? try Self.configure(bottle: bottle, for: game, retina: retina,
                                               screen: GameScaling.availableScreen()) : 1
         try BackendTree.prepareBottle(bottle, for: backend, wine: wine)
         try await insertDisc(of: game, into: bottle)
@@ -122,7 +126,8 @@ public struct GameLauncher: Sendable {
         let chromium = game.store != nil ? nil
             : game.chromium ?? (info.chromium ? .inProcessGPU : nil)
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
-                        environment: environment, log: newLogFile(for: game.id), scale: scale, client: client,
+                        environment: environment, log: newLogFile(for: game.id), scale: scale, retina: retina,
+                        client: client,
                         gameFolder: folder, chromium: chromium, storeClient: storeClient)
     }
 
@@ -148,13 +153,11 @@ public struct GameLauncher: Sendable {
 
     /// Writes the game's settings into its bottle before a launch, each value only when it changes. Returns how
     /// many times larger Wine will draw the game. Only while the bottle's Wine is down (see `WineRegistry`).
-    static func configure(bottle: URL, for game: GameRecord, dpiAware: Bool,
+    static func configure(bottle: URL, for game: GameRecord, retina: Bool,
                           screen: GameScaling.Size) throws -> Double {
         // Wine's own "the program has crashed" dialog (winedbg) would pop up over the Mac; EscApp reports
         // crashes itself, from the log.
         try BottleManager.disableCrashDialog(bottle: bottle)
-        // Retina only for games that say they handle high DPI; others would draw a tiny interface.
-        let retina = GameSettings.retina(game.retina, dpiAware: dpiAware)
         let macDriver = #"Software\Wine\Mac Driver"#
         try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: "RetinaMode",
                                             value: retina ? "y" : "n")
@@ -203,7 +206,7 @@ public struct GameLauncher: Sendable {
         defer { try? log.close() }
 
         let startedAt = Date()
-        let retina = GameSettings.retina(prepared.game.retina, dpiAware: prepared.info.dpiAware)
+        let retina = prepared.retina
         let header = [
             "[EscApp] Launch \(ISO8601DateFormatter().string(from: startedAt))",
             "[EscApp] Game \(prepared.game.name) (\(prepared.game.id))",

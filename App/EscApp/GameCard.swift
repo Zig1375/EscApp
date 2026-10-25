@@ -37,6 +37,9 @@ struct GameCard: View {
                 Button("Stop") { library.stop(game) }
             }
             Button("Show in Finder") { library.showInFinder(game) }
+            if game.canRename {
+                Button("Rename…") { library.renaming = game }
+            }
             Button(library.customCovers.contains(game.id) ? "Change Cover…" : "Choose Cover…") {
                 library.chooseCover(for: game)
             }

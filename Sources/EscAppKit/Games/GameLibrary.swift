@@ -87,6 +87,19 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
         chromium = nil
     }
 
+    /// Only the player's own games can be renamed: a store game keeps the name its store gives it.
+    public var canRename: Bool { store == nil }
+
+    /// The player's own name for the game, trimmed. Returns false, changing nothing, for a store game or an
+    /// empty name: a card without a name can't be found or told apart.
+    @discardableResult
+    public mutating func rename(to newName: String) -> Bool {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard canRename, !trimmed.isEmpty else { return false }
+        name = trimmed
+        return true
+    }
+
     /// Whether anything is left for `forgetLaunchSettings` to forget.
     public var hasLaunchSettings: Bool { backend != nil || window != nil || chromium != nil }
 

@@ -37,6 +37,8 @@ final class LibraryModel {
     var notice: Notice?
     /// The game "Delete" asks about (`DeleteGameSheet`).
     var deleting: GameRecord?
+    /// The game "Rename…" on its card asks a new name for.
+    var renaming: GameRecord?
     /// The store game "Delete" asks to confirm: one click on it once removed a Steam game by accident.
     var confirmingDelete: GameRecord?
     var launch: Launch? {

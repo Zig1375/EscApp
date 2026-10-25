@@ -47,6 +47,11 @@ extension LibraryModel {
         }
     }
 
+    /// The player's own name, on the card and the page. Only for their own games (`GameRecord.canRename`).
+    func rename(_ game: GameRecord, to name: String) {
+        update(game.id) { $0.rename(to: name) }
+    }
+
     func update(_ id: GameID, _ change: (inout GameRecord) -> Void) {
         do {
             try GameLibrary.modify(paths.library) { library in

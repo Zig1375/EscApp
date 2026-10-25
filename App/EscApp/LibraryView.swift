@@ -104,6 +104,13 @@ struct LibraryView: View {
                 """)
         }
         .sheet(isPresented: $addingStore) { AddStoreSheet(library: library) }
+        .alert("Rename Game", isPresented: Binding(get: { library.renaming != nil },
+                                                  set: { if !$0 { library.renaming = nil } }),
+               presenting: library.renaming) { game in
+            RenameField(game: game, library: library)
+        } message: { _ in
+            Text("The new name shows in EscApp only.")
+        }
         .sheet(item: $deletingStore) { store in DeleteStoreSheet(store: store, library: library) }
         .installSheet(library)
         .problemSheet(library)

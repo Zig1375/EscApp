@@ -284,3 +284,17 @@ struct CompactButtonStyle: ButtonStyle {
         BrandButtonStyle(kind: kind, height: 30, radius: 8).makeBody(configuration: configuration)
     }
 }
+
+/// The field in the card's "Rename…" alert, starting with the current name.
+struct RenameField: View {
+    let game: GameRecord
+    let library: LibraryModel
+    @State private var name = ""
+
+    var body: some View {
+        TextField("Game name", text: $name)
+            .onAppear { name = game.name }
+        Button("Rename") { library.rename(game, to: name) }
+        Button("Cancel", role: .cancel) {}
+    }
+}

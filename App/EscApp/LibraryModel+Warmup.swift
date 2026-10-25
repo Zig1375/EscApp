@@ -40,6 +40,14 @@ extension LibraryModel {
         if let game = WarmPolicy.lastPlayed(games) { warmUp(game) }
     }
 
+    /// Quitting: left to shut down by itself, a warm bottle's Wine ran on for a few seconds (once much longer),
+    /// and macOS 27 kept EscApp in the Dock as "running in the background" until it ended.
+    func coolBeforeQuit() async {
+        coolTask?.cancel()
+        hoverTask?.cancel()
+        await warmer.coolAll()
+    }
+
     private func coolSoon() {
         coolTask?.cancel()
         coolTask = Task {

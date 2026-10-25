@@ -169,6 +169,11 @@ final class LibraryModel {
         }
     }
 
+    /// A game starting or running, or one being installed: EscApp mustn't quit when its window closes.
+    var isBusy: Bool {
+        !states.isEmpty || install != nil
+    }
+
     /// Keeps `now` current for durations shown while games run.
     func startClock() {
         Task {

@@ -63,8 +63,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppAppearance.saved.apply()
     }
 
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        quitWhenIdleWithoutWindows()
+    }
+
     func application(_ application: NSApplication, open urls: [URL]) {
         for url in urls { library.open(url) }
+    }
+
+    /// Warm bottles are shut down before EscApp exits (`coolBeforeQuit`); a stuck Wine mustn't hold up the quit.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        let library = library
+        Task {
+            await withTaskGroup(of: Void.self) { group in
+                group.addTask { await library.coolBeforeQuit() }
+                group.addTask { try? await Task.sleep(for: .seconds(3)) }
+                await group.next()
+                group.cancelAll()
+            }
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
+    }
+
+    /// On macOS 27 a closed EscApp stayed in the Dock as "running in the background" with nothing to show.
+    /// It stays only while a game runs (the menu bar shows it) or a game is being installed.
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        !library.isBusy
+    }
+
+    /// The other half: the window was closed while a game ran, and now the game has ended.
+    private func quitWhenIdleWithoutWindows() {
+        withObservationTracking {
+            _ = library.isBusy
+        } onChange: {
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                let hasWindow = NSApp.windows.contains { $0.canBecomeMain && ($0.isVisible || $0.isMiniaturized) }
+                if !library.isBusy, !hasWindow {
+                    NSApp.terminate(nil)
+                } else {
+                    quitWhenIdleWithoutWindows()
+                }
+            }
+        }
     }
 }
 

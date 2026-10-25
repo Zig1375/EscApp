@@ -37,8 +37,11 @@ struct GameCard: View {
                 Button("Stop") { library.stop(game) }
             }
             Button("Show in Finder") { library.showInFinder(game) }
-            if let log = library.latestLog(for: game) {
-                Button("Show Last Log") { library.openLog(log) }
+            Button(library.customCovers.contains(game.id) ? "Change Cover…" : "Choose Cover…") {
+                library.chooseCover(for: game)
+            }
+            if library.customCovers.contains(game.id) {
+                Button("Remove Cover") { library.removeCover(for: game) }
             }
             Divider()
             Button("Delete…", role: .destructive) { library.delete(game) }
@@ -47,20 +50,7 @@ struct GameCard: View {
     }
 
     private var cover: some View {
-        Color.clear
-            .aspectRatio(3 / 4, contentMode: .fit)
-            .overlay { artwork }
-            .overlay(alignment: .topLeading) {
-                if let store = game.store {
-                    StoreLogo(store: store, size: 24)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(.white.opacity(0.35), lineWidth: 1.5)
-                        }
-                        .padding(8)
-                        .help(Text(store.name))
-                }
-            }
+        GameCoverArt(game: game, library: library)
             .overlay(alignment: .topTrailing) {
                 if game.lastPlayed == nil, state == nil {
                     Pill(text: "New", background: .newBackground, foreground: .newText).padding(8)
@@ -81,24 +71,6 @@ struct GameCard: View {
                     .strokeBorder(isHovered ? Color.brand : Color.black.opacity(0.06), lineWidth: isHovered ? 2 : 1)
             }
             .shadow(color: .black.opacity(isHovered ? 0.22 : 0.08), radius: isHovered ? 14 : 1, y: isHovered ? 12 : 1)
-    }
-
-    @ViewBuilder private var artwork: some View {
-        if let image = library.covers[game.id] {
-            Image(nsImage: image)
-                .resizable()
-                .interpolation(.high)
-                .scaledToFill()
-                .accessibilityHidden(true)
-        } else {
-            // No cover: the icon, 80 pt, a little above the middle, on a tint of its own colour.
-            ZStack {
-                Color.cardBackground
-                (library.tints[game.id] ?? .brand).opacity(0.2)
-                GameIconTile(game: game, library: library, size: 80, iconSize: 80, radius: 19, plain: true)
-                    .offset(y: -12)
-            }
-        }
     }
 
     /// What's under the cover's bottom edge: starting, the running time, or (under the pointer) the buttons.
@@ -157,6 +129,51 @@ struct GameCard: View {
                 .buttonStyle(BrandButtonStyle(kind: .primary, height: 34, fill: true))
                 .accessibilityLabel("Play")
             CoverButton(symbol: "ellipsis", label: "About", action: showDetails)
+        }
+    }
+}
+
+/// A game's cover as on its library card (Main.dc.html in the main-screen canvas): the picture, or its icon on a
+/// tint of its own colour, and the store's badge in the corner. The card and the game's page both show it.
+struct GameCoverArt: View {
+    let game: GameRecord
+    let library: LibraryModel
+    var iconSize: CGFloat = 80
+    var badgeSize: CGFloat = 24
+
+    var body: some View {
+        Color.clear
+            .aspectRatio(3 / 4, contentMode: .fit)
+            .overlay { artwork }
+            .overlay(alignment: .topLeading) {
+                if let store = game.store {
+                    StoreLogo(store: store, size: badgeSize)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: badgeSize / 4, style: .continuous)
+                                .strokeBorder(.white.opacity(0.35), lineWidth: 1.5)
+                        }
+                        .padding(badgeSize / 3)
+                        .help(Text(store.name))
+                }
+            }
+    }
+
+    @ViewBuilder private var artwork: some View {
+        if let image = library.covers[game.id] {
+            Image(nsImage: image)
+                .resizable()
+                .interpolation(.high)
+                .scaledToFill()
+                .accessibilityHidden(true)
+        } else {
+            // No cover: the icon, a little above the middle, on a tint of its own colour.
+            ZStack {
+                Color.cardBackground
+                (library.tints[game.id] ?? .brand).opacity(0.2)
+                GameIconTile(game: game, library: library, size: iconSize, iconSize: iconSize, radius: iconSize * 0.24,
+                             plain: true)
+                    .offset(y: -iconSize * 0.15)
+            }
         }
     }
 }

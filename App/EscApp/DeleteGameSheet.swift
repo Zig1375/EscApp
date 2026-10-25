@@ -52,6 +52,7 @@ struct DeleteGameSheet: View {
         }
         .padding(24)
         .frame(width: 460)
+        .focusEffectDisabled()
         .task { if folderSize == nil { measured = await library.folderSize(of: game) } }
     }
 

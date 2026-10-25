@@ -41,6 +41,8 @@ struct AddStoreSheet: View {
         }
         .frame(width: 460)
         .background(Color.toolbarBackground)
+        // A sheet doesn't inherit the window's setting: macOS drew its blue ring round the close button.
+        .focusEffectDisabled()
         .onAppear { library.refreshStores() }
     }
 }
@@ -147,6 +149,7 @@ struct DeleteStoreSheet: View {
         .padding(EdgeInsets(top: 24, leading: 22, bottom: 18, trailing: 22))
         .frame(width: 380)
         .background(Color.toolbarBackground)
+        .focusEffectDisabled()
         .task { await measure() }
     }
 

@@ -68,8 +68,9 @@ struct GamePage: View {
     }
 
     private func hero(_ game: GameRecord) -> some View {
-        HStack(spacing: 20) {
-            GameIconTile(game: game, library: library, size: 104, iconSize: 76, radius: 24)
+        HStack(alignment: .top, spacing: 24) {
+            // The same cover as the game's card in the library, with the choice of the player's own picture.
+            PageCover(game: game, library: library)
             VStack(alignment: .leading, spacing: 10) {
                 Text(game.name)
                     .font(.system(size: 26, weight: .bold))
@@ -123,6 +124,45 @@ struct GamePage: View {
         }
         if info.dpiAware { result.append("Retina") }
         return result
+    }
+}
+
+/// The game's cover on its page, 200 wide, and under it "Choose Cover…" (or "Change Cover…" and "Remove").
+/// Most games the player installed themselves have no cover from a store, only an icon.
+private struct PageCover: View {
+    let game: GameRecord
+    let library: LibraryModel
+
+    private var isCustom: Bool { library.customCovers.contains(game.id) }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            GameCoverArt(game: game, library: library, iconSize: 104, badgeSize: 30)
+                .clipShape(.rect(cornerRadius: 14, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Color.black.opacity(0.06))
+                }
+                .shadow(color: .black.opacity(0.12), radius: 8, y: 6)
+                .contextMenu { menu }
+            HStack(spacing: 6) {
+                Button(isCustom ? "Change Cover…" : "Choose Cover…") { library.chooseCover(for: game) }
+                    .buttonStyle(BrandButtonStyle(height: 28, small: true, fill: true))
+                if isCustom {
+                    Button { library.removeCover(for: game) } label: { Image(systemName: "trash") }
+                        .buttonStyle(BrandButtonStyle(height: 26, small: true))
+                        .help("Remove Cover")
+                        .accessibilityLabel("Remove Cover")
+                }
+            }
+        }
+        .frame(width: 200)
+    }
+
+    @ViewBuilder private var menu: some View {
+        Button(isCustom ? "Change Cover…" : "Choose Cover…") { library.chooseCover(for: game) }
+        if isCustom {
+            Button("Remove Cover") { library.removeCover(for: game) }
+        }
     }
 }
 

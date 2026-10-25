@@ -3955,6 +3955,76 @@
           }
         }
       }
+    },
+    "Change Cover…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сменить обложку…"
+          }
+        }
+      }
+    },
+    "Choose Cover…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбрать обложку…"
+          }
+        }
+      }
+    },
+    "Choose a picture file, such as PNG, JPEG or HEIC.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите файл с картинкой, например PNG, JPEG или HEIC."
+          }
+        }
+      }
+    },
+    "Choose a picture for %@. An upright one, like 600 × 900, fits best.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите картинку для %@. Лучше всего подойдёт вертикальная, например 600 × 900."
+          }
+        }
+      }
+    },
+    "Couldn't use this picture": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось взять эту картинку"
+          }
+        }
+      }
+    },
+    "Remove Cover": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Убрать обложку"
+          }
+        }
+      }
+    },
+    "Use as Cover": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сделать обложкой"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

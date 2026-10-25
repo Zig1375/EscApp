@@ -27,9 +27,11 @@ final class LibraryModel {
     private(set) var tints: [GameID: Color] = [:]
     /// Icons drawn edge to edge (opaque corners), shown filling their tile rather than inset in it.
     private(set) var fullBleedIcons: Set<GameID> = []
-    /// Steam games' portrait covers from Steam's own cache (`SteamCovers`). Other games have none: a game the
-    /// player installed from a disc only has its icon, which the card shows instead.
+    /// Portrait covers: one the player chose (`CustomCovers`), else Steam's from its own cache (`SteamCovers`).
+    /// A game installed from a disc usually has neither, only its icon, which the card shows instead.
     private(set) var covers: [GameID: NSImage] = [:]
+    /// Games whose cover the player chose, which "Remove Cover" can take away.
+    private(set) var customCovers: Set<GameID> = []
     private(set) var infos: [GameID: ExecutableInfo] = [:]
     var states: [GameID: PlayState] = [:]
     var notice: Notice?
@@ -101,11 +103,14 @@ final class LibraryModel {
     }
 
     func reload() {
-        games = ((try? GameLibrary.load(from: paths.library))?.games ?? [])
+        let loaded = try? GameLibrary.load(from: paths.library)
+        games = (loaded?.games ?? [])
             .sorted { ($0.lastPlayed ?? $0.addedAt) > ($1.lastPlayed ?? $1.addedAt) }
+        // Only from a library that was read: an unreadable Games.json must not take every cover with it.
+        if let loaded { CustomCovers.prune(keeping: Set(loaded.games.map(\.id)), paths: paths) }
         for game in games where icons[game.id] == nil { loadIcon(for: game) }
         // Asked again on each reload: Steam downloads a new game's cover some time after the game appears.
-        for game in games where game.store == .steam && covers[game.id] == nil { loadCover(for: game) }
+        for game in games where covers[game.id] == nil { loadCover(for: game) }
         refreshDefaultHandler()
     }
 
@@ -241,13 +246,44 @@ final class LibraryModel {
     }
 
     private func loadCover(for game: GameRecord) {
-        guard let appID = game.storeID else { return }
+        let paths = paths
+        let appID = game.store == .steam ? game.storeID : nil
         let steam = SteamCovers.steamFolder(bottle: StoreClient(paths: paths).bottle(for: .steam))
         Task.detached(priority: .utility) {
-            guard let file = SteamCovers.cover(appID: appID, steamFolder: steam),
+            let custom = CustomCovers.cover(for: game.id, paths: paths)
+            guard let file = custom ?? appID.flatMap({ SteamCovers.cover(appID: $0, steamFolder: steam) }),
                   let image = NSImage(contentsOf: file) else { return }
-            await MainActor.run { self.covers[game.id] = image }
+            await MainActor.run {
+                self.covers[game.id] = image
+                if custom != nil { self.customCovers.insert(game.id) }
+            }
         }
+    }
+
+    /// "Choose Cover…": a picture from the Mac becomes the game's cover, on its card and its page.
+    func chooseCover(for game: GameRecord) {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.image]
+        let name = game.name
+        panel.message = String(localized: "Choose a picture for \(name). An upright one, like 600 × 900, fits best.")
+        panel.prompt = String(localized: "Use as Cover")
+        guard panel.runModal() == .OK, let picture = panel.url else { return }
+        do {
+            let file = try CustomCovers.set(picture, for: game.id, paths: paths)
+            covers[game.id] = NSImage(contentsOf: file)
+            customCovers.insert(game.id)
+        } catch {
+            notice = Notice(title: String(localized: "Couldn't use this picture"),
+                            message: String(localized: "Choose a picture file, such as PNG, JPEG or HEIC."))
+        }
+    }
+
+    /// "Remove Cover": back to Steam's cover, or the icon.
+    func removeCover(for game: GameRecord) {
+        CustomCovers.remove(for: game.id, paths: paths)
+        covers[game.id] = nil
+        customCovers.remove(game.id)
+        loadCover(for: game)
     }
 
     private func loadIcon(for game: GameRecord) {

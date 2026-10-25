@@ -67,6 +67,7 @@ public struct BottleManager: Sendable {
             try await ProcessRunner.check(wine.wineserver.path, ["-w"], environment: environment)
 
             try SharedProfile.link(userFolder: try Self.userFolder(in: staging), to: paths.profile)
+            try WindowsFonts.link(bottle: staging)
             try Self.setWindowsVersion(.default, bottle: staging)
             let marker = try JSONEncoder.iso.encode(BottleInfo(runtime: runtime.id, createdAt: Date()))
             try marker.write(to: staging.appending(path: Self.templateMarker))
@@ -137,6 +138,7 @@ public struct BottleManager: Sendable {
             try marker.write(to: folder.appending(path: Self.bottleMarker))
         }
         try Self.setWindowsVersion(windows, bottle: folder)
+        try WindowsFonts.link(bottle: folder)
         return folder
     }
 

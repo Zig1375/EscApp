@@ -32,6 +32,49 @@ import Testing
     }
 }
 
+@Suite struct WindowsFontsTests {
+    @Test func picksTheWindowsFamiliesOnly() {
+        let names = ["Arial.ttf", "Arial Unicode.ttf", "Arial Bold Italic.ttf", "Wingdings 2.ttf", "Tahoma.ttf",
+                     "Arialic Hollow.ttf", "AppleGothic.ttf", "Impact.otf", "Georgia.ttf"]
+        #expect(WindowsFonts.chosen(from: names) == [
+            "Arial Bold Italic.ttf", "Arial Unicode.ttf", "Arial.ttf", "Georgia.ttf", "Tahoma.ttf", "Wingdings 2.ttf",
+        ])
+    }
+
+    @Test func linksFontsAndLeavesAGamesOwnAlone() throws {
+        let temp = try TempFolder()
+        let fileManager = FileManager.default
+        let mac = temp.url.appending(path: "Supplemental")
+        let bottle = temp.url.appending(path: "bottle")
+        let fonts = bottle.appending(path: "drive_c/windows/Fonts")
+        try fileManager.createDirectory(at: mac, withIntermediateDirectories: true)
+        try fileManager.createDirectory(at: fonts, withIntermediateDirectories: true)
+        for name in ["Arial.ttf", "Tahoma.ttf", "Verdana.ttf", "AppleGothic.ttf"] {
+            try Data(name.utf8).write(to: mac.appending(path: name))
+        }
+        // A game's own Tahoma, and a link of EscApp's to a font macOS has since dropped.
+        try Data("game".utf8).write(to: fonts.appending(path: "Tahoma.ttf"))
+        try fileManager.createSymbolicLink(atPath: fonts.appending(path: "Georgia.ttf").path,
+                                           withDestinationPath: mac.appending(path: "Georgia.ttf").path)
+
+        try WindowsFonts.link(bottle: bottle, macFonts: mac)
+        try WindowsFonts.link(bottle: bottle, macFonts: mac)  // twice is harmless
+
+        #expect(try fileManager.destinationOfSymbolicLink(atPath: fonts.appending(path: "Arial.ttf").path)
+            == mac.appending(path: "Arial.ttf").path)
+        #expect(try String(contentsOf: fonts.appending(path: "Verdana.ttf"), encoding: .utf8) == "Verdana.ttf")
+        #expect(try String(contentsOf: fonts.appending(path: "Tahoma.ttf"), encoding: .utf8) == "game")
+        #expect(try fileManager.contentsOfDirectory(atPath: fonts.path).sorted()
+            == ["Arial.ttf", "Tahoma.ttf", "Verdana.ttf"])
+    }
+
+    @Test func aFolderThatIsNoBottleIsLeftAlone() throws {
+        let temp = try TempFolder()
+        try WindowsFonts.link(bottle: temp.url)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: temp.url.path).isEmpty)
+    }
+}
+
 @Suite struct BottleManagerTests {
     @Test func cloneCopiesTheTemplateAndStaysIndependent() throws {
         let temp = try TempFolder()

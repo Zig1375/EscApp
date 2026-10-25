@@ -156,14 +156,20 @@ public struct LogDiagnosis: Sendable, Equatable {
         return text(head) + "\n" + text(tail)
     }
 
-    /// Wine writes UTF-8, but a tail cut mid-character isn't valid UTF-8; Latin-1 reads any bytes, and the lines
-    /// that matter are ASCII.
-    private static func text(_ data: Data) -> String {
-        String(bytes: data, encoding: .utf8) ?? String(bytes: data, encoding: .isoLatin1) ?? ""
-    }
+    private static func text(_ data: Data) -> String { String(logBytes: data) }
 
     static func trim(_ line: String) -> String {
         let trimmed = line.trimmingCharacters(in: .whitespaces)
         return trimmed.count > 240 ? String(trimmed.prefix(240)) + "…" : trimmed
+    }
+}
+
+extension String {
+    /// A game's log as text. Wine writes UTF-8, but a game's own output may not be (Chromium wrote an error in
+    /// code page 1251), and a tail cut mid-character isn't valid either. Only those bytes are replaced: reading
+    /// the whole log as Latin-1 instead turned the Japanese name of "Inquisitor White Prison"'s exe in the report
+    /// into `ç°ç«¯å¯©…`.
+    init(logBytes data: Data) {
+        self.init(decoding: data, as: UTF8.self)
     }
 }

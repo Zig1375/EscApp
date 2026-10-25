@@ -365,7 +365,7 @@ final class LogTail {
             return []
         }
         offset += UInt64(data.count)
-        let text = partial + (String(bytes: data, encoding: .utf8) ?? String(bytes: data, encoding: .isoLatin1) ?? "")
+        let text = partial + String(logBytes: data)
         var lines = text.components(separatedBy: "\n")
         // The last piece may be a line still being written.
         partial = lines.removeLast()

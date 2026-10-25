@@ -26,6 +26,23 @@ import Testing
         #expect(AutoLaunch.nextChromium(after: .noGPU) == nil)
     }
 
+    @Test func v8KeepsItsFlagsWritableAndTheGamesOwnFlagsStay() throws {
+        // "Inquisitor White Prison" (NW.js 0.69, Chromium 106) quit at once without it.
+        #expect(ChromiumApp.jsFlags(packageJSON: nil) == "--no-freeze-flags-after-init")
+        // RPG Maker MV's package.json.
+        let makerMV = Data(#"{"main": "www/index.html", "js-flags": "--expose-gc"}"#.utf8)
+        #expect(ChromiumApp.jsFlags(packageJSON: makerMV) == "--expose-gc --no-freeze-flags-after-init")
+        let args = Data(#"{"chromium-args": "--force-color-profile=srgb --js-flags=\"--max-old-space-size=4096\""}"#
+            .utf8)
+        #expect(ChromiumApp.jsFlags(packageJSON: args) == "--max-old-space-size=4096 --no-freeze-flags-after-init")
+        #expect(ChromiumApp.jsFlags(packageJSON: Data("not json".utf8)) == "--no-freeze-flags-after-init")
+
+        let temp = try TempFolder()
+        try makerMV.write(to: temp.url.appending(path: "package.json"))
+        #expect(ChromiumApp.Mode.inProcessGPU.arguments(forProgramIn: temp.url)
+            == ChromiumApp.Mode.inProcessGPU.arguments + ["--js-flags=--expose-gc --no-freeze-flags-after-init"])
+    }
+
     @Test func aFlatWindowIsBlankAndAPictureIsNot() {
         let width = 20, height = 20
         var pixels = [UInt8](repeating: 255, count: width * height * 4)
@@ -161,5 +178,18 @@ extension AutoLaunchTests {
         #expect(result.attempts.first?.failure == .blankPicture)
         #expect(result.working == .dxvk)
         #expect(try GameLibrary.load(from: paths.library)[game.id]?.chromium == .noGPU)
+    }
+}
+
+@Suite struct LogTextTests {
+    @Test func oneForeignByteDoesNotGarbleTheRestOfTheLog() throws {
+        let temp = try TempFolder()
+        let log = temp.url.appending(path: "run.log")
+        var data = Data("[EscApp] Executable /g/異端審問官·白濁監獄.exe\n".utf8)
+        // Chromium's "file not found" in code page 1251.
+        data.append(contentsOf: [0x5B, 0xCD, 0xE5, 0x20, 0xF3, 0xE4, 0x5D, 0x0A])
+        try data.write(to: log)
+        let text = try #require(LogDiagnosis.read(log))
+        #expect(text.contains("異端審問官·白濁監獄.exe"))
     }
 }

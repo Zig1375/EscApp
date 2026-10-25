@@ -223,7 +223,9 @@ public struct GameLauncher: Sendable {
         let header = Self.header(for: prepared, retina: retina, startedAt: startedAt)
         let ready = prepared.storeClient != .steam || StoreClient.steamReady(prepared.bottle)
         let arguments = (prepared.storeClient?.clientArguments(clientReady: ready) ?? [])
-            + GameSettings.arguments(prepared.game.arguments ?? "") + (prepared.chromium?.arguments ?? [])
+            + GameSettings.arguments(prepared.game.arguments ?? "")
+            + (prepared.chromium?.arguments(forProgramIn: URL(filePath: prepared.game.executable)
+                .deletingLastPathComponent()) ?? [])
         var extra = arguments.isEmpty ? [] : ["[EscApp] Arguments \(arguments.joined(separator: " "))"]
         if !prepared.rtps.isEmpty { extra.append("[EscApp] RPG Maker \(prepared.rtps.joined(separator: ", "))") }
         if let store = prepared.game.store {

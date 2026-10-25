@@ -26,6 +26,35 @@ public enum ChromiumApp {
 
         /// What to try after this one; nil when nothing is left.
         public var next: Mode? { self == .inProcessGPU ? .noGPU : nil }
+
+        /// The switches for the program in `folder`, with V8's flags (`jsFlags`) joined to any it sets itself.
+        public func arguments(forProgramIn folder: URL) -> [String] {
+            let package = try? Data(contentsOf: folder.appending(path: "package.json"))
+            return arguments + ["--js-flags=" + ChromiumApp.jsFlags(packageJSON: package)]
+        }
+    }
+
+    /// V8 flags every Chromium program gets.
+    ///
+    /// V8 (Chromium 106 and later) makes its own flags read-only once it has started and checks that the page
+    /// was read-write before. Under Wine the page of a DLL's data doesn't report that, so the check fails and the
+    /// program quits at once: "Inquisitor White Prison" (RPG Maker MZ, NW.js 0.69) showed no window, its log
+    /// saying `Check failed: 0x04 == old_protection`. Older V8 doesn't know the flag and goes on without it.
+    static let v8Flags = "--no-freeze-flags-after-init"
+
+    /// The value for `--js-flags`: V8's flags an NW.js game sets in its `package.json` (`js-flags`, as RPG Maker MV
+    /// writes `--expose-gc`, and any in `chromium-args`), then `v8Flags`. The command line's would otherwise replace
+    /// the game's instead of adding to them.
+    static func jsFlags(packageJSON: Data?) -> String {
+        guard let data = packageJSON,
+              let package = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return v8Flags }
+        var flags = (package["js-flags"] as? String).map { [$0] } ?? []
+        if let switches = package["chromium-args"] as? String,
+           let match = switches.firstMatch(of: /--js-flags=(?:"([^"]*)"|'([^']*)'|(\S+))/) {
+            flags.append(String(match.1 ?? match.2 ?? match.3 ?? ""))
+        }
+        return (flags + [v8Flags]).map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+            .joined(separator: " ")
     }
 
     /// Whether the program at `executable` is a Chromium browser itself, from its imports and the files next to

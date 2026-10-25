@@ -25,11 +25,10 @@ public enum LaunchHistory {
             guard let handle = try? FileHandle(forReadingFrom: file) else { return nil }
             defer { try? handle.close() }
             // The header is at the top and the exit line at the end; game output in between can be huge.
-            let head = (try? handle.read(upToCount: 4096)).flatMap { String(bytes: $0, encoding: .isoLatin1) } ?? ""
+            let head = (try? handle.read(upToCount: 4096)).map { String(logBytes: $0) } ?? ""
             let size = (try? handle.seekToEnd()) ?? 0
             try? handle.seek(toOffset: size > 512 ? size - 512 : 0)
-            // Latin-1 decodes any bytes, so a tail cut mid-character still reads; the [EscApp] lines are ASCII.
-            let tail = (try? handle.readToEnd()).flatMap { String(bytes: $0, encoding: .isoLatin1) } ?? ""
+            let tail = (try? handle.readToEnd()).map { String(logBytes: $0) } ?? ""
             return parse(head: head, tail: tail, log: file)
         }
     }

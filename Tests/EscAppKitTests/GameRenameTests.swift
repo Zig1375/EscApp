@@ -28,4 +28,22 @@ import Testing
         let renamed = banished.rename(to: "My Town")
         #expect(!renamed && banished.name == "Diablo II")
     }
+
+    @Test func originalNameIsKeptAcrossRenamesAndRestored() {
+        var diablo = game()
+        diablo.rename(to: "D2")
+        diablo.rename(to: "Diablo 2")
+        #expect(diablo.name == "Diablo 2" && diablo.originalName == "Diablo II")
+        diablo.restoreName()
+        #expect(diablo.name == "Diablo II" && diablo.originalName == nil)
+    }
+
+    @Test func typingTheOriginalBackForgetsIt() {
+        var diablo = game()
+        diablo.rename(to: "D2")
+        diablo.rename(to: "Diablo II")
+        #expect(diablo.originalName == nil)
+        diablo.rename(to: "Diablo II")
+        #expect(diablo.originalName == nil)
+    }
 }

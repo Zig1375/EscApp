@@ -47,10 +47,39 @@ struct GameTitle: View {
     @State private var draft = ""
     @State private var isHovered = false
     @FocusState private var focused: Bool
+    /// The box in window coordinates, for telling a click outside it.
+    @State private var box: CGRect = .zero
+    @State private var clickWatch: Any?
     /// One line of the 26-pt title with a little room above and below.
     private static let boxHeight: CGFloat = 40
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            title
+            if let original = game.originalName {
+                // Renamed: what it was called, and the way back.
+                HStack(spacing: 6) {
+                    Text("Original name: \(original)")
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                        .textSelection(.enabled)
+                    Button { library.restoreName(of: game) } label: {
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.system(size: 11, weight: .semibold))
+                            .frame(width: 20, height: 20)
+                            .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Restore the Original Name")
+                    .accessibilityLabel("Restore the Original Name")
+                }
+                .font(.system(size: 12))
+                .foregroundStyle(Color.secondaryText)
+            }
+        }
+    }
+
+    @ViewBuilder private var title: some View {
         if game.canRename {
             // Always a field, drawn as a plain title until the pointer comes (a grey frame) or it is being typed
             // in (the brand frame). As a title that turned into a field on click, it couldn't be selected straight
@@ -92,17 +121,42 @@ struct GameTitle: View {
                     .strokeBorder(focused ? Color.brand : isHovered ? Color.buttonBorder : .clear, lineWidth: 2)
             }
             .padding(.horizontal, -8)
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { box = $0 }
             .onHover { isHovered = $0 }
             .help("Click to rename")
             .onAppear { draft = game.name }
             .onChange(of: game.name) { if !focused { draft = game.name } }
             .onChange(of: focused) { if !focused { save() } }
+            .onAppear(perform: watchClicks)
+            // "All Games" while typing: the field goes without losing focus first.
+            .onDisappear {
+                save()
+                if let clickWatch { NSEvent.removeMonitor(clickWatch) }
+                clickWatch = nil
+            }
         } else {
             // A store game keeps the name its store gives it.
             Text(game.name)
                 .font(.system(size: 26, weight: .bold))
                 .lineLimit(2)
                 .textSelection(.enabled)
+        }
+    }
+
+    /// A click anywhere outside the title ends typing, which keeps the new name. A click on the page's empty
+    /// space or on a button doesn't take the focus on macOS, so without this the field kept it and the new name
+    /// was never saved.
+    private func watchClicks() {
+        guard clickWatch == nil else { return }
+        clickWatch = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { event in
+            MainActor.assumeIsolated {
+                if focused, let content = event.window?.contentView {
+                    let point = CGPoint(x: event.locationInWindow.x,
+                                        y: content.bounds.height - event.locationInWindow.y)
+                    if !box.contains(point) { focused = false }
+                }
+            }
+            return event
         }
     }
 

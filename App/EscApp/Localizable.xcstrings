@@ -4085,6 +4085,26 @@
           }
         }
       }
+    },
+    "Original name: %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Исходное название: %@"
+          }
+        }
+      }
+    },
+    "Restore the Original Name": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вернуть исходное название"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

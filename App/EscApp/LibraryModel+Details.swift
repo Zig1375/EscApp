@@ -52,6 +52,11 @@ extension LibraryModel {
         update(game.id) { $0.rename(to: name) }
     }
 
+    /// Back to the name EscApp gave the game (`GameRecord.originalName`).
+    func restoreName(of game: GameRecord) {
+        update(game.id) { $0.restoreName() }
+    }
+
     func update(_ id: GameID, _ change: (inout GameRecord) -> Void) {
         do {
             try GameLibrary.modify(paths.library) { library in

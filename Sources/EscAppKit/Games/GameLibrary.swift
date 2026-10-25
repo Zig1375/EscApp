@@ -51,6 +51,8 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     /// Environment variables, as typed: one `NAME=value` per line.
     public var environment: String?
     public var verboseLog: Bool?
+    /// The name EscApp gave the game before the player renamed it, shown under the new one with a way back.
+    public var originalName: String?
 
     /// The store the game is from: it runs in the store's bottle, through its client. Nil for a game from disc,
     /// an installer or a folder.
@@ -96,8 +98,19 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     public mutating func rename(to newName: String) -> Bool {
         let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard canRename, !trimmed.isEmpty else { return false }
+        guard trimmed != name else { return true }
+        let original = originalName ?? name
         name = trimmed
+        // Typing the old name back is the same as restoring it.
+        originalName = trimmed == original ? nil : original
         return true
+    }
+
+    /// Back to the name EscApp gave the game.
+    public mutating func restoreName() {
+        guard let originalName else { return }
+        name = originalName
+        self.originalName = nil
     }
 
     /// Whether anything is left for `forgetLaunchSettings` to forget.

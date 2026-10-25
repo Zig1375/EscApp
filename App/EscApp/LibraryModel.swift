@@ -218,6 +218,7 @@ final class LibraryModel {
 
     /// Lets the user pick which exe in the game's folder starts the game (a launcher instead of the game).
     func chooseExecutable(for game: GameRecord) {
+        guard !isPlaying(game.id) else { return }
         let panel = NSOpenPanel()
         panel.directoryURL = URL(filePath: game.folder, directoryHint: .isDirectory)
         panel.allowedContentTypes = [UTType("com.microsoft.windows-executable")].compactMap { $0 }

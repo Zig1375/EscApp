@@ -42,10 +42,12 @@ struct AdvancedPage: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Advanced").font(.system(size: 22, weight: .bold))
+                if library.isPlaying(game.id) { ClosedGameNote() }
                 HStack(alignment: .top, spacing: 16) {
                     graphics(game)
                     controls(game)
                 }
+                .disabled(library.isPlaying(game.id))
                 windows(game)
                 Text(GameSettings.canReset(game, paths: library.paths)
                      ? "A reset makes a clean Windows for the game. Saves and the game itself stay."
@@ -69,11 +71,6 @@ struct AdvancedPage: View {
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Graphics")
             Text(backendHint(game)).modifier(Hint())
-            SettingRow(title: "Sharp screen (Retina)", detail: retinaHint(game)) {
-                Segmented(selection: setting(game, \.retina), options: GameScaling.Setting.allCases,
-                          title: Self.settingTitle)
-                    .frame(width: 190)
-            }
             SettingRow(title: "Enlarge low resolutions", detail: scalingHint(game)) {
                 Segmented(selection: setting(game, \.scaling), options: GameScaling.Setting.allCases,
                           title: Self.settingTitle)
@@ -102,28 +99,6 @@ struct AdvancedPage: View {
         case .noDirectX: "Auto now picks \(name): the game draws without DirectX. \(Self.byHand)"
         }
         return why
-    }
-
-    private func retinaHint(_ game: GameRecord) -> LocalizedStringKey {
-        // A game that doesn't handle Retina can't be clicked right in it either: Wine halves the mouse position
-        // for it, and the clicks miss what is drawn (they did for Banished). Players need to hear the cure.
-        let dpiAware = library.infos[game.id]?.dpiAware ?? false
-        switch game.retina ?? .auto {
-        case .auto:
-            return dpiAware ? """
-                Auto now: on — the game draws for high-resolution screens itself. If clicks miss its buttons, \
-                turn it off.
-                """
-                : "Auto now: off — the game can't use a high-resolution screen; with Retina its interface would be tiny"
-        case .on:
-            return dpiAware ? "Auto would turn it on too. If clicks miss the game's buttons, turn it off."
-                : """
-                    The game isn't made for it: its interface is small, and clicks may miss its buttons. Auto would \
-                    turn it off.
-                    """
-        case .off:
-            return dpiAware ? "Auto would turn it on" : "Auto would turn it off"
-        }
     }
 
     private func scalingHint(_ game: GameRecord) -> LocalizedStringKey {
@@ -220,7 +195,7 @@ struct AdvancedPage: View {
                 .disabled(log == nil)
             Button("Reset Windows…") { confirmingReset = true }
                 .buttonStyle(BrandButtonStyle(kind: .danger, height: 32, radius: 8))
-                .disabled(!GameSettings.canReset(game, paths: library.paths) || library.states[game.id] != nil
+                .disabled(!GameSettings.canReset(game, paths: library.paths) || library.isPlaying(game.id)
                           || size == nil)
         }
         .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
@@ -307,7 +282,6 @@ private struct Segmented<Value: Hashable>: View {
     @Binding var selection: Value
     let options: [Value]
     let title: (Value) -> String
-    @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
         HStack(spacing: 2) {
@@ -335,7 +309,7 @@ private struct Segmented<Value: Hashable>: View {
         .padding(3)
         .background(Color.chip, in: .rect(cornerRadius: 9, style: .continuous))
         // Plain buttons look the same when disabled; without this a locked choice looked clickable.
-        .opacity(isEnabled ? 1 : 0.45)
+        .modifier(DimmedWhenDisabled())
     }
 }
 
@@ -356,6 +330,7 @@ private struct Switch: View {
         .buttonStyle(.plain)
         .accessibilityValue(isOn ? Text("On") : Text("Off"))
         .accessibilityAddTraits(.isToggle)
+        .modifier(DimmedWhenDisabled())
     }
 }
 

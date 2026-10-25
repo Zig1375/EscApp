@@ -53,6 +53,9 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     public var verboseLog: Bool?
     /// The name EscApp gave the game before the player renamed it, shown under the new one with a way back.
     public var originalName: String?
+    /// The player closed the tip about clicks missing the game's buttons with Retina on. Per game: a game added
+    /// later shows it again, since Retina can break clicks in any of them.
+    public var retinaTipClosed: Bool?
 
     /// The store the game is from: it runs in the store's bottle, through its client. Nil for a game from disc,
     /// an installer or a folder.

@@ -51,6 +51,7 @@ struct GamePage: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 VStack(alignment: .leading, spacing: 12) {
+                    if library.isPlaying(game.id) { ClosedGameNote() }
                     DetailsColumn(game: game, size: size, library: library)
                     Button(action: advanced) {
                         HStack(spacing: 8) {
@@ -85,6 +86,10 @@ struct GamePage: View {
                         PlayButton(game: game, library: library, large: true)
                         HStack(spacing: 8) { secondaryActions(game) }
                     }
+                }
+                if GameSettings.retina(game.retina, dpiAware: library.infos[game.id]?.dpiAware ?? false) {
+                    RetinaClicksTip(game: game, library: library)
+                        .padding(.top, 4)
                 }
             }
         }
@@ -251,7 +256,9 @@ private struct DetailsColumn: View {
             DetailRow(label: "Starts") {
                 Mono(text: URL(filePath: game.executable).lastPathComponent)
             } action: {
-                Button("Change") { library.chooseExecutable(for: game) }.buttonStyle(BrandButtonStyle(small: true))
+                Button("Change") { library.chooseExecutable(for: game) }
+                    .buttonStyle(BrandButtonStyle(small: true))
+                    .disabled(library.isPlaying(game.id))
             }
             DetailRow(label: "Game size") {
                 Text(size.map { $0.formatted(.byteCount(style: .file)) } ?? "…")
@@ -268,9 +275,16 @@ private struct DetailsColumn: View {
                                      version == .default
                                          ? String(localized: "\(version.displayName) (default)") : version.displayName
                                  })
+                    .disabled(library.isPlaying(game.id))
                 }
             }
             DetailRow(label: "Graphics") { Text(graphics) }
+            DetailRow(label: "Retina") {
+                DesignSelect(selection: Binding(get: { game.retina ?? .auto }, set: { setting in
+                    library.changeSetting(of: game.id) { $0.retina = setting == .auto ? nil : setting }
+                }), options: GameScaling.Setting.allCases, title: retinaTitle)
+                .disabled(library.isPlaying(game.id))
+            }
             DetailRow(label: "Played") { Text(played) }
             DetailRow(label: "Added") { Text(game.addedAt.formatted(date: .long, time: .omitted)) }
         }
@@ -285,6 +299,12 @@ private struct DetailsColumn: View {
         case .unsupported:
             return String(localized: "Not supported")
         }
+    }
+
+    /// Auto says what it does for this game, as "Windows 10 (default)" does for the system.
+    private func retinaTitle(_ setting: GameScaling.Setting) -> String {
+        guard setting == .auto else { return AdvancedPage.settingTitle(setting) }
+        return library.infos[game.id]?.dpiAware == true ? String(localized: "Auto: on") : String(localized: "Auto: off")
     }
 
     private var played: String {

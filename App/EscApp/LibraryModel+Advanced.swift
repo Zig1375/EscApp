@@ -7,9 +7,14 @@ extension LibraryModel {
     /// Changes a setting that applies at the next launch. The game's warm bottle is cooled first: settings go into
     /// its registry, which can't change under a running Wine.
     func changeSetting(of id: GameID, _ change: @escaping (inout GameRecord) -> Void) {
+        guard !isPlaying(id) else { return }
         Task { await warmer.cool(id) }
         update(id, change)
     }
+
+    /// Starting or running. Its settings stay as they are until it ends: they went into its Windows at launch, so
+    /// one changed meanwhile would show a setting the running game doesn't have.
+    func isPlaying(_ id: GameID) -> Bool { states[id] != nil }
 
     /// What the game's Windows takes on disk, and what Finder shows for it.
     func bottleSize(of id: GameID) async -> (unique: Int64, apparent: Int64)? {

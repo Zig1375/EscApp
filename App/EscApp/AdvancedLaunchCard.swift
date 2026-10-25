@@ -28,7 +28,7 @@ struct LaunchSettingsCard: View {
                 library.changeSetting(of: game.id) { $0.forgetLaunchSettings() }
             }
             .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
-            .disabled(!game.hasLaunchSettings || library.states[game.id] != nil)
+            .disabled(!game.hasLaunchSettings || library.isPlaying(game.id))
         }
         .padding(20)
         .background(Color.cardBackground, in: .rect(cornerRadius: 14, style: .continuous))

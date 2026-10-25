@@ -6,6 +6,7 @@ import Foundation
 extension LibraryModel {
     /// Applied to the bottle at the next launch (the registry can't change while the game runs).
     func setWindowsVersion(_ version: WindowsVersion, for game: GameRecord) {
+        guard !isPlaying(game.id) else { return }
         // A warm bottle's registry can't change under its running Wine.
         Task { await warmer.cool(game.id) }
         update(game.id) { $0.windowsVersion = version }

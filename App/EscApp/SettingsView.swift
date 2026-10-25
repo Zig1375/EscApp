@@ -353,7 +353,7 @@ private struct GeneralCard: View {
                     Text("Sharp screen (Retina) for new games")
                     Text("""
                         Auto turns it on for games made for high-resolution screens. If clicks miss a game's \
-                        buttons, turn Retina off in that game's Advanced settings.
+                        buttons, set Retina to Off on that game's page.
                         """)
                         .font(.system(size: 12))
                         .foregroundStyle(Color.secondaryText)

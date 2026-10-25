@@ -73,6 +73,7 @@ struct BrandButtonStyle: ButtonStyle {
                     .strokeBorder(border, lineWidth: 1)
             }
             .contentShape(.rect)
+            .modifier(DimmedWhenDisabled())
     }
 
     private var foreground: Color {
@@ -98,6 +99,16 @@ struct BrandButtonStyle: ButtonStyle {
         case .danger: .dangerBorder
         case .destructive: .danger
         }
+    }
+}
+
+/// Controls drawn by the app look the same whether or not they can be used; "Change" on a running game's page
+/// looked clickable and did nothing.
+struct DimmedWhenDisabled: ViewModifier {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func body(content: Content) -> some View {
+        content.opacity(isEnabled ? 1 : 0.45)
     }
 }
 
@@ -139,5 +150,6 @@ struct DesignSelect<Value: Hashable>: View {
         .buttonStyle(.plain)
         .menuIndicator(.hidden)
         .fixedSize()
+        .modifier(DimmedWhenDisabled())
     }
 }

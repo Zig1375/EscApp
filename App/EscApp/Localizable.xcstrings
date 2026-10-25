@@ -4116,42 +4116,65 @@
         }
       }
     },
-    "Auto turns it on for games made for high-resolution screens. If clicks miss a game's buttons, turn Retina off in that game's Advanced settings.": {
+    "Auto turns it on for games made for high-resolution screens. If clicks miss a game's buttons, set Retina to Off on that game's page.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "«Авто» включает её для игр, сделанных для экранов высокой чёткости. Если клики не попадают по кнопкам игры, выключите Retina в дополнительных настройках этой игры."
+            "value": "«Авто» включает её для игр, сделанных для экранов высокой чёткости. Если клики не попадают по кнопкам игры, поставьте Retina «Выкл» на странице этой игры."
           }
         }
       }
     },
-    "Auto now: on — the game draws for high-resolution screens itself. If clicks miss its buttons, turn it off.": {
+    "Clicks miss the game's buttons or land beside them? Set Retina to Off for this game.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Авто сейчас: включено — игра сама рисует для экранов высокой чёткости. Если клики не попадают по её кнопкам, выключите."
+            "value": "Клики не попадают по кнопкам игры или попадают рядом? Поставьте Retina «Выкл» для этой игры."
           }
         }
       }
     },
-    "Auto would turn it on too. If clicks miss the game's buttons, turn it off.": {
+    "Close Tip": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "В режиме «Авто» тоже было бы включено. Если клики не попадают по кнопкам игры, выключите."
+            "value": "Закрыть подсказку"
           }
         }
       }
     },
-    "The game isn't made for it: its interface is small, and clicks may miss its buttons. Auto would turn it off.": {
+    "Auto: on": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Игра для этого не сделана: интерфейс мелкий, а клики могут не попадать по кнопкам. В режиме «Авто» было бы выключено."
+            "value": "Авто: вкл"
+          }
+        }
+      }
+    },
+    "Auto: off": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто: выкл"
+          }
+        }
+      }
+    },
+    "Retina": {
+      "shouldTranslate": false
+    },
+    "Settings can be changed once the game is closed.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройки можно менять, когда игра закрыта."
           }
         }
       }

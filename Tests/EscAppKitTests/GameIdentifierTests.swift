@@ -99,11 +99,9 @@ import Testing
         let exe = try makeExe("Downloads/setup_game.exe")
         let result = try identifier.identify(executable: exe)
         #expect(!result.record.hasMarker)
-        #expect(result.record.fingerprint != nil)
+        #expect(result.record.fingerprint == nil)
         #expect(result.record.name == "setup_game")
         #expect(!FileManager.default.fileExists(atPath: home.appending(path: "Downloads/.escapp").path))
-        // Found again by path.
-        #expect(try identifier.identify(executable: exe).method == .lastPath)
     }
 
     @Test func searchStopsAtSharedFolders() throws {
@@ -113,35 +111,18 @@ import Testing
         #expect(try identifier.identify(executable: exe).method == .new)
     }
 
-    @Test func readOnlyFolderFallsBackToFingerprint() throws {
+    @Test func onlyTheMarkerFindsAGame() throws {
+        // A game EscApp couldn't mark (read-only folder) isn't found again by its path or its exe: the same exe
+        // opened again is a new game.
         let exe = try makeExe("Discs/Heroes/heroes.exe")
         let folder = exe.deletingLastPathComponent()
         try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: folder.path)
         defer { try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: folder.path) }
-
         let first = try identifier.identify(executable: exe)
         #expect(!first.record.hasMarker)
-
-        // The same disc mounted somewhere else: found by fingerprint.
-        let elsewhere = try makeExe("Discs2/Heroes/heroes.exe")
-        try FileManager.default.setAttributes([.posixPermissions: 0o555],
-                                              ofItemAtPath: elsewhere.deletingLastPathComponent().path)
-        defer {
-            try? FileManager.default.setAttributes([.posixPermissions: 0o755],
-                                                   ofItemAtPath: elsewhere.deletingLastPathComponent().path)
-        }
-        let again = try identifier.identify(executable: elsewhere)
-        #expect(again.method == .fingerprint)
-        #expect(again.record.id == first.record.id)
-    }
-
-    @Test func identicalExesInDifferentGamesAreDifferentGames() throws {
-        // Two Unity games: same player exe, different data next to it, both read-only.
-        let first = try makeExe("RO1/GameA/game.exe", contents: "UnityPlayer")
-        try Data("a".utf8).write(to: home.appending(path: "RO1/GameA/GameA_Data"))
-        let second = try makeExe("RO2/GameB/game.exe", contents: "UnityPlayer")
-        try Data("bb".utf8).write(to: home.appending(path: "RO2/GameB/GameB_Data"))
-        #expect(try GameIdentifier.fingerprint(of: first) != GameIdentifier.fingerprint(of: second))
+        let again = try identifier.identify(executable: exe)
+        #expect(again.method == .new)
+        #expect(again.record.id != first.record.id)
     }
 
     @Test func removingFromAppKeepsTheGameButForgetsIt() throws {

@@ -1,4 +1,3 @@
-import CryptoKit
 import Foundation
 
 /// Works out which game an executable belongs to, so it always gets the same bottle and settings.
@@ -6,8 +5,8 @@ import Foundation
 /// A hash of the exe alone isn't enough: Unity games all ship the same renamed player, old GOG games all start
 /// through `DOSBox.exe`, and a patch changes the hash. So the main sign is a small `.escapp` file in the game's
 /// folder (like `.git` in a repository). It survives moves, copies to other disks, archives and patches.
-/// Where `.escapp` can't be written (disc image, read-only folder), the last known path and then a fingerprint
-/// of the exe and its folder find the game again.
+/// It is the only sign: an exe without one is a new game. The last known path and a fingerprint of the exe used
+/// to find a game too, and could take one game for another.
 public struct GameIdentifier: Sendable {
     public static let markerName = ".escapp"
     /// How many folders above the exe's own folder are searched for `.escapp`, so `Game/bin/x64/game.exe` and
@@ -15,7 +14,7 @@ public struct GameIdentifier: Sendable {
     static let levelsUp = 3
 
     public enum Method: String, Sendable, Equatable {
-        case marker, copiedFolder, lastPath, fingerprint, new
+        case marker, copiedFolder, new
     }
 
     public struct Result: Sendable, Equatable {
@@ -72,31 +71,8 @@ public struct GameIdentifier: Sendable {
         }
 
         let root = gameRoot(for: exeFolder)
-        let canMark = !isStopFolder(root)
-        if var record = library.games.first(where: { $0.executable == exe.path(percentEncoded: false) }) {
-            if canMark, !record.hasMarker, (try? writeMarker(record.id, in: root)) != nil {
-                record.hasMarker = true
-                record.folder = root.path(percentEncoded: false)
-            }
-            library[record.id] = record
-            return Result(record: record, method: .lastPath)
-        }
-
-        let fingerprint = try Self.fingerprint(of: exe)
-        if var record = library.games.first(where: { $0.fingerprint == fingerprint }) {
-            record.executable = exe.path(percentEncoded: false)
-            record.folder = root.path(percentEncoded: false)
-            library[record.id] = record
-            return Result(record: record, method: .fingerprint)
-        }
-
         var record = newRecord(exe: exe, folder: root, now: now)
-        if canMark, (try? writeMarker(record.id, in: root)) != nil {
-            record.hasMarker = true
-        } else {
-            record.hasMarker = false
-            record.fingerprint = fingerprint
-        }
+        if !isStopFolder(root), (try? writeMarker(record.id, in: root)) != nil { record.hasMarker = true }
         library[record.id] = record
         return Result(record: record, method: .new)
     }
@@ -187,20 +163,6 @@ public struct GameIdentifier: Sendable {
             return product
         }
         return rootIsShared ? base : root.lastPathComponent
-    }
-
-    /// The exe's hash plus the names and sizes of the files next to it. The folder part tells apart two games
-    /// that share an identical exe (Unity player, DOSBox).
-    static func fingerprint(of exe: URL) throws -> String {
-        let folder = exe.deletingLastPathComponent()
-        let listing = try FileManager.default
-            .contentsOfDirectory(at: folder, includingPropertiesForKeys: [.fileSizeKey])
-            .filter { $0.lastPathComponent != markerName }
-            .map { "\($0.lastPathComponent)\t\((try? $0.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? -1)" }
-            .sorted()
-            .joined(separator: "\n")
-        let combined = try Downloader.sha256(of: exe) + "\n" + listing
-        return Downloader.hex(SHA256.hash(data: Data(combined.utf8)))
     }
 
     /// Comparable form of a folder path: resolved, no trailing slash.

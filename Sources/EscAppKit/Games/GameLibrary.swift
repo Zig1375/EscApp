@@ -9,10 +9,9 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     public var executable: String
     /// The game's folder: where its `.escapp` file is, or the executable's folder when there is none.
     public var folder: String
-    /// False when EscApp couldn't write `.escapp` (disc image, read-only folder); the game is then found again by
-    /// path or fingerprint.
+    /// False when EscApp couldn't write `.escapp` (disc image, read-only folder, a shared folder like Downloads).
     public var hasMarker: Bool
-    /// SHA-256 of the executable plus the folder's file list. Only computed for games without a marker.
+    /// No longer used: games are found by `.escapp` alone. Kept so Games.json written by earlier versions reads.
     public var fingerprint: String?
     public var windowsVersion: WindowsVersion
     public var addedAt: Date

@@ -35,8 +35,8 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 - Bottles: `BottleManager` builds one template per runtime (`wineboot`, staging + `TEMPLATE.json`) and APFS-clones
   it per game (`BOTTLE.json`). `SharedProfile` links AppData and Saved Games to `EscApp/Profile` in the template.
   `WineRegistry` edits `user.reg` as text (only while the bottle's wineserver is stopped).
-- Games: `GameIdentifier` finds the game for an exe via the `.escapp` file in its root folder, then last path, then a
-  fingerprint; `GameLibrary` is `Games.json`. `escapp game identify|prepare|list` exercises both.
+- Games: `GameIdentifier` finds the game for an exe by the `.escapp` file in its root folder, and by nothing else; an
+  exe without one is a new game. `GameLibrary` is `Games.json`. `escapp game identify|prepare|list` exercises both.
 - Launching: `ExecutableInfo` reads an exe (format, imports → DirectX, name, icon, DPI) with a bounds-checked
   PE reader; `BackendPlan` orders backends; `GameLauncher` prepares the bottle and runs `wine <exe>` from the
   backend's own Wine tree (`BackendTree`: APFS clone of `wine` with DXVK/DXMT builtin DLLs in `lib/wine`;

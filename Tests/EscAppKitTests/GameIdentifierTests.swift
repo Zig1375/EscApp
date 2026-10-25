@@ -37,6 +37,18 @@ import Testing
         #expect(try library().games == [result.record])
     }
 
+    /// The default from Settings goes to games added after it; a game already known keeps its own setting.
+    @Test func aNewGameGetsTheRetinaDefault() throws {
+        let heroes = try makeExe("Games/Heroes3/Heroes3.exe")
+        #expect(try identifier.identify(executable: heroes).record.retina == nil)
+        try SharedSettings(newGameRetina: .off).save(to: paths.settings)
+        #expect(try identifier.identify(executable: heroes).record.retina == nil)
+        let fallout = try makeExe("Games/Fallout2/fallout2.exe")
+        #expect(try identifier.identify(executable: fallout).record.retina == .off)
+        try SharedSettings(newGameRetina: .auto).save(to: paths.settings)
+        #expect(try identifier.identify(executable: makeExe("Games/Diablo/diablo.exe")).record.retina == nil)
+    }
+
     @Test func theSameGameIsFoundAgainAndFromAnotherExeInItsFolders() throws {
         let launcher = try makeExe("Games/Witcher/launcher.exe")
         let first = try identifier.identify(executable: launcher)

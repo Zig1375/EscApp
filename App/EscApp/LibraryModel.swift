@@ -56,8 +56,8 @@ final class LibraryModel {
     private(set) var now = Date()
     /// Whether double-clicking an .exe in Finder opens EscApp.
     private(set) var isDefaultForExe = true
-    /// Settings → General: Retina off in every game (`SharedSettings`).
-    private(set) var retinaOffForAll = false
+    /// Settings → General: the Retina setting new games get (`SharedSettings`).
+    private(set) var newGameRetina = GameScaling.Setting.auto
     /// Stores whose client is installed (Stores.dc.html).
     var installedStores: Set<Store> = []
     /// Stores being installed, with how far each is.
@@ -116,16 +116,16 @@ final class LibraryModel {
         // Asked again on each reload: Steam downloads a new game's cover some time after the game appears.
         for game in games where covers[game.id] == nil { loadCover(for: game) }
         refreshDefaultHandler()
-        retinaOffForAll = SharedSettings.load(from: paths.settings).retinaOff == true
+        newGameRetina = SharedSettings.load(from: paths.settings).newGameRetina ?? .auto
     }
 
-    /// Applies from each game's next launch, like its own settings.
-    func setRetinaOffForAll(_ off: Bool) {
+    /// Games already in the library keep their own setting.
+    func setNewGameRetina(_ setting: GameScaling.Setting) {
         var settings = SharedSettings.load(from: paths.settings)
-        settings.retinaOff = off ? true : nil
+        settings.newGameRetina = setting == .auto ? nil : setting
         do {
             try settings.save(to: paths.settings)
-            retinaOffForAll = off
+            newGameRetina = setting
         } catch {
             notice = Notice(title: String(localized: "Couldn't save the setting"), message: error.localizedDescription)
         }

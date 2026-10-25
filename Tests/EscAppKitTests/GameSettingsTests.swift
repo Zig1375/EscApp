@@ -25,23 +25,18 @@ import Testing
     }
 
     @Test func retinaFollowsTheGameUnlessChosen() {
-        #expect(GameSettings.retina(nil, dpiAware: true, offForAll: false))
-        #expect(!GameSettings.retina(.auto, dpiAware: false, offForAll: false))
-        #expect(GameSettings.retina(.on, dpiAware: false, offForAll: false))
-        #expect(!GameSettings.retina(.off, dpiAware: true, offForAll: false))
-    }
-
-    @Test func retinaOffForAllWinsOverTheGame() {
-        #expect(!GameSettings.retina(nil, dpiAware: true, offForAll: true))
-        #expect(!GameSettings.retina(.on, dpiAware: true, offForAll: true))
+        #expect(GameSettings.retina(nil, dpiAware: true))
+        #expect(!GameSettings.retina(.auto, dpiAware: false))
+        #expect(GameSettings.retina(.on, dpiAware: false))
+        #expect(!GameSettings.retina(.off, dpiAware: true))
     }
 
     @Test func sharedSettingsSurviveASaveAndDefaultWithoutAFile() throws {
         let file = FileManager.default.temporaryDirectory.appending(path: "escapp-settings-\(UUID()).json")
         defer { try? FileManager.default.removeItem(at: file) }
         #expect(SharedSettings.load(from: file) == SharedSettings())
-        try SharedSettings(retinaOff: true).save(to: file)
-        #expect(SharedSettings.load(from: file).retinaOff == true)
+        try SharedSettings(newGameRetina: .off).save(to: file)
+        #expect(SharedSettings.load(from: file).newGameRetina == .off)
     }
 
     @Test func autoSaysWhichBackendAndWhy() {

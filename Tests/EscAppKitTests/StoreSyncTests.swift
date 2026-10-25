@@ -28,4 +28,13 @@ import Testing
         #expect(StoreLibrary.merge([.steam: []], into: &library, now: Date()))
         #expect(library.games.isEmpty)
     }
+
+    @Test func aNewStoreGameGetsTheRetinaDefault() throws {
+        let folder = temp.url.appending(path: "common/Banished", directoryHint: .isDirectory)
+        let banished = StoreLibrary.Game(store: .steam, id: "242920", name: "Banished", folder: folder,
+                                         executable: folder.appending(path: "Banished.exe"))
+        var library = GameLibrary()
+        #expect(StoreLibrary.merge([.steam: [banished]], into: &library, now: Date(), retina: .off))
+        #expect(library.games.first?.retina == .off)
+    }
 }

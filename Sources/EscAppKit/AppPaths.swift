@@ -45,7 +45,7 @@ public struct AppPaths: Sendable, Equatable {
     /// Pictures of games fetched from their stores (`SteamScreenshots`); safe to delete, they come back.
     public var artwork: URL { folder("Artwork") }
     public var library: URL { root.appending(path: "Games.json", directoryHint: .notDirectory) }
-    /// Settings for every game (`SharedSettings`).
+    /// Settings for all games (`SharedSettings`).
     public var settings: URL { root.appending(path: "Settings.json", directoryHint: .notDirectory) }
 
     public func runtime(_ id: String) -> URL { runtimes.appending(path: id, directoryHint: .isDirectory) }

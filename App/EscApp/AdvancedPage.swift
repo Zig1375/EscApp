@@ -73,7 +73,6 @@ struct AdvancedPage: View {
                 Segmented(selection: setting(game, \.retina), options: GameScaling.Setting.allCases,
                           title: Self.settingTitle)
                     .frame(width: 190)
-                    .disabled(library.retinaOffForAll)
             }
             SettingRow(title: "Enlarge low resolutions", detail: scalingHint(game)) {
                 Segmented(selection: setting(game, \.scaling), options: GameScaling.Setting.allCases,
@@ -106,13 +105,23 @@ struct AdvancedPage: View {
     }
 
     private func retinaHint(_ game: GameRecord) -> LocalizedStringKey {
-        if library.retinaOffForAll { return "Off for all games in Settings" }
+        // A game that doesn't handle Retina can't be clicked right in it either: Wine halves the mouse position
+        // for it, and the clicks miss what is drawn (they did for Banished). Players need to hear the cure.
         let dpiAware = library.infos[game.id]?.dpiAware ?? false
         switch game.retina ?? .auto {
         case .auto:
-            return dpiAware ? "Auto now: on — the game draws for high-resolution screens itself"
+            return dpiAware ? """
+                Auto now: on — the game draws for high-resolution screens itself. If clicks miss its buttons, \
+                turn it off.
+                """
                 : "Auto now: off — the game can't use a high-resolution screen; with Retina its interface would be tiny"
-        case .on, .off:
+        case .on:
+            return dpiAware ? "Auto would turn it on too. If clicks miss the game's buttons, turn it off."
+                : """
+                    The game isn't made for it: its interface is small, and clicks may miss its buttons. Auto would \
+                    turn it off.
+                    """
+        case .off:
             return dpiAware ? "Auto would turn it on" : "Auto would turn it off"
         }
     }
@@ -123,8 +132,7 @@ struct AdvancedPage: View {
         case .off: return "The game's window keeps its own size. Full-screen games still fill the screen."
         case .auto: break
         }
-        let retina = GameSettings.retina(game.retina, dpiAware: library.infos[game.id]?.dpiAware ?? false,
-                                         offForAll: library.retinaOffForAll)
+        let retina = GameSettings.retina(game.retina, dpiAware: library.infos[game.id]?.dpiAware ?? false)
         switch GameSettings.autoScaling(for: game, retina: retina) {
         case .notSeenYet:
             return "Auto: decided after the first launch, from the size of the game's window"
@@ -299,6 +307,7 @@ private struct Segmented<Value: Hashable>: View {
     @Binding var selection: Value
     let options: [Value]
     let title: (Value) -> String
+    @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
         HStack(spacing: 2) {
@@ -325,6 +334,8 @@ private struct Segmented<Value: Hashable>: View {
         }
         .padding(3)
         .background(Color.chip, in: .rect(cornerRadius: 9, style: .continuous))
+        // Plain buttons look the same when disabled; without this a locked choice looked clickable.
+        .opacity(isEnabled ? 1 : 0.45)
     }
 }
 

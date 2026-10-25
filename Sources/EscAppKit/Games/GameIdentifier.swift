@@ -137,8 +137,10 @@ public struct GameIdentifier: Sendable {
         let name = Self.name(exe: exe, root: folder, rootIsShared: isStopFolder(folder))
         // Whole seconds, the precision Games.json keeps, so a record reads back equal to what was saved.
         let added = Date(timeIntervalSince1970: now.timeIntervalSince1970.rounded(.down))
-        return GameRecord(id: .make(), name: name, executable: exe.path(percentEncoded: false),
-                          folder: folder.path(percentEncoded: false), hasMarker: false, addedAt: added)
+        var record = GameRecord(id: .make(), name: name, executable: exe.path(percentEncoded: false),
+                                folder: folder.path(percentEncoded: false), hasMarker: false, addedAt: added)
+        record.retina = SharedSettings.newGameRetina(paths: paths)
+        return record
     }
 
     /// Product names that say which engine or wrapper made the exe, not which game it is.

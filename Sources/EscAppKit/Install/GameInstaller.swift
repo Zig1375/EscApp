@@ -192,6 +192,7 @@ public struct GameInstaller: Sendable {
         var record = GameRecord(id: installed.id, name: plan.name, executable: exe.path(percentEncoded: false),
                                 folder: folder.path(percentEncoded: false), hasMarker: hasMarker,
                                 windowsVersion: plan.windowsVersion, addedAt: now)
+        record.retina = SharedSettings.newGameRetina(paths: paths)
         if keepDisc, let disc = plan.disc { record.disc = disc.image.path(percentEncoded: false) }
         if !keepDisc { DiscDrive.eject(from: bottle) }
         try GameLibrary.modify(paths.library) { $0[record.id] = record }

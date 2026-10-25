@@ -2122,16 +2122,6 @@
         }
       }
     },
-    "Auto now: on — the game draws for high-resolution screens itself": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Авто сейчас: включено — игра сама умеет высокое разрешение экрана"
-          }
-        }
-      }
-    },
     "Auto now: on — the game's window is %lld×%lld, EscApp enlarges it %@× and leaves the Mac's display alone": {
       "localizations": {
         "ru": {
@@ -4106,42 +4096,62 @@
         }
       }
     },
-    "Turn off Retina in all games": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выключить Retina во всех играх"
-          }
-        }
-      }
-    },
-    "Every game draws at its own size, whatever its Advanced settings say": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Все игры рисуются в своём размере, что бы ни стояло в их дополнительных настройках"
-          }
-        }
-      }
-    },
-    "Off for all games in Settings": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выключено для всех игр в настройках"
-          }
-        }
-      }
-    },
     "Couldn't save the setting": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
             "value": "Не удалось сохранить настройку"
+          }
+        }
+      }
+    },
+    "Sharp screen (Retina) for new games": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чёткий экран (Retina) для новых игр"
+          }
+        }
+      }
+    },
+    "Auto turns it on for games made for high-resolution screens. If clicks miss a game's buttons, turn Retina off in that game's Advanced settings.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Авто» включает её для игр, сделанных для экранов высокой чёткости. Если клики не попадают по кнопкам игры, выключите Retina в дополнительных настройках этой игры."
+          }
+        }
+      }
+    },
+    "Auto now: on — the game draws for high-resolution screens itself. If clicks miss its buttons, turn it off.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Авто сейчас: включено — игра сама рисует для экранов высокой чёткости. Если клики не попадают по её кнопкам, выключите."
+          }
+        }
+      }
+    },
+    "Auto would turn it on too. If clicks miss the game's buttons, turn it off.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В режиме «Авто» тоже было бы включено. Если клики не попадают по кнопкам игры, выключите."
+          }
+        }
+      }
+    },
+    "The game isn't made for it: its interface is small, and clicks may miss its buttons. Auto would turn it off.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра для этого не сделана: интерфейс мелкий, а клики могут не попадать по кнопкам. В режиме «Авто» было бы выключено."
           }
         }
       }

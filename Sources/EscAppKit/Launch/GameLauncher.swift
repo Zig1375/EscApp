@@ -99,8 +99,7 @@ public struct GameLauncher: Sendable {
         progress(.graphics(backend, directX: info.directX.max()))
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
         // Retina only for games that say they handle high DPI; others would draw a tiny interface.
-        let retina = GameSettings.retina(game.retina, dpiAware: info.dpiAware,
-                                         offForAll: SharedSettings.load(from: paths.settings).retinaOff == true)
+        let retina = GameSettings.retina(game.retina, dpiAware: info.dpiAware)
         let (idle, client) = try await prepareStore(for: game, wine: wine, retina: retina)
         let fastSync = WineEnvironment.fastSync(for: game, wine: wine)
         if game.store == nil { await Self.stopWine(in: bottle, unless: fastSync) }

@@ -210,7 +210,7 @@ extension StoreLibrary {
         }
         var steamApps: Set<String> = []
         let changed = try GameLibrary.modify(paths.library) { library in
-            let changed = merge(found, into: &library, now: now)
+            let changed = merge(found, into: &library, now: now, retina: SharedSettings.newGameRetina(paths: paths))
             steamApps = Set(library.games.filter { $0.store == .steam }.compactMap(\.storeID))
             return changed
         }
@@ -219,8 +219,11 @@ extension StoreLibrary {
     }
 
     /// The pure part of `sync`.
-    /// - Parameter stillThere: a game the scan missed that is still installed all the same; it stays.
+    /// - Parameters:
+    ///   - retina: the Retina setting a newly found game gets (`SharedSettings.newGameRetina`).
+    ///   - stillThere: a game the scan missed that is still installed all the same; it stays.
     static func merge(_ found: [Store: [Game]], into library: inout GameLibrary, now: Date,
+                      retina: GameScaling.Setting? = nil,
                       stillThere: (GameRecord) -> Bool = stillInstalled) -> Bool {
         var changed = false
         let before = library.games
@@ -253,6 +256,7 @@ extension StoreLibrary {
                                             folder: folder, hasMarker: false, addedAt: now)
                     record.store = store
                     record.storeID = game.id
+                    record.retina = retina
                     library.games.append(record)
                     changed = true
                 }

@@ -20,6 +20,9 @@ public struct AttemptJudge: Sendable, Equatable {
         case noWindow
         /// The window stayed one flat colour the whole time it was checked (`WindowPicture`).
         case blankPicture
+        /// Chromium refused the game WebGL (`LogDiagnosis.refusesWebGL`): an RPG Maker MZ game then shows "Failed to
+        /// initialize graphics" in a window that looks fine to every other check.
+        case noWebGL
     }
 
     /// How long the window has to stay up. A crash later than this is the game's, not the backend's.
@@ -63,13 +66,15 @@ public struct AttemptJudge: Sendable, Equatable {
     ///     running, so 0 alone decides nothing.
     ///   - idle: whether everything in the bottle has stopped.
     /// - Parameter blank: what a look at the window showed now: flat (true), a picture (false), or nothing.
+    /// - Parameter noWebGL: the log says Chromium refused the game WebGL.
     public mutating func observe(elapsed: TimeInterval, window: Bool, exitCode: Int32?, idle: Bool,
-                                 blank: Bool? = nil) -> Verdict? {
+                                 blank: Bool? = nil, noWebGL: Bool = false) -> Verdict? {
         if window, windowSince == nil { windowSince = elapsed }
         if window, let blank {
             if blank { blankSamples += 1 } else { sawPicture = true }
         }
         if let exitCode, exitCode != 0 { return .failed(.closed(exitCode: exitCode)) }
+        if noWebGL { return .failed(.noWebGL) }
         if let windowSince, elapsed - windowSince >= windowHolds {
             // A Chromium window that hasn't drawn yet gets longer; one that has works.
             guard checksPicture, !sawPicture else { return .working }

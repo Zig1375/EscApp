@@ -88,6 +88,15 @@ public struct LogDiagnosis: Sendable, Equatable {
 
     /// `0024:trace:msgbox:MSGBOX_OnInit L"Please insert the Fallout 2 CD"`: a message box naming a disc and asking
     /// for it, in the languages old games came in.
+    /// Chromium refused a WebGL context the game can't do without: software drawing for a game that asked for the
+    /// graphics card (`fail_if_major_perf_caveat`, RPG Maker MZ), or WebGL 1 on the GPU blocklist. A refused WebGL 2
+    /// alone isn't: games fall back to WebGL 1.
+    static func refusesWebGL(_ line: String) -> Bool {
+        guard line.contains("ContextResult::kFatalFailure") else { return false }
+        return line.contains("fail_if_major_perf_caveat")
+            || line.contains("WebGL1 blacklisted") || line.contains("WebGL1 blocklisted")
+    }
+
     static func asksForDisc(_ line: String) -> Bool {
         guard line.contains(":msgbox:") else { return false }
         let text = line.lowercased()

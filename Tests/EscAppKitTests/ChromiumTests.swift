@@ -18,7 +18,8 @@ import Testing
     }
 
     @Test func eachDrawingModeHasItsFallback() {
-        #expect(ChromiumApp.Mode.inProcessGPU.arguments == ["--in-process-gpu"])
+        #expect(ChromiumApp.Mode.inProcessGPU.arguments
+            == ["--in-process-gpu", "--ignore-gpu-blacklist", "--ignore-gpu-blocklist"])
         #expect(ChromiumApp.Mode.noGPU.arguments.contains("--disable-gpu"))
         #expect(AutoLaunch.nextChromium(after: nil) == .inProcessGPU)
         #expect(AutoLaunch.nextChromium(after: .inProcessGPU) == .noGPU)

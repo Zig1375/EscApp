@@ -62,6 +62,7 @@ struct LaunchSheet: View {
     @ViewBuilder private func retrying(_ retry: LibraryModel.Launch.Retry) -> some View {
         caption("The game failed — EscApp is trying again")
         gameRow(retry.reason == .blankPicture ? "Its window stayed blank"
+                    : retry.reason == .noWebGL ? "Its graphics didn't start"
                     : retry.reason == .noWindow ? "No window after \(retry.seconds) s"
                     : "Closed \(retry.seconds) s after starting")
         Callout(tone: .warning) {
@@ -132,13 +133,17 @@ struct LaunchSheet: View {
         case .needsSteam?:
             Text("It needs Steam running.")
         case nil:
-            if failure.reason == .blankPicture {
-                Text("Its window stays blank.")
-            } else if case let .closed(code)? = failure.reason {
-                Text("It closes right after starting (code \(String(code))).")
-            } else {
-                Text("Its window never appeared.")
-            }
+            reason(failure.reason)
+        }
+    }
+
+    /// What the check saw, when the log tells nothing more.
+    private static func reason(_ seen: AttemptJudge.Failure?) -> Text {
+        switch seen {
+        case .blankPicture?: Text("Its window stays blank.")
+        case .noWebGL?: Text("Its graphics can't start on this Mac.")
+        case let .closed(code)?: Text("It closes right after starting (code \(String(code))).")
+        case .noWindow?, nil: Text("Its window never appeared.")
         }
     }
 

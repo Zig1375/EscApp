@@ -65,6 +65,18 @@ import Testing
         #expect(LogDiagnosis(log: log + "\n" + game).problem == .missingFile("binkw32.dll"))
         #expect(LogDiagnosis(log: game + "\n" + log).problem == .missingFile("binkw32.dll"))
     }
+
+    @Test func chromiumRefusingWebGLIsCaught() {
+        // Celina's Calling (NW.js 0.48) with the GPU on Chromium's blocklist: software drawing, refused.
+        let software = "[32:568:1025/171635.419:ERROR:gles2_cmd_decoder.cc(3614)] ContextResult::kFatalFailure: "
+            + "fail_if_major_perf_caveat + swiftshader"
+        #expect(LogDiagnosis.refusesWebGL(software))
+        let refused = "ERROR:context_group.cc(154)] ContextResult::kFatalFailure: "
+        #expect(LogDiagnosis.refusesWebGL(refused + "WebGL1 blocklisted"))
+        // With the blocklist off WebGL 2 is still refused, and the game goes on with WebGL 1.
+        #expect(!LogDiagnosis.refusesWebGL(refused + "WebGL2 blacklisted"))
+        #expect(!LogDiagnosis.refusesWebGL("ERROR:angle_platform_impl.cc(43)] Error querying driver version"))
+    }
 }
 
 @Suite struct AttemptJudgeTests {
@@ -99,6 +111,12 @@ import Testing
         #expect(first.observe(elapsed: 61, window: false, exitCode: nil, idle: false) == .failed(.noWindow))
         var remembered = AttemptJudge(windowTimeout: nil)
         #expect(remembered.observe(elapsed: 600, window: false, exitCode: nil, idle: false) == nil)
+    }
+
+    @Test func refusedWebGLFailsAWindowThatLooksFine() {
+        var judge = AttemptJudge(windowTimeout: 60)
+        #expect(judge.observe(elapsed: 5, window: true, exitCode: nil, idle: false) == nil)
+        #expect(judge.observe(elapsed: 7, window: true, exitCode: nil, idle: false, noWebGL: true) == .failed(.noWebGL))
     }
 }
 

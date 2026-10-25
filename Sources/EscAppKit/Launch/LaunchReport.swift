@@ -18,6 +18,7 @@ public enum LaunchReport {
             case let .closed(code)?: "closed after \(attempt.seconds) s, exit code \(code)"
             case .noWindow?: "no window after \(attempt.seconds) s"
             case .blankPicture?: "its window stayed blank"
+            case .noWebGL?: "its graphics didn't start (WebGL refused)"
             }
             lines.append("- \(attempt.backend.displayName): \(outcome)")
             if let evidence = attempt.diagnosis.evidence { lines.append("  \(evidence)") }

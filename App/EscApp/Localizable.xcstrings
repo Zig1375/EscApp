@@ -3328,6 +3328,26 @@
         }
       }
     },
+    "Its graphics didn't start": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Графика не запустилась"
+          }
+        }
+      }
+    },
+    "its graphics didn't start": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "графика не запустилась"
+          }
+        }
+      }
+    },
     "Its window stayed blank": {
       "localizations": {
         "ru": {

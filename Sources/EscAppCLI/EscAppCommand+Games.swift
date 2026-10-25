@@ -146,6 +146,7 @@ extension EscAppCommand {
         case let .closed(code)?: "closed after \(attempt.seconds) s (exit \(code))"
         case .noWindow?: "showed no window in \(attempt.seconds) s"
         case .blankPicture?: "its window stayed blank"
+        case .noWebGL?: "its graphics didn't start (WebGL refused)"
         }
         let problem = attempt.diagnosis.problem.map { " — \($0)" } ?? ""
         return "\(attempt.backend.displayName): \(result)\(attempt.failure == nil ? "" : problem)"

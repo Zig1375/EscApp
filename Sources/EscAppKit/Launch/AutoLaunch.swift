@@ -253,11 +253,14 @@ public struct AutoLaunch: Sendable {
         // request is caught from the log as it is written, not after the game ends.
         let tail = LogTail(running.log)
         var askedForDisc = false
+        var noWebGL = false
         while true {
-            if !askedForDisc, let line = tail.newLines().first(where: LogDiagnosis.asksForDisc) {
+            let lines = tail.newLines()
+            if !askedForDisc, let line = lines.first(where: LogDiagnosis.asksForDisc) {
                 askedForDisc = true
                 context.events(.asksForDisc(LogDiagnosis.messageText(line)))
             }
+            noWebGL = noWebGL || lines.contains(where: LogDiagnosis.refusesWebGL)
             let owners = windows(running.session)
             if !owners.isEmpty, let window = measure(running.session) { seen = window }
             if let owner = owners.first, !announced {
@@ -278,7 +281,7 @@ public struct AutoLaunch: Sendable {
             }
             let blank = judge.checksPicture ? await looks.look(at: owners, elapsed: elapsed)?.blank : nil
             if let verdict = judge.observe(elapsed: elapsed, window: !owners.isEmpty, exitCode: running.exitCode,
-                                           idle: running.isIdle, blank: blank) {
+                                           idle: running.isIdle, blank: blank, noWebGL: noWebGL) {
                 return verdict
             }
             if let seconds = judge.held(at: elapsed).map({ Int($0) }), seconds != held {

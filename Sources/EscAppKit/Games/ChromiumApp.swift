@@ -5,16 +5,21 @@ import Foundation
 /// process, and what that process draws never reaches the window the Mac shows. With the GPU work inside the
 /// browser process the picture appears and stays hardware-accelerated (WebGL games keep their speed); without
 /// any GPU work is the fallback. Tested with NW.js 0.92 and Electron 33 on Wine 11.20.
+///
+/// Chromium also can't read the graphics driver's version under Wine, and older builds then put the GPU on their
+/// blocklist and draw in software. RPG Maker MZ asks WebGL for real hardware only, so Celina's Calling (NW.js 0.48)
+/// showed "Failed to initialize graphics" until the blocklist was switched off.
 public enum ChromiumApp {
     public enum Mode: String, Codable, Sendable, Equatable {
-        /// `--in-process-gpu`: the fix, with acceleration.
+        /// `--in-process-gpu`: the fix, with acceleration, and the GPU blocklist off (it is
+        /// `--ignore-gpu-blacklist` up to Chromium 85 and `--ignore-gpu-blocklist` since; each ignores the other).
         case inProcessGPU
         /// Software drawing: for a program the first doesn't fix.
         case noGPU
 
         public var arguments: [String] {
             switch self {
-            case .inProcessGPU: ["--in-process-gpu"]
+            case .inProcessGPU: ["--in-process-gpu", "--ignore-gpu-blacklist", "--ignore-gpu-blocklist"]
             case .noGPU: ["--disable-gpu", "--disable-gpu-compositing", "--in-process-gpu"]
             }
         }

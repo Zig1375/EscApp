@@ -130,6 +130,8 @@ public struct GameInstaller: Sendable {
                                                fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
         let log = paths.logs(forGame: id).appending(path: "install-\(Self.timestamp()).log")
         try fileManager.createDirectory(at: log.deletingLastPathComponent(), withIntermediateDirectories: true)
+        // Room for this one: the newest two installs' logs stay.
+        LogRotation.prune(log.deletingLastPathComponent(), keep: LogRotation.kept - 1)
         let started = Date().addingTimeInterval(-2)
 
         progress(.installing)

@@ -38,8 +38,6 @@ public struct GameLauncher: Sendable {
         public var log: URL
     }
 
-    /// How many logs to keep per game.
-    static let keptLogs = 20
     /// For past runs, where nothing but the log is left: a program that ran at least this long, or exited
     /// cleanly, worked with its backend. A launch itself decides with `AttemptJudge`, which also sees windows.
     public static let workingAfter: TimeInterval = 15
@@ -299,13 +297,7 @@ public struct GameLauncher: Sendable {
     }
 
     func pruneLogs(for game: GameID) {
-        let folder = paths.logs(forGame: game)
-        let logs = ((try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? [])
-            .filter { $0.hasSuffix(".log") }
-            .sorted()
-        for name in logs.dropLast(Self.keptLogs) {
-            try? FileManager.default.removeItem(at: folder.appending(path: name))
-        }
+        LogRotation.prune(paths.logs(forGame: game))
     }
 }
 

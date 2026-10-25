@@ -283,6 +283,8 @@ public struct StoreClient: Sendable {
     func newLog(_ store: Store, _ kind: String) -> URL {
         let folder = paths.logs(forGame: store.bottleID)
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        // Room for this one: a client writes a log each time it starts, and they piled up by the dozen.
+        LogRotation.prune(folder, keep: LogRotation.kept - 1)
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"

@@ -82,7 +82,8 @@ struct SettingsView: View {
                         .foregroundStyle(section == item ? Color.navSelectedText : .primary)
                         .padding(.horizontal, 12)
                         .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
-                        .background(section == item ? Color.navSelected : .clear, in: .rect(cornerRadius: 8))
+                        // `navSelected` almost vanishes on the sidebar's #EFECE7; a brand tint shows in both themes.
+                        .background(section == item ? Color.brand.opacity(0.18) : .clear, in: .rect(cornerRadius: 8))
                         .contentShape(.rect)
                 }
                 .buttonStyle(.plain)

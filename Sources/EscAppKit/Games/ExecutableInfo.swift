@@ -32,8 +32,10 @@ public struct ExecutableInfo: Sendable, Equatable {
         for name in imports {
             if ["ddraw.dll", "d3d8.dll", "d3dim.dll", "d3drm.dll"].contains(name) { result.insert(.legacy) }
             if name == "d3d9.dll" || name.hasPrefix("d3dx9") { result.insert(.d3d9) }
+            // A Unity game's exe imports only UnityPlayer.dll, which loads d3d11.dll at run time (Unity's default
+            // on Windows): 凛姦小屋 got the short no-imports plan and never tried DXMT.
             if name.hasPrefix("d3d10") || name == "d3d11.dll" || name.hasPrefix("dxgi")
-                || name.hasPrefix("d3dx11") {
+                || name.hasPrefix("d3dx11") || name == "unityplayer.dll" {
                 result.insert(.d3d11)
             }
             // Chromium links d3d12.dll for WebGPU and draws through Direct3D 11 (Electron 33 does).

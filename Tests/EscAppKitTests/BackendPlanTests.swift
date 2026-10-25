@@ -1,4 +1,4 @@
-import EscAppKit
+@testable import EscAppKit
 import Testing
 
 @Suite struct BackendPlanTests {
@@ -33,6 +33,14 @@ import Testing
 
     @Test func launchersUseDXVK() {
         #expect(plan(.x64, [.d3d11], launcher: true) == .attempts([.dxvk, .wined3d]))
+    }
+
+    /// Unity's exe imports only UnityPlayer.dll, which loads Direct3D 11 itself.
+    @Test func unityGamesAreDirectX11() {
+        let info = ExecutableInfo(format: .pe64, imports: ["kernel32.dll", "unityplayer.dll"], productName: nil,
+                                  icon: nil, dpiAware: false)
+        #expect(info.directX == [.d3d11])
+        #expect(BackendPlan.forTraits(info.traits) == .attempts([.dxvk, .dxmt, .wined3d]))
     }
 
     @Test func noStaticImportsFallsBackToDXVK() {

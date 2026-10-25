@@ -165,9 +165,8 @@ public struct GameLauncher: Sendable {
             try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: side, value: command)
         }
         // Full-screen games get an emulated display mode, small windowed ones a system DPI that enlarges them
-        // (`GameScaling`). The key is the X11 driver's by name, but Wine's core reads it for every driver.
-        try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\X11 Driver"#, name: "EmulateModeset",
-                                            value: "y")
+        // (`GameScaling`), and fixed-size windows can be stretched.
+        try BottleManager.enableScaling(bottle: bottle)
         let scale = GameScaling.scale(setting: game.scaling ?? .auto, learned: game.window, dpiAware: retina,
                                       screen: screen)
         try BottleManager.setRegistryDWord(bottle: bottle, key: #"Control Panel\Desktop"#, name: "LogPixels",
@@ -357,6 +356,17 @@ public enum LaunchError: Error, Equatable, CustomStringConvertible {
 }
 
 extension BottleManager {
+    /// `EmulateModeset` lets a game switch to a low resolution without touching the Mac's display.
+    /// `StretchWindows` (EscApp's Wine) lets the player drag the corner of a game window that can't be resized:
+    /// a Unity game with a fixed 1440×800 window was half the screen on a Retina Mac and couldn't be made bigger.
+    /// The window keeps its size for the game and Wine scales the picture and the mouse. Both keys are the X11
+    /// driver's by name, but Wine's core reads them for every driver.
+    static func enableScaling(bottle: URL) throws {
+        let key = #"Software\Wine\X11 Driver"#
+        try setRegistryString(bottle: bottle, key: key, name: "EmulateModeset", value: "y")
+        try setRegistryString(bottle: bottle, key: key, name: "StretchWindows", value: "y")
+    }
+
     static func disableCrashDialog(bottle: URL) throws {
         let userReg = bottle.appending(path: "user.reg")
         let text = try String(contentsOf: userReg, encoding: .utf8)

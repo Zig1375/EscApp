@@ -27,6 +27,7 @@ import Testing
         try StoreClient.setUpForGames(temp.url)
         let text = try String(contentsOf: userReg, encoding: .utf8)
         #expect(WineRegistry.string(in: text, key: #"Software\Wine\X11 Driver"#, name: "EmulateModeset") == "y")
+        #expect(WineRegistry.string(in: text, key: #"Software\Wine\X11 Driver"#, name: "StretchWindows") == "y")
     }
 
     @Test func aRetinaClientIsKnownFromItsBottle() throws {

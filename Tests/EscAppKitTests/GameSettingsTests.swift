@@ -103,6 +103,7 @@ import Testing
         #expect(try value(#"Software\Wine\Mac Driver"#, "RetinaMode") == "n")
         #expect(try value(#"Software\Wine\Mac Driver"#, "LeftCommandIsCtrl") == "n")
         #expect(try value(#"Software\Wine\X11 Driver"#, "EmulateModeset") == "y")
+        #expect(try value(#"Software\Wine\X11 Driver"#, "StretchWindows") == "y")
         #expect(try userReg().contains(#""ShowCrashDialog"=dword:00000000"#))
         #expect(try userReg().contains(#""LogPixels"=dword:00000060"#))
     }

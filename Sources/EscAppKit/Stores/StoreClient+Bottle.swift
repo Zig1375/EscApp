@@ -20,8 +20,7 @@ extension StoreClient {
     /// Banished, started from Steam, switched the Mac's display to 960×600 and the mouse missed its buttons.
     static func setUpForGames(_ bottle: URL) throws {
         try BottleManager.disableCrashDialog(bottle: bottle)
-        try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\X11 Driver"#, name: "EmulateModeset",
-                                            value: "y")
+        try BottleManager.enableScaling(bottle: bottle)
     }
 
     /// Whether the bottle's Wine draws in Retina mode, as written before its client started (`drawSharp`).

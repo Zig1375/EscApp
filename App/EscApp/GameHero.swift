@@ -40,69 +40,63 @@ struct PageCover: View {
     }
 }
 
-/// The game's name, and a pencil that turns it into a field: Return keeps the new name, Escape the old one.
+/// The game's name, editable in place for the player's own games: Return keeps the new name, Escape the old one.
 struct GameTitle: View {
     let game: GameRecord
     let library: LibraryModel
-    // A flag and a plain string: a field bound through `Binding($optional)` crashed EscApp when saving set the
-    // optional back to nil while the field was still being laid out.
-    @State private var isEditing = false
     @State private var draft = ""
     @State private var isHovered = false
+    @FocusState private var focused: Bool
     /// One line of the 26-pt title with a little room above and below.
     private static let boxHeight: CGFloat = 40
-    @FocusState private var focused: Bool
 
     var body: some View {
-        if isEditing {
-            TextField("Game name", text: $draft)
-                .textFieldStyle(.plain)
-                .font(.system(size: 26, weight: .bold))
-                .padding(.horizontal, 8)
-                .frame(maxWidth: .infinity, minHeight: Self.boxHeight, alignment: .leading)
-                .background(Color.cardBackground, in: .rect(cornerRadius: 8, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Color.brand, lineWidth: 2)
-                }
-                .padding(.horizontal, -8)
-                .focused($focused)
-                // Set on appear, the focus didn't reach the new field and typing went nowhere.
-                .task {
-                    try? await Task.sleep(for: .milliseconds(50))
-                    focused = true
-                }
-                .onSubmit(save)
-                .onExitCommand { isEditing = false }
-                .onChange(of: focused) { if !focused { save() } }
-        } else if game.canRename {
-            // The name itself is the control: under the pointer it gets the field's frame, a click makes it the
-            // field. The pencil after it says so before the pointer gets there.
+        if game.canRename {
+            // Always a field, drawn as a plain title until the pointer comes (a grey frame) or it is being typed
+            // in (the brand frame). As a title that turned into a field on click, it couldn't be selected straight
+            // away: dragging over "Ru_" to delete it did nothing.
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text(game.name)
+                // The field is as wide as the name (the hidden copy sets the size), so the pencil sits right after
+                // it rather than at the far end of the row.
+                Text(draft + " ")
                     .font(.system(size: 26, weight: .bold))
                     .lineLimit(2)
-                Image(systemName: "pencil")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(isHovered ? Color.primary : Color.secondaryText)
-                    .accessibilityHidden(true)
+                    .hidden()
+                    .overlay(alignment: .topLeading) {
+                        TextField("Game name", text: $draft, axis: .vertical)
+                            .textFieldStyle(.plain)
+                            .font(.system(size: 26, weight: .bold))
+                            .lineLimit(1...2)
+                            .focused($focused)
+                            .onSubmit { focused = false }
+                            .onExitCommand {
+                                draft = game.name
+                                focused = false
+                            }
+                    }
+                if !focused {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(isHovered ? Color.primary : Color.secondaryText)
+                        .onTapGesture { focused = true }
+                        .accessibilityHidden(true)
+                }
+                Spacer(minLength: 0)
             }
             .padding(.horizontal, 8)
-            // The same box as the field, so the frame doesn't jump or change size on click.
+            .padding(.vertical, 3)
             .frame(maxWidth: .infinity, minHeight: Self.boxHeight, alignment: .leading)
+            .background(focused ? Color.cardBackground : .clear, in: .rect(cornerRadius: 8, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .strokeBorder(isHovered ? Color.buttonBorder : .clear, lineWidth: 2)
+                    .strokeBorder(focused ? Color.brand : isHovered ? Color.buttonBorder : .clear, lineWidth: 2)
             }
             .padding(.horizontal, -8)
-            .contentShape(.rect)
             .onHover { isHovered = $0 }
-            .pointerStyle(.horizontalText)
-            .onTapGesture(perform: edit)
             .help("Click to rename")
-            .accessibilityElement(children: .combine)
-            .accessibilityAddTraits(.isButton)
-            .accessibilityHint("Rename")
-            .accessibilityAction { edit() }
+            .onAppear { draft = game.name }
+            .onChange(of: game.name) { if !focused { draft = game.name } }
+            .onChange(of: focused) { if !focused { save() } }
         } else {
             // A store game keeps the name its store gives it.
             Text(game.name)
@@ -112,15 +106,13 @@ struct GameTitle: View {
         }
     }
 
-    private func edit() {
-        draft = game.name
-        isHovered = false
-        isEditing = true
-    }
-
+    /// Return or leaving the field keeps the new name; an empty one puts the old name back.
     private func save() {
-        guard isEditing else { return }
-        isEditing = false
-        library.rename(game, to: draft)
+        let name = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, name != game.name else {
+            draft = game.name
+            return
+        }
+        library.rename(game, to: name)
     }
 }

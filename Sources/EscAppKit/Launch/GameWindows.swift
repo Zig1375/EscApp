@@ -30,13 +30,23 @@ public enum GameWindows {
                   let path = executablePath(of: pid), path.hasPrefix(rootPath) else { continue }
             if prefix != nil || folder != nil {
                 let process = procArguments(of: pid)
-                if let prefix, process.environment["WINEPREFIX"] != prefix { continue }
+                if let prefix, !inBottle(process.environment, prefix: prefix) { continue }
                 // A store game's bottle also holds the store's client, whose windows aren't the game's.
                 if let folder, !WineProcesses.runs(process.arguments.first ?? "", from: folder) { continue }
             }
             result.append(pid)
         }
         return result
+    }
+
+    /// Whether a process runs in the bottle `prefix`, by its `WINEPREFIX`. A process whose environment can't be
+    /// read counts as in it: Wine had rewritten the whole argument block of Ru_Daughter_For_Dessert's process with
+    /// its Windows command line, its environment was gone, and the game's window, up for a minute, was never
+    /// seen. Only a process that names another bottle is someone else's.
+    static func inBottle(_ environment: [String: String], prefix: String) -> Bool {
+        guard let own = environment["WINEPREFIX"] else { return true }
+        func trimmed(_ path: String) -> String { path.hasSuffix("/") ? String(path.dropLast()) : path }
+        return trimmed(own) == trimmed(prefix)
     }
 
     /// Window levels a game's window can have: normal ones, "always on top" ones (21: Wine's level for a

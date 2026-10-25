@@ -186,3 +186,16 @@ import Testing
         #expect(!GameWindows.isGameLayer(24) && !GameWindows.isGameLayer(25))
     }
 }
+
+@Suite struct InBottleTests {
+    @Test func sameOrUnreadablePrefixIsTheGames() {
+        #expect(GameWindows.inBottle(["WINEPREFIX": "/b/1"], prefix: "/b/1"))
+        #expect(GameWindows.inBottle(["WINEPREFIX": "/b/1/"], prefix: "/b/1"))
+        // Wine overwrote the argument block with the Windows command line: no environment to read.
+        #expect(GameWindows.inBottle([:], prefix: "/b/1"))
+    }
+
+    @Test func anotherBottleIsNot() {
+        #expect(!GameWindows.inBottle(["WINEPREFIX": "/b/2"], prefix: "/b/1"))
+    }
+}

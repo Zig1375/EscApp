@@ -20,6 +20,12 @@ struct LibraryView: View {
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
+        alerts(on: sheets(on: screen))
+    }
+
+    /// The screen itself; `body` adds its sheets and alerts. In parts: as one expression it was too much for
+    /// the Swift on CI's macos-15 runner ("unable to type-check this expression in reasonable time").
+    private var screen: some View {
         VStack(spacing: 0) {
             header
             if case let .game(id)? = page {
@@ -70,6 +76,10 @@ struct LibraryView: View {
             }
         }
         .animation(.easeOut(duration: 0.2), value: library.learned)
+    }
+
+    private func sheets(on view: some View) -> some View {
+        view
         // While settings are looked for, the launch shows on the cover over the game instead (`TuningCover`).
         .sheet(item: Binding(get: { library.launch?.tuning == nil ? library.launch : nil }, set: {
             if $0 == nil, library.launch?.tuning == nil { library.cancelLaunch() }
@@ -97,6 +107,10 @@ struct LibraryView: View {
         .sheet(item: $deletingStore) { store in DeleteStoreSheet(store: store, library: library) }
         .installSheet(library)
         .problemSheet(library)
+    }
+
+    private func alerts(on view: some View) -> some View {
+        view
         .onChange(of: library.shownPage, initial: true) {
             guard let shown = library.shownPage else { return }
             library.shownPage = nil

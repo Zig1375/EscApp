@@ -43,6 +43,15 @@ import Testing
         #expect(BackendPlan.forTraits(info.traits) == .attempts([.dxvk, .dxmt, .wined3d]))
     }
 
+    /// NW.js imports no Direct3D (ANGLE loads it), and DXVK draws RPG Maker MV's menus empty.
+    @Test func chromiumGamesStartWithWineD3D() {
+        var info = ExecutableInfo(format: .pe32, imports: ["kernel32.dll", "nw_elf.dll"], productName: nil,
+                                  icon: nil, dpiAware: false)
+        info.chromium = true
+        #expect(BackendPlan.forTraits(info.traits) == .attempts([.wined3d, .dxmt, .dxvk]))
+        #expect(plan(.x64, [.d3d11], launcher: true) == .attempts([.dxvk, .wined3d]))
+    }
+
     @Test func noStaticImportsFallsBackToDXVK() {
         #expect(plan(.x64, []) == .attempts([.dxvk, .wined3d]))
     }

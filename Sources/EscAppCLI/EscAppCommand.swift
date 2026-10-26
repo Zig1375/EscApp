@@ -64,7 +64,7 @@ public struct EscAppCommand: Sendable {
 
           version                          Print the version
           paths                            Show where EscApp keeps its files (ESCAPP_HOME overrides)
-          plan --arch x86|x64 [--dx 8|9|11|12 ...] [--launcher]
+          plan --arch x86|x64 [--dx 8|9|11|12 ...] [--launcher] [--chromium]
                                            Show which graphics backends a first launch would try
           env --bottle <path> [--verbose]
                                            Print the environment a game would start with
@@ -113,9 +113,11 @@ public struct EscAppCommand: Sendable {
             directX.insert(dx)
         }
         let launcher = options.flag("--launcher")
+        let chromium = options.flag("--chromium")
         if let unknown = options.leftover { return failure("Unknown option: \(unknown)") }
 
-        let traits = ExecutableTraits(architecture: architecture, directX: directX, isChromiumLauncher: launcher)
+        let traits = ExecutableTraits(architecture: architecture, directX: directX, isChromiumLauncher: launcher,
+                                     isChromium: chromium)
         switch BackendPlan.forTraits(traits) {
         case let .attempts(backends):
             return success(backends.map(\.displayName).joined(separator: " → "))

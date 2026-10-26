@@ -24,11 +24,15 @@ public struct ExecutableTraits: Sendable, Equatable {
     public var directX: Set<DirectX>
     /// Chromium-based launchers (Steam, Epic) are known to run well on DXVK.
     public var isChromiumLauncher: Bool
+    /// A game built on Chromium (NW.js, Electron, CEF): `ChromiumApp`.
+    public var isChromium: Bool
 
-    public init(architecture: Architecture, directX: Set<DirectX> = [], isChromiumLauncher: Bool = false) {
+    public init(architecture: Architecture, directX: Set<DirectX> = [], isChromiumLauncher: Bool = false,
+                isChromium: Bool = false) {
         self.architecture = architecture
         self.directX = directX
         self.isChromiumLauncher = isChromiumLauncher
+        self.isChromium = isChromium
     }
 }
 
@@ -47,6 +51,11 @@ public enum BackendPlan: Sendable, Equatable {
     public static func forTraits(_ traits: ExecutableTraits) -> BackendPlan {
         if traits.architecture == .win16 { return .unsupported(.sixteenBit) }
         if traits.isChromiumLauncher { return .attempts([.dxvk, .wined3d]) }
+        // Chromium draws through ANGLE on Direct3D 11, which DXVK gets wrong two ways: RPG Maker MV (NW.js 0.29)
+        // clears a scissored rectangle under each window and DXVK wipes the windows drawn before, so the crafting
+        // menu of "My wife and I ~Shipwrecked on a Desert Island~" showed one empty frame; NW.js 0.92 (Chromium
+        // 131, "The Taming Massage Parlor") crashed at start. Both draw right on WineD3D, MV also on DXMT.
+        if traits.isChromium { return .attempts([.wined3d, .dxmt, .dxvk]) }
         // The newest Direct3D an exe imports decides: a game that imports both d3d9 and d3d11 renders with 11
         // and keeps 9 for a fallback path or its settings tool.
         switch traits.directX.max() {

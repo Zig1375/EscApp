@@ -131,6 +131,11 @@ Electron 33 под Wine 11.20.
   `libcef.dll`, либо рядом с exe лежат `icudtl.dat`, `*.pak` и `libEGL.dll`/`v8_context_snapshot.bin`. Такой
   программе ключ добавляется при каждом запуске. Её импорт `d3d12.dll` (WebGPU) не делает её игрой на DirectX 12:
   рисует она через Direct3D 11.
+- **Графика: WineD3D → DXMT → DXVK** (`BackendPlan`, `ExecutableTraits.isChromium`). Chromium рисует через ANGLE
+  на Direct3D 11, и DXVK ошибается с ним дважды. RPG Maker MV (NW.js 0.29) перед каждым окном очищает его
+  прямоугольник с обрезкой (scissor), а DXVK при этом стирает окна, нарисованные раньше: меню крафта в «My wife and
+  I ~Shipwrecked on a Desert Island~» показывало одну пустую рамку. NW.js 0.92 (Chromium 131, «The Taming Massage
+  Parlor») на DXVK падал при старте. На WineD3D рисуют обе, MV и на DXMT.
 - **Проверка картинки при первом запуске** (`WindowPicture`, `AttemptJudge.checksPicture`): пока окно держится,
   EscApp раз в секунду снимает его через ScreenCaptureKit. Если окно программы на Chromium (по файлам или по
   GPU-процессу Chromium в бутылке) за 40 с так и не показало ничего, кроме одного цвета, попытка не удалась. Тот же
@@ -288,6 +293,7 @@ CD, папка только для чтения, общая папка врод�
 | `d3d10`/`d3d11`, 32-бит | DXMT → DXVK → WineD3D (на Gcenx 11.18 DXVK такое устройство не создаёт, на WhiskyWine 11.0 создаёт) |
 | `d3d12` | v1: честное сообщение «пока не поддерживается» |
 | Лаунчеры с Chromium (Steam, Epic) | DXVK |
+| Игры на Chromium (NW.js, Electron, CEF) | WineD3D → DXMT → DXVK |
 
 ## Компоненты
 

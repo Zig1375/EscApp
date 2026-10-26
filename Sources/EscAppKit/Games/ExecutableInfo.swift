@@ -50,7 +50,7 @@ public struct ExecutableInfo: Sendable, Equatable {
         case .pe32: .x86
         case .win16, .dos: .win16
         }
-        return ExecutableTraits(architecture: architecture, directX: directX)
+        return ExecutableTraits(architecture: architecture, directX: directX, isChromium: chromium)
     }
 
     public static func read(_ url: URL) throws -> ExecutableInfo {

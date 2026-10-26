@@ -42,6 +42,15 @@ public enum WineProcesses {
             + TimeInterval(info.pbi_start_tvusec) / 1_000_000)
     }
 
+    /// CPU time the process has used, in the kernel's own units: only for comparing processes.
+    static func cpuTime(of pid: pid_t) -> UInt64? {
+        var info = rusage_info_v2()
+        let result = withUnsafeMutablePointer(to: &info) { pointer in
+            pointer.withMemoryRebound(to: rusage_info_t?.self, capacity: 1) { proc_pid_rusage(pid, RUSAGE_INFO_V2, $0) }
+        }
+        return result == 0 ? info.ri_user_time + info.ri_system_time : nil
+    }
+
     /// Processes in `bottle` started from a program in the Windows folder `folder`.
     public static func game(in bottle: URL, folder: String) -> [pid_t] {
         running(in: bottle).filter { runs($0.program, from: folder) }.map(\.pid)

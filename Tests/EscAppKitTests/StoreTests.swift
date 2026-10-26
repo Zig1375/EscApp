@@ -317,6 +317,23 @@ private func makeBottle(in temp: TempFolder, name: String = "Bottle") throws -> 
 }
 
 extension EpicUpdateTests {
+    @Test func theSpinningWebPageProcessIsTheOneEnded() {
+        func helper(_ pid: pid_t, _ type: String) -> WineProcesses.Process {
+            WineProcesses.Process(
+                pid: pid, executable: "/wine/bin/wine",
+                program: #"C:/Program Files/Epic Games/Launcher/Engine/Binaries/Win64/EpicWebHelper.exe"#,
+                arguments: ["--type=\(type)", "--no-sandbox"])
+        }
+        let launcher = WineProcesses.Process(
+            pid: 10, executable: "/wine/bin/wine",
+            program: #"C:\Program Files\Epic Games\Launcher\Portal\Binaries\Win64\EpicGamesLauncher.exe"#)
+        let processes = [launcher, helper(11, "utility"), helper(12, "renderer"), helper(13, "renderer")]
+        let cpu: [pid_t: UInt64] = [10: 900, 11: 500, 12: 40, 13: 300]
+        #expect(StoreClient.busiestRenderer(processes, cpu: { cpu[$0] }) == 13)
+        #expect(StoreClient.busiestRenderer([launcher, helper(11, "utility")], cpu: { cpu[$0] }) == nil)
+        #expect(WineProcesses.cpuTime(of: getpid()) != nil)
+    }
+
     @Test func aLauncherOnItsLogoIsToldFromOneShowingItsPages() {
         let stuck = """
             [2026.10.24-12.26.57:534][101]LogInit: AllCheckComplete SelfUpdate=1 SignedIn=0 RequiresRestart=0

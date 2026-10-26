@@ -1,3 +1,4 @@
+import Darwin
 import Foundation
 
 /// The Epic Games Launcher updates itself by downloading the new version, quitting, and leaving a small
@@ -23,14 +24,19 @@ extension StoreClient {
     }
 
     /// While the launcher runs from "Open": once it has quit for an update, the update is installed and the
-    /// launcher started again. And a launcher stuck on its Epic logo is started again: about one start in three
-    /// never loads its store pages (no `LogWebView` line ever reaches its log), and a second start does.
+    /// launcher started again. And a launcher stuck on its Epic logo is set going again. Its web page process
+    /// sometimes spins at start and never loads the store pages (no `LogWebView` line ever reaches its log): six
+    /// starts in fifteen on one Mac, more while the Mac was busy, and a launcher restarted for it got stuck the
+    /// same way. Ending only that process works: the launcher starts a new one ("Render process terminated …
+    /// recovery attempt 1/3") and its pages were there six seconds later. A full restart is the last resort.
     func watchEpicUpdates(_ client: URL, wine: Wine) {
         let client = client
         Task.detached { [self] in
             let bottle = bottle(for: .epic)
             var started = Date()
+            var waiting = started
             var restarts = 0
+            var rendererKills = 0
             let deadline = Date().addingTimeInterval(60 * 60)
             while Date() < deadline, isRunning(.epic) {
                 if Self.epicUpdaterWaits(in: bottle) {
@@ -39,21 +45,43 @@ extension StoreClient {
                     try? start(wine, client, Store.epic.clientArguments(clientReady: true), store: .epic)
                     return
                 }
-                if restarts < Self.epicStuckRestarts, Date().timeIntervalSince(started) > Self.epicPagesTimeout,
+                if Date().timeIntervalSince(waiting) > Self.epicPagesTimeout,
                    !Self.epicPagesLoaded(in: bottle, since: started) {
-                    restarts += 1
-                    await shutDown(.epic)
-                    try? start(wine, client, Store.epic.clientArguments(clientReady: true), store: .epic)
-                    started = Date()
+                    if rendererKills < Self.epicRendererKills,
+                       let renderer = Self.busiestRenderer(WineProcesses.running(in: bottle),
+                                                           cpu: WineProcesses.cpuTime) {
+                        rendererKills += 1
+                        kill(renderer, SIGKILL)
+                    } else if restarts < Self.epicStuckRestarts {
+                        restarts += 1
+                        rendererKills = 0
+                        await shutDown(.epic)
+                        try? start(wine, client, Store.epic.clientArguments(clientReady: true), store: .epic)
+                        started = Date()
+                    }
+                    waiting = Date()
                 }
                 try? await Task.sleep(for: .seconds(3))
             }
         }
     }
 
-    /// How long the launcher gets to show its store pages, and how many times it is restarted without them.
-    static let epicPagesTimeout: TimeInterval = 75
-    static let epicStuckRestarts = 2
+    /// How long the launcher gets to show its store pages: they came in 14 to 40 s when it didn't get stuck.
+    static let epicPagesTimeout: TimeInterval = 45
+    /// How many times its web page process is ended (the launcher recovers it three times), and how many times
+    /// the launcher is then restarted.
+    static let epicRendererKills = 2
+    static let epicStuckRestarts = 1
+
+    /// The launcher's web page process that has used the most CPU: the stuck one spins, the others wait.
+    static func busiestRenderer(_ processes: [WineProcesses.Process], cpu: (pid_t) -> UInt64?) -> pid_t? {
+        processes.filter { process in
+            let name = process.program.replacingOccurrences(of: "\\", with: "/").split(separator: "/").last ?? ""
+            return name.lowercased() == "epicwebhelper.exe" && process.arguments.contains("--type=renderer")
+        }
+        .compactMap { process in cpu(process.pid).map { (process.pid, $0) } }
+        .max { $0.1 < $1.1 }?.0
+    }
 
     /// Whether the launcher started at `since` has shown its web pages: its log names them as they load.
     static func epicPagesLoaded(in bottle: URL, since: Date) -> Bool {

@@ -193,3 +193,50 @@ extension AutoLaunchTests {
         #expect(text.contains("異端審問官·白濁監獄.exe"))
     }
 }
+
+extension AutoLaunchTests {
+    /// NW.js packed into one exe shows Chromium only by its GPU process; the next attempts follow Chromium's order.
+    @Test func chromiumFoundAtRunTimeGoesOnInChromiumsOrder() async throws {
+        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.02, exitAt: 0.8),
+                                       .wined3d: Script(windowAt: 0.02, exitAt: 0.8)], logs: logs())
+        var fast = timing
+        fast.pictureEvery = 0.005
+        let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
+                                          measure: { _ in nil }, picture: { _ in WindowLook(window: 1, blank: false) },
+                                          gpuProcess: { _ in true }, timing: fast)
+            .play(game, runtime: runtime)
+        #expect(starter.started.map(\.0) == [.dxvk, .wined3d])
+        #expect(result.attempts.first?.failure == .blankPicture)
+        #expect(result.working == .wined3d)
+        #expect(try GameLibrary.load(from: paths.library)[game.id]?.chromium == .inProcessGPU)
+    }
+
+    @Test func chromiumsOrderFollowsWhatWasTried() {
+        #expect(AutoLaunch.order(afterFindingChromiumIn: [.dxvk, .wined3d], tried: 0)
+                    == [.dxvk, .wined3d, .dxmt, .dxvk])
+    }
+}
+
+@Suite struct EnigmaVirtualBoxTests {
+    /// The box's table: UTF-16 names at odd offsets among binary fields.
+    @Test func packedNamesAreReadAtAnyOffset() {
+        var table = Data([0x01, 0xFF, 0x00])
+        for name in ["%DEFAULT FOLDER%", "icudtl.dat", "libEGL.dll", "en-US.pak", "nw.dll"] {
+            table.append(Data(name.utf16.flatMap { [UInt8($0 & 0xFF), UInt8($0 >> 8)] }))
+            table.append(contentsOf: [0x00, 0x00, 0x07, 0x9C, 0x01])
+        }
+        let names = EnigmaVirtualBox.fileNames(in: table)
+        #expect(names.isSuperset(of: ["icudtl.dat", "libegl.dll", "en-us.pak", "nw.dll"]))
+        #expect(ChromiumApp.isChromium(imports: ["kernel32.dll"], filesBeside: names))
+    }
+
+    /// `.enigma1` is 4 KB in memory and 735 MB in the file: the imports in `.enigma2` after it are still found.
+    @Test func aSectionSpansItsVirtualSize() {
+        let sections = [PEReader.Section(name: ".enigma1", virtualAddress: 0x18F000, virtualSize: 0x1000,
+                                         rawOffset: 0x187A00, rawSize: 0x2DDE_F000),
+                        PEReader.Section(name: ".enigma2", virtualAddress: 0x190000, virtualSize: 0x45000,
+                                         rawOffset: 0x2DF7_6A00, rawSize: 0x45000)]
+        #expect(PEReader.offset(of: 0x190010, in: sections) == 0x2DF7_6A10)
+        #expect(PEReader.offset(of: 0x18F010, in: sections) == 0x187A10)
+    }
+}

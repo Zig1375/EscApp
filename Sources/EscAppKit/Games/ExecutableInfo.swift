@@ -26,6 +26,8 @@ public struct ExecutableInfo: Sendable, Equatable {
     public var manifest: String?
     /// A Chromium program (`ChromiumApp`), known from the files beside it when read from disk.
     public var chromium = false
+    /// Lowercased names of the files packed inside the exe (`EnigmaVirtualBox`).
+    public var packedFiles: Set<String> = []
 
     public var directX: Set<ExecutableTraits.DirectX> {
         var result = Set<ExecutableTraits.DirectX>()
@@ -56,7 +58,7 @@ public struct ExecutableInfo: Sendable, Equatable {
     public static func read(_ url: URL) throws -> ExecutableInfo {
         let data = try Data(contentsOf: url, options: .alwaysMapped)
         var info = try PEReader(data: data).read()
-        info.chromium = ChromiumApp.isChromium(executable: url, imports: info.imports)
+        info.chromium = ChromiumApp.isChromium(executable: url, imports: info.imports, packed: info.packedFiles)
         return info
     }
 }
@@ -85,7 +87,8 @@ struct PEReader {
         case icon = 3, groupIcon = 14, version = 16, manifest = 24
     }
 
-    private struct Section {
+    struct Section {
+        var name = ""
         var virtualAddress: Int
         var virtualSize: Int
         var rawOffset: Int
@@ -112,6 +115,10 @@ struct PEReader {
         let layout = try readLayout(peHeader: header)
         var info = ExecutableInfo(format: layout.is64 ? .pe64 : .pe32, imports: readImports(layout),
                                   productName: nil, icon: nil, dpiAware: false)
+        if let box = layout.sections.first(where: { $0.name == EnigmaVirtualBox.section }),
+           let table = slice(box.rawOffset, min(box.rawSize, EnigmaVirtualBox.tableBytes)) {
+            info.packedFiles = EnigmaVirtualBox.fileNames(in: table)
+        }
         if let root = directory(.resources, layout) {
             let resources = Resources(reader: self, root: root) { Self.offset(of: $0, in: layout.sections) }
             info.versionStrings = resources.first(.version).map(versionStrings) ?? [:]
@@ -142,8 +149,9 @@ struct PEReader {
             let entry = sectionTable + index * 40
             guard let size = u32(entry + 8), let address = u32(entry + 12), let rawSize = u32(entry + 16),
                   let rawOffset = u32(entry + 20) else { throw ExecutableError.damaged("sections") }
-            sections.append(Section(virtualAddress: Int(address), virtualSize: Int(size), rawOffset: Int(rawOffset),
-                                    rawSize: Int(rawSize)))
+            let name = slice(entry, 8).flatMap { String(bytes: $0.prefix { $0 != 0 }, encoding: .ascii) } ?? ""
+            sections.append(Section(name: name, virtualAddress: Int(address), virtualSize: Int(size),
+                                    rawOffset: Int(rawOffset), rawSize: Int(rawSize)))
         }
         return Layout(is64: is64,
                       imageBase: is64 ? Int(u64(optional + 24) ?? 0) : Int(u32(optional + 28) ?? 0),
@@ -308,9 +316,12 @@ struct PEReader {
 
     // MARK: Primitives
 
-    private static func offset(of rva: Int, in sections: [Section]) -> Int? {
+    /// A section takes its virtual size in memory; the file may hold more. Enigma Virtual Box puts a whole NW.js
+    /// game (735 MB) in `.enigma1`, 4 KB in memory: counted by its file size, it hid `.enigma2` with the imports,
+    /// and `Game_boxed.exe` of "Wife Tsuma Uninhabited Island" wasn't known as Chromium.
+    static func offset(of rva: Int, in sections: [Section]) -> Int? {
         for section in sections {
-            let size = max(section.virtualSize, section.rawSize)
+            let size = section.virtualSize > 0 ? section.virtualSize : section.rawSize
             if rva >= section.virtualAddress, rva < section.virtualAddress + size {
                 let offset = section.rawOffset + rva - section.virtualAddress
                 return offset < section.rawOffset + section.rawSize ? offset : nil

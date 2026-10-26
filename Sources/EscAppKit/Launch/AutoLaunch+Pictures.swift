@@ -18,14 +18,14 @@ extension AutoLaunch {
             let elapsed = Date().timeIntervalSince(start)
             // Started later by a launcher: a Chromium GPU process that keeps running (not one that fails and
             // quits, as Epic's does) means a blank window.
-            if !switched, PictureLooks.chromiumRuns(for: running.session) {
+            if !switched, gpuProcess(running.session) {
                 gpuSince = gpuSince ?? elapsed
                 if elapsed - (gpuSince ?? elapsed) >= patience / 2 { return true }
             } else {
                 gpuSince = nil
             }
             if let look = await looks.look(at: windows(running.session), elapsed: elapsed),
-               late.observe(look, at: elapsed), chromium || PictureLooks.chromiumRuns(for: running.session) {
+               late.observe(look, at: elapsed), chromium || gpuProcess(running.session) {
                 return true
             }
             guard (try? await Task.sleep(for: .seconds(timing.lateEvery))) != nil else { return false }

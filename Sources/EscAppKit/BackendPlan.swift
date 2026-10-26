@@ -48,6 +48,9 @@ public enum BackendPlan: Sendable, Equatable {
         case directX12
     }
 
+    /// For a program on Chromium (`ExecutableTraits.isChromium`).
+    static let chromiumAttempts: [GraphicsBackend] = [.wined3d, .dxmt, .dxvk]
+
     public static func forTraits(_ traits: ExecutableTraits) -> BackendPlan {
         if traits.architecture == .win16 { return .unsupported(.sixteenBit) }
         if traits.isChromiumLauncher { return .attempts([.dxvk, .wined3d]) }
@@ -55,7 +58,7 @@ public enum BackendPlan: Sendable, Equatable {
         // clears a scissored rectangle under each window and DXVK wipes the windows drawn before, so the crafting
         // menu of "My wife and I ~Shipwrecked on a Desert Island~" showed one empty frame; NW.js 0.92 (Chromium
         // 131, "The Taming Massage Parlor") crashed at start. Both draw right on WineD3D, MV also on DXMT.
-        if traits.isChromium { return .attempts([.wined3d, .dxmt, .dxvk]) }
+        if traits.isChromium { return .attempts(chromiumAttempts) }
         // The newest Direct3D an exe imports decides: a game that imports both d3d9 and d3d11 renders with 11
         // and keeps 9 for a fallback path or its settings tool.
         switch traits.directX.max() {

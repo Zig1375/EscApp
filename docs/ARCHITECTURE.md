@@ -128,7 +128,9 @@ NW.js (на нём все игры RPG Maker MV и MZ), Electron и програ
 Electron 33 под Wine 11.20.
 
 - **Распознавание по файлам** (`ChromiumApp`, `ExecutableInfo.chromium`): импорт `nw_elf.dll`/`nw.dll` или
-  `libcef.dll`, либо рядом с exe лежат `icudtl.dat`, `*.pak` и `libEGL.dll`/`v8_context_snapshot.bin`. Такой
+  `libcef.dll`, либо рядом с exe лежат `icudtl.dat`, `*.pak` и `libEGL.dll`/`v8_context_snapshot.bin`. Файлы,
+  упакованные Enigma Virtual Box внутрь exe (`EnigmaVirtualBox`: таблица имён в начале секции `.enigma1`),
+  считаются лежащими рядом. Такой
   программе ключ добавляется при каждом запуске. Её импорт `d3d12.dll` (WebGPU) не делает её игрой на DirectX 12:
   рисует она через Direct3D 11.
 - **Графика: WineD3D → DXMT → DXVK** (`BackendPlan`, `ExecutableTraits.isChromium`). Chromium рисует через ANGLE
@@ -136,6 +138,8 @@ Electron 33 под Wine 11.20.
   прямоугольник с обрезкой (scissor), а DXVK при этом стирает окна, нарисованные раньше: меню крафта в «My wife and
   I ~Shipwrecked on a Desert Island~» показывало одну пустую рамку. NW.js 0.92 (Chromium 131, «The Taming Massage
   Parlor») на DXVK падал при старте. На WineD3D рисуют обе, MV и на DXMT.
+  Если Chromium виден только по его GPU-процессу (упаковка, которую EscApp не знает), после первой попытки дальше
+  пробуется тот же порядок.
 - **Проверка картинки при первом запуске** (`WindowPicture`, `AttemptJudge.checksPicture`): пока окно держится,
   EscApp раз в секунду снимает его через ScreenCaptureKit. Если окно программы на Chromium (по файлам или по
   GPU-процессу Chromium в бутылке) за 40 с так и не показало ничего, кроме одного цвета, попытка не удалась. Тот же

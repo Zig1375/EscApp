@@ -16,6 +16,11 @@ extension AutoLaunch {
         return game.store == nil ? planned : Array(planned.prefix(1))
     }
 
+    /// The order once attempt `index` showed the program is Chromium: what was tried, then Chromium's own order.
+    static func order(afterFindingChromiumIn order: [GraphicsBackend], tried index: Int) -> [GraphicsBackend] {
+        Array(order.prefix(index + 1)) + BackendPlan.chromiumAttempts
+    }
+
     /// The settings from the game's `.escapp`, for its first attempt. Windows only as for the game database: once
     /// the game was launched here the player may have set it by hand.
     static func apply(_ recommended: RecommendedSettings, to game: inout GameRecord) {

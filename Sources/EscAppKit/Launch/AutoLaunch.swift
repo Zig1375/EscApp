@@ -52,6 +52,8 @@ public struct AutoLaunch: Sendable {
     let measure: @Sendable (GameSession) -> GameScaling.LearnedWindow?
     /// Whether the window of these processes shows one flat colour (`WindowPicture`); nil when it can't be told.
     let picture: @Sendable ([Int32]) async -> WindowLook?
+    /// Whether a Chromium GPU process runs in the attempt's bottle (`ChromiumApp.runsGPUProcess`).
+    let gpuProcess: @Sendable (GameSession) -> Bool
     let timing: Timing
 
     public init(paths: AppPaths, host: [String: String] = ProcessInfo.processInfo.environment,
@@ -59,12 +61,14 @@ public struct AutoLaunch: Sendable {
                 windows: @escaping @Sendable (GameSession) -> [Int32] = GameWindows.owners(of:),
                 measure: @escaping @Sendable (GameSession) -> GameScaling.LearnedWindow? = GameWindows.learnWindow(of:),
                 picture: @escaping @Sendable ([Int32]) async -> WindowLook? = WindowPicture.look(windowOf:),
+                gpuProcess: (@Sendable (GameSession) -> Bool)? = nil,
                 timing: Timing = .standard) {
         self.paths = paths
         self.starter = starter ?? GameLauncher(paths: paths, host: host)
         self.windows = windows
         self.measure = measure
         self.picture = picture
+        self.gpuProcess = gpuProcess ?? PictureLooks.chromiumRuns(for:)
         self.timing = timing
     }
 
@@ -113,24 +117,27 @@ public struct AutoLaunch: Sendable {
             ? GameIdentifier.recommended(for: game) : nil
         let standard = (windows: game.windowsVersion, chromium: game.chromium)
         if let fromFile { Self.apply(fromFile, to: &game) }
-        let order = Self.order(for: game, override: override, info: info, recommended: fromFile, known: known)
+        var order = Self.order(for: game, override: override, info: info, recommended: fromFile, known: known)
         // Graphics picked in Advanced works like `--backend`: that one only, no retries.
         if override ?? game.chosenBackend != nil { control.stopRetrying() }
 
         if Self.isTuning(game, order: order, retrying: control.retrying) { events(.tuning(order)) }
         var attempts: [LaunchAttempt] = []
-        for (index, backend) in order.enumerated() {
+        var index = 0
+        while index < order.count {
+            let backend = order[index]
             var ran = try await attempt(backend, of: game, number: index + 1, of: order.count, context: context)
             attempts.append(ran.attempt)
-            // A Chromium window that stayed blank: the same graphics again, with Chromium drawing another way.
-            while ran.attempt.failure == .blankPicture, control.retrying,
-                  let mode = Self.nextChromium(after: game.chromium
-                                                   ?? (context.chromiumProgram ? .inProcessGPU : nil)) {
-                game.chromium = mode
-                events(.retrying(ran.attempt, next: backend, attempt: index + 1, total: order.count))
-                ran = try await attempt(backend, of: game, number: index + 1, of: order.count, context: context)
-                attempts.append(ran.attempt)
+            if Self.foundChromium(ran, in: &game, context: context) {
+                order = Self.order(afterFindingChromiumIn: order, tried: index)
+                events(.retrying(ran.attempt, next: order[index + 1], attempt: index + 2, total: order.count))
+                index += 1
+                continue
             }
+            let redrawn = try await redrawn(ran, with: backend, of: &game, at: (index + 1, order.count),
+                                            context: context)
+            ran = redrawn.last ?? ran
+            attempts += redrawn.map(\.attempt)
             if ran.worked {
                 try keep(game, workingWith: backend)
             } else if fromFile != nil, index == 0 {
@@ -145,6 +152,7 @@ public struct AutoLaunch: Sendable {
                               log: ran.attempt.log)
             }
             events(.retrying(ran.attempt, next: order[index + 1], attempt: index + 2, total: order.count))
+            index += 1
         }
         return Result(game: game, attempts: attempts, working: nil, log: attempts.last?.log)
     }
@@ -157,7 +165,7 @@ public struct AutoLaunch: Sendable {
     }
 
     /// What one launch keeps the same across its attempts.
-    private struct Context: Sendable {
+    struct Context: Sendable {
         let runtime: RuntimeManifest.Runtime
         let verboseLog: Bool
         let control: LaunchControl
@@ -167,13 +175,8 @@ public struct AutoLaunch: Sendable {
         let chromiumProgram: Bool
     }
 
-    /// The Chromium drawing to try after `current` (nil: none was asked for).
-    static func nextChromium(after current: ChromiumApp.Mode?) -> ChromiumApp.Mode? {
-        current.map(\.next) ?? .inProcessGPU
-    }
-
     /// How one attempt went, to the end of the game.
-    private struct Ran {
+    struct Ran {
         var attempt: LaunchAttempt
         var worked: Bool
         /// False when the player stopped the checking and the game just ran.
@@ -182,8 +185,8 @@ public struct AutoLaunch: Sendable {
         var duration: TimeInterval
     }
 
-    private func attempt(_ backend: GraphicsBackend, of game: GameRecord, number: Int, of total: Int,
-                         context: Context) async throws -> Ran {
+    func attempt(_ backend: GraphicsBackend, of game: GameRecord, number: Int, of total: Int,
+                 context: Context) async throws -> Ran {
         let running = try await starter.start(game, runtime: context.runtime, backend: backend,
                                               verboseLog: context.verboseLog) { context.events(.preparing($0)) }
         if Task.isCancelled {
@@ -205,7 +208,7 @@ public struct AutoLaunch: Sendable {
         // whatever the window shows. Known without looking at the screen.
         let switched = game.chromium != nil || context.chromiumProgram
         if verdict == .working, !switched, context.control.retrying,
-           PictureLooks.chromiumRuns(for: running.session) {
+           gpuProcess(running.session) {
             verdict = .failed(.blankPicture)
         }
         if verdict == .working {
@@ -265,7 +268,7 @@ public struct AutoLaunch: Sendable {
             if let owner = owners.first, !announced {
                 announced = true
                 context.events(.windowShown(pid: owner))
-                judge.checksPicture = judge.checksPicture || PictureLooks.chromiumRuns(for: running.session)
+                judge.checksPicture = judge.checksPicture || gpuProcess(running.session)
             }
             // A warm bottle's helper goes once the game surely holds the bottle itself: dropping it earlier
             // would shut down the services the game is about to use.

@@ -58,12 +58,12 @@ public enum ChromiumApp {
     }
 
     /// Whether the program at `executable` is a Chromium browser itself, from its imports and the files next to
-    /// it. Its helper processes and Chromium in another folder (a launcher's web pages) don't count: flags reach
-    /// Chromium only on its main program's command line.
-    public static func isChromium(executable: URL, imports: Set<String>) -> Bool {
+    /// it, or packed inside it (`packed`, `EnigmaVirtualBox`). Its helper processes and Chromium in another folder
+    /// (a launcher's web pages) don't count: flags reach Chromium only on its main program's command line.
+    public static func isChromium(executable: URL, imports: Set<String>, packed: Set<String> = []) -> Bool {
         let names = (try? FileManager.default.contentsOfDirectory(atPath: executable.deletingLastPathComponent().path))
             ?? []
-        return isChromium(imports: imports, filesBeside: Set(names.map { $0.lowercased() }))
+        return isChromium(imports: imports, filesBeside: Set(names.map { $0.lowercased() }).union(packed))
     }
 
     static func isChromium(imports: Set<String>, filesBeside files: Set<String>) -> Bool {

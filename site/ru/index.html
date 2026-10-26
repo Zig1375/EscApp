@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EscApp — Windows-игры на Mac</title>
+  <meta name="description" content="EscApp запускает Windows-игры на Mac с Apple Silicon. Двойной клик по .exe — и игра работает.">
+  <meta property="og:title" content="EscApp — Windows-игры на Mac">
+  <meta property="og:description" content="Двойной клик по .exe — и игра работает. Без настройки, без Windows, без обязательного магазина.">
+  <meta property="og:image" content="../icon.png">
+  <link rel="icon" href="../favicon.png">
+  <link rel="alternate" hreflang="en" href="../">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <div class="hero">
+    <div class="wrap">
+      <header class="top">
+        <a class="logo" href="./"><img src="../favicon.png" alt="">EscApp</a>
+        <nav>
+          <a class="hide-sm" href="#how">Как это работает</a>
+          <a class="hide-sm" href="https://github.com/Zig1375/EscApp">GitHub</a>
+          <a href="../" lang="en">English</a>
+        </nav>
+      </header>
+      <div class="hero-body">
+        <div>
+          <h1>Windows-игры на Mac. Запустите и играйте.</h1>
+          <p class="lead">EscApp запускает Windows-игры на Apple Silicon и всё делает сам: разбирается, что нужно
+            игре, подбирает настройки, с которыми она идёт лучше всего, и запоминает их. Ничего настраивать и ни о чём
+            думать не надо: запустили — и играете.</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="https://github.com/Zig1375/EscApp">Следить на GitHub</a>
+            <a class="btn btn-ghost" href="https://github.com/Zig1375/EscApp/releases/latest">Скачать</a>
+          </div>
+          <p class="req">Бесплатно и с открытым кодом · macOS 15 и новее · Apple Silicon</p>
+        </div>
+        <img class="hero-icon" src="../icon.png" alt="Значок EscApp: геймпад">
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section id="how">
+      <h2>Как это работает</h2>
+      <p class="sub">От вас нужно одно: открыть игру. Всё остальное — забота EscApp. Не надо выбирать настройки,
+        читать инструкции и ставить Windows.</p>
+      <div class="steps">
+        <div class="step">
+          <h3>Вы открываете игру</h3>
+          <p>Двойной клик по её <code>.exe</code> в Finder или перетащите папку игры на EscApp. Установщики тоже подходят.</p>
+        </div>
+        <div class="step">
+          <h3>EscApp разбирается сам</h3>
+          <p>Он смотрит, как устроена игра, ставит всё, что ей нужно, и перебирает настройки, пока игра не пойдёт
+            хорошо. Сам, пока вы немного ждёте.</p>
+        </div>
+        <div class="step">
+          <h3>Вы играете</h3>
+          <p>Удачные настройки запоминаются, и дальше игра просто запускается.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="screens">
+      <h2>Как это выглядит</h2>
+      <p class="sub">Всё приложение — это библиотека ваших игр. Больше ничего изучать не придётся.</p>
+      <div class="shots">
+        <figure>
+          <img src="../screens/library-ru.webp" width="1600" height="1014" loading="lazy"
+            alt="Библиотека EscApp до добавления игр, с тремя шагами: найдите игру, дважды щёлкните её .exe, играйте">
+          <figcaption>Откройте игру один раз, и она останется здесь — в одном клике от запуска.</figcaption>
+        </figure>
+        <figure>
+          <img src="../screens/setup-ru.webp" width="1600" height="1012" loading="lazy"
+            alt="Первый запуск EscApp: он скачивает то, что нужно Windows-играм, у каждой части своя полоса загрузки">
+          <figcaption>При первом запуске EscApp скачивает то, что нужно играм. Один раз и сам.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>Не мешает играть</h2>
+      <p class="sub">Всё, чего ждёт Windows-игра, EscApp делает за вас и без лишних вопросов.</p>
+      <div class="features">
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+          <h3>DirectX 9, 10 и 11</h3>
+          <p>EscApp смотрит, как устроена игра, и выбирает, как рисовать её через Metal. Не вышло — пробует следующий вариант.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg></div>
+          <h3>Компоненты ставятся сами</h3>
+          <p>Visual C++, .NET и пакеты RPG Maker берутся у их издателей и только тогда, когда они нужны игре.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg></div>
+          <h3>Сохранения в одном месте</h3>
+          <p>У всех игр общий профиль: сохранения и настройки никуда не денутся, сколько бы игр вы ни добавили.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></div>
+          <h3>Старые игры крупнее</h3>
+          <p>Игры для маленьких экранов EscApp аккуратно увеличивает, а не переключает разрешение экрана Mac.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+          <h3>Японские игры</h3>
+          <p>Игры для японской Windows запускаются с нужным языком и шрифтами, и текст в них читается.</p>
+        </div>
+        <div class="feature">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+          <h3>Приватно и открыто</h3>
+          <p>Ничего о вас и ваших играх никуда не отправляется. Каждая загрузка сверяется с заранее записанным
+            отпечатком. Код под лицензией Apache-2.0.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="status">
+      <div class="status">
+        <div>
+          <span class="badge">Что умеет</span>
+          <h2>Работает уже сейчас</h2>
+          <p class="sub" style="margin:0">Бесплатно и с открытым кодом. С каждым обновлением игр и возможностей становится больше.</p>
+        </div>
+        <ul>
+          <li><strong>Уже работает:</strong> игры на DirectX 9–11 и Unity, RPG Maker XP/VX/VX Ace, игры, которым
+            нужны Visual C++ или .NET.</li>
+          <li><strong>Магазины:</strong> Steam, Epic Games Store, GOG Galaxy, EA app и Ubisoft Connect ставятся одной
+            кнопкой.</li>
+          <li><strong>Потом:</strong> DirectX 12.</li>
+          <li><strong>Нужен:</strong> Mac с Apple Silicon и macOS 15 или новее.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>EscApp — открытый код под Apache-2.0. Wine, DXVK и DXMT — отдельные проекты со своими лицензиями.</span>
+      <a href="https://github.com/Zig1375/EscApp">github.com/Zig1375/EscApp</a>
+    </div>
+  </footer>
+</body>
+</html>

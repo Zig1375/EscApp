@@ -71,6 +71,10 @@ EscApp-Games/
 
 ## Модуль: структура
 
+Формат описан JSON Schema в `EscApp-Games/schema/` (`module.schema.json` для `modules/`, `shared.schema.json` для
+`shared/`). Схема проверяет форму; остальные правила (ветки реестра, типы файлов, имена компонентов, уникальность
+`match`) проверяет `tools/check`.
+
 ```json
 {
   "id": "example-game",
@@ -114,7 +118,7 @@ EscApp-Games/
           "set": [{ "section": "Display", "key": "VSync", "value": "1" }] }
       ],
       "files": [
-        { "add": "game:dxvk.conf", "from": "example-game/dxvk.conf", "sha256": "ef56…" }
+        { "add": "game:dxvk.conf", "from": "example-game/dxvk.conf" }
       ]
     }
   ]
@@ -155,7 +159,7 @@ EscApp-Games/
 | `wine` | `{ "below": "11.20" }`, `{ "from": "11.0" }` | обход бага, который исправлен в нашей сборке Wine |
 | `exeSha256` | `["ab12…"]` | правка для одной версии игры |
 | `steamBuild` | `{ "from": 1234567 }` | `buildid` из `appmanifest_*.acf` |
-| `store` | `["steam"]` | игре из Steam нужно одно, копии с диска — другое |
+| `store` | `["steam"]`, `["none"]` | игре из Steam нужно одно, копии с диска (`none`) — другое |
 | `backend` | `["dxvk"]` | переменные DXVK имеют смысл только с DXVK |
 
 ## Действия
@@ -174,9 +178,9 @@ EscApp-Games/
 Поля: `backend` (список по порядку), `windows`, `retina`, `scaling`, `chromium`, `fastSync`, `arguments`
 (добавляются перед аргументами игрока), `environment`.
 
-`environment` ограничен списком префиксов, которые относятся к графике и Wine: `DXVK_`, `DXMT_`, `MVK_`, `MTL_`,
-отдельные `WINE*` из `WineEnvironment` (например, `WINEESYNC`). Всегда запрещены: `DYLD_*`, `PATH`, `HOME`,
-`WINEPREFIX`, `WINESERVER`, `WINEDLLPATH`, `WINELOADER`, `WINEDLLOVERRIDES` (для DLL есть своё действие).
+`environment` ограничен переменными графики: `DXVK_*`, `DXMT_*`, `MVK_*`, `MTL_*`. Переменные Wine и системы
+(`WINE*`, `DYLD_*`, `PATH`, `HOME`…) запрещены все: то, что EscApp делает через них, у модуля есть отдельными
+настройками (`fastSync`, `dllOverrides`).
 
 ### `dllOverrides` — какую библиотеку брать
 
@@ -187,7 +191,7 @@ EscApp-Games/
 
 ### `components` — компоненты из манифеста
 
-Имена из `redists` и `rtps` манифеста рантаймов. Ставятся как сейчас (`RedistInstaller`, `RTPInstaller`),
+Id из `redists` манифеста рантаймов (`vcrun14-x64`) или `rtp:<имя>` из `rtps` (`rtp:RPGVXAce`). Ставятся как сейчас (`RedistInstaller`, `RTPInstaller`),
 записываются в `REDISTS.json`, на экране запуска называются по имени. Дополняют найденное `RedistNeeds`, а не
 заменяют его.
 
@@ -222,7 +226,8 @@ wineserver бутылки остановлен, как сейчас.
   та версия, для которой сделана замена. На этапе 3, и только с лицензией, разрешающей распространение.
 - Разрешённые расширения: `.conf`, `.cfg`, `.ini`, `.txt`, `.json`, `.xml`. Любой файл с заголовком PE (`MZ`),
   Mach-O или `#!` отклоняется, даже с разрешённым расширением, и в CI, и в приложении. До 1 МБ на файл.
-- Файл скачивается по ссылке из индекса и проверяется по SHA-256 до записи.
+- В модуле указывается только `from` (путь в `files/`); SHA-256 и размер считает `tools/build-index` и кладёт в
+  индекс. Файл скачивается по ссылке из индекса и проверяется по SHA-256 до записи.
 
 ## Зависимости: что скачать для игры
 

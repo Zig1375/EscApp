@@ -1,15 +1,26 @@
 import AppKit
 import SwiftUI
 
-/// Settings → General → Language: the app's own language, as macOS keeps it per app.
+/// Settings → General → Language: the app's own language, as macOS keeps it per app. Every one here has a full
+/// translation in `Localizable.xcstrings`; `scripts/check-translations.py` keeps it that way.
 enum AppLanguage: String, CaseIterable {
-    case system, russian = "ru", english = "en"
+    case system
+    case english = "en", german = "de", spanish = "es", french = "fr", italian = "it", russian = "ru"
+    case japanese = "ja", korean = "ko", chinese = "zh-Hans"
 
+    /// Each language by its own name, as macOS lists them.
     var title: String {
         switch self {
         case .system: String(localized: "As in macOS")
-        case .russian: "Русский"
         case .english: "English"
+        case .german: "Deutsch"
+        case .spanish: "Español"
+        case .french: "Français"
+        case .italian: "Italiano"
+        case .russian: "Русский"
+        case .japanese: "日本語"
+        case .korean: "한국어"
+        case .chinese: "简体中文"
         }
     }
 }
@@ -19,7 +30,7 @@ extension AppLanguage {
         let chosen = UserDefaults.standard.array(forKey: "AppleLanguages") as? [String]
         guard let first = chosen?.first, UserDefaults.standard.persistentDomain(
             forName: Bundle.main.bundleIdentifier ?? "")?["AppleLanguages"] != nil else { return .system }
-        return first.hasPrefix("ru") ? .russian : first.hasPrefix("en") ? .english : .system
+        return allCases.first { $0 != .system && first.hasPrefix($0.rawValue) } ?? .system
     }
 
     /// The app's own language, like System Settings → Language & Region → Applications.

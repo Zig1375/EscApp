@@ -22,5 +22,5 @@ jobs:
           xcodegen generate
           xcodebuild -project EscApp.xcodeproj -scheme EscApp -configuration Debug \
             -destination 'platform=macOS,arch=arm64' -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO build
-      - name: Every UI string has a Russian translation
+      - name: Every UI string is translated into every language
         run: scripts/check-translations.py .build/xcode

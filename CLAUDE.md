@@ -16,7 +16,7 @@ swift test --filter BackendPlanTests    # one suite or test
 swift run escapp help                      # debugging CLI; ESCAPP_HOME=<dir> keeps it out of the real data
 ESCAPP_INTEGRATION=1 ESCAPP_HOME=<dir> swift test --filter ProbeLaunchTests   # real Wine; needs `escapp runtime install`
 swiftlint lint --strict                 # CI fails on any warning
-scripts/check-translations.py .build/xcode   # after an app build: every UI string needs a Russian translation
+scripts/check-translations.py .build/xcode   # after an app build: every UI string needs every translation
 xcodegen generate                       # EscApp.xcodeproj from project.yml (the project file is not committed)
 xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS,arch=arm64' build
 ```
@@ -26,7 +26,8 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 - `Package.swift` at the root: `EscAppKit` (all logic, no UI), `EscAppCLI` (the `escapp` command as a testable library),
   `escapp` (entry point only).
 - `App/EscApp`: the SwiftUI app. It depends on EscAppKit through the local package. Strings go in
-  `Localizable.xcstrings` with English and Russian from the start; CI fails on an untranslated string.
+  `Localizable.xcstrings` with every language of `AppLanguage` from the start (de, es, fr, it, ja, ko, ru, zh-Hans;
+  English is the source); CI fails on an untranslated string.
   Use `Color.brand` for the brand colour (`Color.accentColor` follows the user's system accent).
   `GameCard` (library grid): a click on the card plays the game (or shows it while running); hover shows a play
   symbol and an About button; everything else is in the context menu.

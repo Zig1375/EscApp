@@ -3,9 +3,11 @@ import Foundation
 extension AutoLaunch {
     /// Chromium known only once its GPU process ran: a packed exe hides the files that tell ("Wife Tsuma Uninhabited
     /// Island", NW.js inside Enigma Virtual Box, settled on DXVK). Turns its switches on; Chromium's own order of
-    /// backends follows (`order(afterFindingChromiumIn:tried:)`).
+    /// backends follows (`order(afterFindingChromiumIn:tried:)`). Not for a game that has worked here: it keeps
+    /// its backend (`order(for:…)`), and `redrawn` tries Chromium's ways of drawing on it.
     static func foundChromium(_ ran: Ran, in game: inout GameRecord, context: Context) -> Bool {
         guard ran.attempt.failure == .blankPicture, context.control.retrying, game.chromium == nil,
+              game.backend == nil,
               !context.chromiumProgram else { return false }
         game.chromium = .inProcessGPU
         return true

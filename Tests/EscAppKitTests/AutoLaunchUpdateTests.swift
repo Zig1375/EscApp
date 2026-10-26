@@ -45,6 +45,16 @@ extension AutoLaunchTests {
         #expect(starter.started.first?.0 == .wined3d)
     }
 
+    @Test func aGameThatWorkedKeepsItsBackendWhenItFailsOnce() async throws {
+        try rememberedWithWineD3D(stamp: GameRecord.ExeStamp(of: URL(filePath: game.executable)))
+        let starter = try FakeStarter([.wined3d: .crashes(), .dxvk: .works], logs: logs())
+        let result = try await playStored(starter)
+        // No other backend is tried, and none replaces the one that worked.
+        #expect(starter.started.map(\.0) == [.wined3d])
+        #expect(result.working == nil)
+        #expect(try remembered() == .wined3d)
+    }
+
     @Test func aGameFromBeforeStampsGetsOneWithoutForgetting() async throws {
         try rememberedWithWineD3D(stamp: nil)
         let starter = try FakeStarter([.wined3d: .works], logs: logs())

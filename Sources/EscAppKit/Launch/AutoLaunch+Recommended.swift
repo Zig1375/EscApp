@@ -2,14 +2,19 @@ import Foundation
 
 extension AutoLaunch {
     /// The backends this launch tries, in order.
+    ///
+    /// A game that has worked here keeps its backend: a game played for a while failed to start once, the launch
+    /// went on to another backend, that one was remembered, and from then on the game didn't start at all.
+    /// Looking again is the player's call ("Find Launch Settings Again"), or happens by itself after the exe
+    /// changes (`forgetLaunchSettings`).
     static func order(for game: GameRecord, override: GraphicsBackend?, info: ExecutableInfo?,
                       recommended: RecommendedSettings?, known: KnownGame?) -> [GraphicsBackend] {
-        if let override = override ?? game.chosenBackend { return [override] }
+        if let only = override ?? game.chosenBackend ?? game.backend { return [only] }
         guard case let .attempts(plan)? = info.map({ BackendPlan.forTraits($0.traits) }) else {
             // Unsupported or unreadable: `prepare` throws the reason.
-            return [game.backend ?? .dxvk]
+            return [.dxvk]
         }
-        let planned = BackendPlan.order(plan, remembered: game.backend, recommended: recommended?.graphicsBackend,
+        let planned = BackendPlan.order(plan, remembered: nil, recommended: recommended?.graphicsBackend,
                                         known: known?.preferredBackend)
         // A store game gets one try: another backend means restarting the store's client, and its first start
         // may sit behind the store's sign-in or an update for as long as those take.

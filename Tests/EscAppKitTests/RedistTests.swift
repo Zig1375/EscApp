@@ -23,33 +23,69 @@ private let net8 = Data("""
     {"runtimeOptions": {"tfm": "net8.0", "framework": {"name": "Microsoft.NETCore.App", "version": "8.0.0"}}}
     """.utf8)
 
+private let probes = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+    .appending(path: "Fixtures/probes")
+
 @Suite struct RedistNeedsTests {
     @Test func aVisualCPlusPlusImportCallsForItsRuntimeOfTheGamesBitness() {
-        let evidence = RedistNeeds.Evidence(architecture: "x86", imports: ["kernel32.dll", "msvcp100.dll"])
+        let evidence = RedistNeeds.Evidence(architecture: "x86", missing: ["x86": ["kernel32.dll", "msvcp100.dll"]])
         #expect(RedistNeeds.needed(evidence, from: vc2010 + [vc14]).map(\.id) == ["vcrun2010-x86"])
     }
 
-    @Test func aGameCarryingTheDLLsItselfNeedsNothing() {
-        let carried = RedistNeeds.Evidence(architecture: "x64", imports: ["msvcp140.dll", "vcruntime140.dll"],
-                                           files: ["game.exe", "msvcp140.dll", "vcruntime140.dll"])
-        #expect(RedistNeeds.needed(carried, from: [vc14]).isEmpty)
+    @Test func aHelperGetsTheRuntimeOfItsOwnBitness() {
+        // Translator++: a 64-bit program needing nothing, with a 32-bit php.exe built with Visual C++ 2019.
+        let x86 = redist("vcrun14-x86", architecture: "x86", provides: ["vcruntime140.dll", "msvcp140.dll"])
+        let evidence = RedistNeeds.Evidence(architecture: "x64",
+                                            missing: ["x64": ["kernel32.dll"], "x86": ["vcruntime140.dll"]])
+        #expect(RedistNeeds.needed(evidence, from: [x86, vc14]).map(\.id) == ["vcrun14-x86"])
+    }
+
+    @Test func aGameCarryingTheDLLsItselfNeedsNothing() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "redist-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let exe = folder.appending(path: "Game.exe")
+        try Data().write(to: exe)
+        try Data().write(to: folder.appending(path: "msvcp140.dll"))
+        let info = ExecutableInfo(format: .pe64, imports: ["msvcp140.dll", "vcruntime140.dll"], productName: nil,
+                                  icon: nil, dpiAware: false)
         // One DLL short is still the runtime: the game would stop on the other.
-        let half = RedistNeeds.Evidence(architecture: "x64", imports: ["msvcp140.dll", "vcruntime140.dll"],
-                                        files: ["game.exe", "msvcp140.dll"])
-        #expect(RedistNeeds.needed(half, from: [vc14]).map(\.id) == ["vcrun14-x64"])
+        let half = try #require(RedistNeeds.read(executable: exe, info: info))
+        #expect(half.missing["x64"] == ["vcruntime140.dll"])
+        try Data().write(to: folder.appending(path: "vcruntime140.dll"))
+        let carried = try #require(RedistNeeds.read(executable: exe, info: info))
+        #expect(RedistNeeds.needed(carried, from: [vc14]).isEmpty)
+    }
+
+    @Test func programsInFoldersBelowCountWithTheirOwnBitness() throws {
+        let folder = FileManager.default.temporaryDirectory.appending(path: "redist-\(UUID().uuidString)")
+        let php = folder.appending(path: "php")
+        try FileManager.default.createDirectory(at: php, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let exe = folder.appending(path: "Tool.exe")
+        try Data().write(to: exe)
+        // A 32-bit program importing d3d9.dll, as the helper in its own folder.
+        try FileManager.default.copyItem(at: probes.appending(path: "d3d9-x86.exe"), to: php.appending(path: "php.exe"))
+        let info = ExecutableInfo(format: .pe64, imports: ["kernel32.dll"], productName: nil, icon: nil,
+                                  dpiAware: false)
+        let evidence = try #require(RedistNeeds.read(executable: exe, info: info))
+        #expect(evidence.missing["x86"]?.contains("d3d9.dll") == true)
+        #expect(evidence.missing["x64"] == ["kernel32.dll"])
+        // The helper carrying the DLL in its folder needs nothing for it.
+        try Data().write(to: php.appending(path: "d3d9.dll"))
+        #expect(RedistNeeds.read(executable: exe, info: info)?.missing["x86"]?.contains("d3d9.dll") == false)
     }
 
     @Test func aDotNetProgramGetsTheRuntimeOfItsMajorVersion() {
-        let evidence = RedistNeeds.Evidence(architecture: "x64", imports: ["kernel32.dll"],
-                                            frameworks: ["Microsoft.NETCore.App/8"])
+        let evidence = RedistNeeds.Evidence(architecture: "x64", frameworks: ["Microsoft.NETCore.App/8"])
         #expect(RedistNeeds.needed(evidence, from: [vc14, dotnet8]).map(\.id) == ["dotnet8-x64"])
-        let older = RedistNeeds.Evidence(architecture: "x64", imports: [], frameworks: ["Microsoft.NETCore.App/6"])
+        let older = RedistNeeds.Evidence(architecture: "x64", frameworks: ["Microsoft.NETCore.App/6"])
         #expect(RedistNeeds.needed(older, from: [dotnet8]).isEmpty)
     }
 
     @Test func aKindThisAppDoesNotKnowIsSkipped() {
         let future = redist("directx-x64", kind: "directx", provides: ["d3dx9_43.dll"])
-        let evidence = RedistNeeds.Evidence(architecture: "x64", imports: ["d3dx9_43.dll"])
+        let evidence = RedistNeeds.Evidence(architecture: "x64", missing: ["x64": ["d3dx9_43.dll"]])
         #expect(RedistNeeds.needed(evidence, from: [future]).isEmpty)
     }
 
@@ -84,7 +120,6 @@ private let net8 = Data("""
         let evidence = try #require(RedistNeeds.read(executable: exe, info: info))
         #expect(evidence.architecture == "x64")
         #expect(evidence.frameworks == ["Microsoft.NETCore.App/8"])
-        #expect(evidence.files.contains("game.runtimeconfig.json"))
         let dos = ExecutableInfo(format: .dos, imports: [], productName: nil, icon: nil, dpiAware: false)
         #expect(RedistNeeds.read(executable: exe, info: dos) == nil)
     }

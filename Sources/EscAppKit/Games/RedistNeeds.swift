@@ -9,18 +9,17 @@ import Foundation
 public struct RedistNeeds: Sendable, Equatable {
     /// What a game's folder tells, read by `read(executable:info:)`.
     public struct Evidence: Sendable, Equatable {
+        /// The program's own: the .NET runtime it needs has its bitness.
         public var architecture: String
-        /// Lowercased DLL names the program imports, and the DLLs beside it of the same bitness.
-        public var imports: Set<String>
-        /// Lowercased names of the files in the program's folder: a DLL the game carries needs no runtime.
-        public var files: Set<String>
+        /// Lowercased DLL names that programs in the folder import and don't carry, by the bitness of the program
+        /// that imports them (`x86`, `x64`): a game that ships a runtime's DLLs loads those, like on Windows.
+        public var missing: [String: Set<String>]
         /// The shared frameworks a .NET program asks for, as `Microsoft.NETCore.App/8`.
         public var frameworks: [String]
 
-        public init(architecture: String, imports: Set<String>, files: Set<String> = [], frameworks: [String] = []) {
+        public init(architecture: String, missing: [String: Set<String>] = [:], frameworks: [String] = []) {
             self.architecture = architecture
-            self.imports = imports
-            self.files = files
+            self.missing = missing
             self.frameworks = frameworks
         }
     }
@@ -29,13 +28,12 @@ public struct RedistNeeds: Sendable, Equatable {
     public static func needed(_ evidence: Evidence,
                               from redists: [RuntimeManifest.Redist]) -> [RuntimeManifest.Redist] {
         redists.filter { redist in
-            guard redist.architecture == evidence.architecture else { return false }
             switch redist.kindValue {
             case .vcrun?:
-                // A game that ships the runtime's DLLs beside it loads those, like on Windows.
-                return redist.provides.contains { evidence.imports.contains($0) && !evidence.files.contains($0) }
+                let missing = evidence.missing[redist.architecture] ?? []
+                return redist.provides.contains { missing.contains($0) }
             case .dotnet?:
-                return redist.provides.contains { provided in
+                return redist.architecture == evidence.architecture && redist.provides.contains { provided in
                     evidence.frameworks.contains { $0.caseInsensitiveCompare(provided) == .orderedSame }
                 }
             case nil:
@@ -53,27 +51,64 @@ public struct RedistNeeds: Sendable, Equatable {
         }
     }
 
-    /// At most this many DLLs beside the program are read: Visual C++ games keep their own DLLs next to the exe,
-    /// and a folder of hundreds (a plugin directory) isn't worth reading on every launch.
-    static let dllLimit = 64
+    /// How deep below the program's folder other programs and DLLs are read, and how many at most. Helpers in
+    /// folders of their own need runtimes too: Translator++ is a 64-bit NW.js program that needs nothing, but
+    /// its `php/php.exe` is 32-bit Visual C++ 2019 and refuses Wine's `vcruntime140.dll` ("2.47 is not
+    /// compatible with this PHP build linked with 14.29"), so Translator++ couldn't open a game.
+    static let depth = 2
+    static let fileLimit = 256
 
     /// Reads the evidence from the program's folder; nil for a program Wine can't run.
     public static func read(executable: URL, info: ExecutableInfo) -> Evidence? {
         guard let architecture = architecture(of: info.format) else { return nil }
         let folder = executable.deletingLastPathComponent()
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
-        let files = Set(names.map { $0.lowercased() })
-        var imports = info.imports
-        for name in names.filter({ $0.lowercased().hasSuffix(".dll") }).sorted().prefix(dllLimit) {
-            guard let dll = try? ExecutableInfo.read(folder.appending(path: name)), dll.format == info.format else {
-                continue
-            }
-            imports.formUnion(dll.imports)
+        let files = names(in: folder)
+        var evidence = Evidence(architecture: architecture,
+                                missing: [architecture: info.imports.subtracting(files)])
+        let others = binaries(under: folder, excluding: executable.lastPathComponent.lowercased())
+        for binary in others.prefix(fileLimit) {
+            guard let other = try? ExecutableInfo.read(binary), let bitness = Self.architecture(of: other.format)
+            else { continue }
+            // Windows finds a DLL's own imports in the program's folder as well as in the DLL's.
+            let carried = files.union(names(in: binary.deletingLastPathComponent()))
+            evidence.missing[bitness, default: []].formUnion(other.imports.subtracting(carried))
         }
         let name = executable.deletingPathExtension().lastPathComponent
         let config = folder.appending(path: name + ".runtimeconfig.json")
-        let frameworks = (try? Data(contentsOf: config)).map { frameworks(inRuntimeConfig: $0, files: files) } ?? []
-        return Evidence(architecture: architecture, imports: imports, files: files, frameworks: frameworks)
+        evidence.frameworks = (try? Data(contentsOf: config)).map { frameworks(inRuntimeConfig: $0, files: files) }
+            ?? []
+        return evidence
+    }
+
+    /// Lowercased names of the files in `folder`.
+    private static func names(in folder: URL) -> Set<String> {
+        Set(((try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []).map { $0.lowercased() })
+    }
+
+    /// The `.exe` and `.dll` files in `folder` and the folders below it down to `depth`, nearest first.
+    static func binaries(under folder: URL, excluding program: String) -> [URL] {
+        let fileManager = FileManager.default
+        var found: [URL] = []
+        var level = [folder]
+        for depth in 0...Self.depth {
+            var next: [URL] = []
+            for directory in level {
+                let names = ((try? fileManager.contentsOfDirectory(atPath: directory.path)) ?? []).sorted()
+                for name in names where !name.hasPrefix(".") {
+                    let item = directory.appending(path: name)
+                    let lower = name.lowercased()
+                    if lower.hasSuffix(".exe") || lower.hasSuffix(".dll") {
+                        if !(depth == 0 && lower == program) { found.append(item) }
+                    } else if depth < Self.depth, (try? item.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory
+                        == true {
+                        next.append(item)
+                    }
+                }
+                if found.count >= fileLimit { return found }
+            }
+            level = next
+        }
+        return found
     }
 
     /// The shared frameworks a `<program>.runtimeconfig.json` asks for, as `Microsoft.WindowsDesktop.App/8`.

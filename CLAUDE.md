@@ -51,10 +51,11 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
   value. `GameLanguage` starts Japanese games with `LC_ALL=ja_JP.UTF-8` (code page 932); `WindowsFonts` maps
   Japanese Windows font names to Arial Unicode MS. `RGSSArchive` reads the game's scripts out of its archive for
   `Graphics.resize_screen`, so the first launch is enlarged like later ones.
-- Microsoft runtimes: `RedistNeeds` finds the Visual C++ (imports of the exe and DLLs beside it) and .NET
-  (`runtimeconfig.json`) a game needs; `RedistInstaller` runs Microsoft's installer (`redists` in the manifest) in the
-  game's bottle, Wine's own copies set aside meanwhile, and records it in `REDISTS.json`. The launch sheet shows each
-  one by name ("Installing components this game needs (1 of 2)"), RPG Maker's packages too.
+- Microsoft runtimes: `RedistNeeds` finds the Visual C++ (imports of every exe and DLL in the program's folder and
+  two levels below, each by its own bitness) and .NET (`runtimeconfig.json`) a game needs; `RedistInstaller` runs
+  Microsoft's installer (`redists` in the manifest) in the game's bottle, Wine's own copies set aside meanwhile, and
+  records it in `REDISTS.json`. The launch sheet shows each one by name ("Installing components this game needs
+  (1 of 2)"), RPG Maker's packages too.
 - `Tests/Fixtures/probes`: tiny D3D9/D3D11 test programs (32/64-bit) with sources and `build.sh` (mingw-w64).
   They are PE fixtures for unit tests and print `PROBE … OK` when they render on real Wine.
 - Wine is EscApp's own build (Wine 11.20, built and released by the sibling repo `../EscApp-Runtime`), with

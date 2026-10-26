@@ -44,7 +44,7 @@
   "works_label": "Funziona già:",
   "works_text": "giochi DirectX 9–11, giochi Unity, RPG Maker XP/VX/VX Ace, giochi che richiedono Visual C++ o .NET.",
   "stores_label": "Negozi:",
-  "stores_text": "Steam, Epic Games Store, GOG Galaxy, EA app e Ubisoft Connect si installano con un pulsante.",
+  "stores_text": "Steam ed Epic Games Store si installano con un pulsante.",
   "later_label": "In seguito:",
   "later_text": "DirectX 12.",
   "needs_label": "Requisiti:",

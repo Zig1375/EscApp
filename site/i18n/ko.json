@@ -44,7 +44,7 @@
   "works_label": "지원:",
   "works_text": "DirectX 9–11 게임, Unity 게임, RPG Maker XP/VX/VX Ace, Visual C++나 .NET이 필요한 게임.",
   "stores_label": "스토어:",
-  "stores_text": "Steam, Epic Games Store, GOG Galaxy, EA app, Ubisoft Connect를 버튼 하나로 설치.",
+  "stores_text": "Steam과 Epic Games Store를 버튼 하나로 설치.",
   "later_label": "예정:",
   "later_text": "DirectX 12.",
   "needs_label": "요구 사항:",

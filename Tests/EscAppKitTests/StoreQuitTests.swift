@@ -74,12 +74,9 @@ import Testing
         #expect(Store.steam.isClientProgram(program) == isClient)
     }
 
-    @Test func otherStoresGames() {
+    @Test func epicPrograms() {
         #expect(Store.epic.isClientProgram(#"C:\Program Files (x86)\Epic Games\Launcher\Portal\Binaries\Win64\x.exe"#))
         #expect(!Store.epic.isClientProgram(#"C:\Program Files\Epic Games\Hades\x64\Hades.exe"#))
-        #expect(!Store.gog.isClientProgram(#"C:\Program Files (x86)\GOG Galaxy\Games\Witcher\witcher.exe"#))
-        #expect(!Store.ubisoft.isClientProgram(
-            #"C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\games\Rayman Legends\Rayman Legends.exe"#))
     }
 
     @Test func helpersOlderThanTheBrowserAreStrays() {

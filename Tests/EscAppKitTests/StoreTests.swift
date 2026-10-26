@@ -73,7 +73,7 @@ private func makeBottle(in temp: TempFolder, name: String = "Bottle") throws -> 
         try manifest("228980", "Steamworks Common Redistributables", flags: 4)
             .write(to: steamapps.appending(path: "appmanifest_228980.acf"), atomically: true, encoding: .utf8)
 
-        let games = StoreLibrary.steamGames(bottle: bottle).sorted { $0.id < $1.id }
+        let games = StoreLibrary.games(of: .steam, bottle: bottle).sorted { $0.id < $1.id }
         #expect(games.map(\.id) == ["400", "70"])
         #expect(games[0].folder.lastPathComponent == "Portal 2")
         #expect(games[0].folder.deletingLastPathComponent().lastPathComponent == "common")
@@ -87,7 +87,7 @@ private func makeBottle(in temp: TempFolder, name: String = "Bottle") throws -> 
              "LaunchExecutable": "Celeste.exe", "AppName": "Salt", "CatalogNamespace": "ns",
              "CatalogItemId": "item", "bIsIncompleteInstall": false}
             """#.utf8)
-        let game = try #require(StoreLibrary.epicGame(item: item, bottle: bottle))
+        let game = try #require(EpicStore.game(item: item, bottle: bottle))
         #expect(game.id == "ns:item:Salt")
         #expect(game.name == "Celeste")
         #expect(game.executable?.lastPathComponent == "Celeste.exe")
@@ -95,96 +95,54 @@ private func makeBottle(in temp: TempFolder, name: String = "Bottle") throws -> 
         let incomplete = Data(#"""
             {"DisplayName": "X", "InstallLocation": "C:\\X", "AppName": "X", "bIsIncompleteInstall": true}
             """#.utf8)
-        #expect(StoreLibrary.epicGame(item: incomplete, bottle: bottle) == nil)
+        #expect(EpicStore.game(item: incomplete, bottle: bottle) == nil)
         // The launch link takes the colons encoded.
         #expect(Store.epic.playArguments(storeID: game.id)
             == ["com.epicgames.launcher://apps/ns%3Aitem%3ASalt?action=launch&silent=true"])
     }
-
-    @Test func gogAndUbisoftComeFromTheRegistry() throws {
-        let bottle = try makeBottle(in: temp)
-        try FileManager.default.createDirectory(at: bottle.appending(path: "drive_c/Ubi/Far Cry"),
-                                                withIntermediateDirectories: true)
-        let systemReg = #"""
-            WINE REGISTRY Version 2
-
-            [Software\\Wow6432Node\\GOG.com\\Games\\1207658924] 1792800000
-            #time=1d
-            "exe"="C:\\GOG Games\\Fallout 2\\fallout2.exe"
-            "gameName"="Fallout 2"
-            "path"="C:\\GOG Games\\Fallout 2"
-
-            [Software\\Wow6432Node\\GOG.com\\Games\\1207658924\\Extra] 1792800000
-
-            [Software\\Wow6432Node\\Ubisoft\\Launcher\\Installs\\85] 1792800000
-            "InstallDir"="C:/Ubi/Far Cry/"
-
-            [Software\\Wow6432Node\\Ubisoft\\Launcher\\Installs\\86] 1792800000
-            "InstallDir"="C:/Ubi/Removed/"
-            """#
-        let gog = StoreLibrary.gogGames(systemReg: systemReg, bottle: bottle)
-        #expect(gog.map(\.id) == ["1207658924"])
-        #expect(gog.first?.name == "Fallout 2")
-        #expect(gog.first?.executable?.lastPathComponent == "fallout2.exe")
-        let ubisoft = StoreLibrary.ubisoftGames(systemReg: systemReg, bottle: bottle)
-        // A game whose folder is gone isn't listed.
-        #expect(ubisoft.map(\.id) == ["85"])
-        #expect(ubisoft.first?.name == "Far Cry")
-    }
-
-    @Test func eaGamesNameTheirContentID() {
-        #expect(StoreLibrary.eaContentID("<game><contentIDs><contentID> 1234 </contentID></contentIDs></game>")
-            == "1234")
-        #expect(StoreLibrary.eaContentID("<game/>") == nil)
-    }
-
-    @Test func syncAddsKeepsAndRemovesStoreGames() throws {
-        let folder = temp.url.appending(path: "Portal 2", directoryHint: .isDirectory)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let exe = folder.appending(path: "portal2.exe")
-        try FileManager.default.copyItem(at: Probes.url("d3d9-x86"), to: exe)
-        let portal = StoreLibrary.Game(store: .steam, id: "400", name: "Portal 2", folder: folder)
-        let fromDisk = GameRecord(id: .make(), name: "Diablo II", executable: "/g/d2.exe", folder: "/g",
-                                  hasMarker: true, addedAt: Date())
-        var library = GameLibrary(games: [fromDisk])
-
-        #expect(StoreLibrary.merge([.steam: [portal]], into: &library, now: Date()))
-        let added = try #require(library.games.first { $0.store == .steam })
-        #expect(added.storeID == "400")
-        // No program named by the store: the one in the folder.
-        #expect(URL(filePath: added.executable).resolvingSymlinksInPath() == exe.resolvingSymlinksInPath())
-        #expect(added.bottleID == Store.steam.bottleID)
-
-        // Played, then synced again: the same record, its play time kept; nothing changes.
-        library.recordPlay(of: added.id, duration: 60, working: .dxvk)
-        #expect(!StoreLibrary.merge([.steam: [portal]], into: &library, now: Date()))
-        #expect(library[added.id]?.playTime == 60)
-
-        // Uninstalled in Steam: it goes. The game from disk stays.
-        #expect(StoreLibrary.merge([.steam: []], into: &library, now: Date()))
-        #expect(library.games.map(\.id) == [fromDisk.id])
-    }
-
-    @Test func aGameWithoutAnyProgramWaits() {
-        let empty = temp.url.appending(path: "Downloading", directoryHint: .isDirectory)
-        let game = StoreLibrary.Game(store: .steam, id: "1", name: "Big Game", folder: empty)
-        var library = GameLibrary()
-        #expect(!StoreLibrary.merge([.steam: [game]], into: &library, now: Date()))
-        #expect(library.games.isEmpty)
-    }
 }
 
 @Suite struct StoreTests {
+    @Test func gamesFromStoresEscAppNoLongerHasAreLeftOut() throws {
+        let own = GameRecord(id: .make(), name: "Own", executable: "C:/x.exe", folder: "C:/", hasMarker: false,
+                             addedAt: Date())
+        var fallout = own
+        fallout.id = .make()
+        fallout.name = "Fallout 2"
+        fallout.store = .steam
+        fallout.storeID = "1"
+        var portal = fallout
+        portal.id = .make()
+        portal.name = "Portal"
+        let data = try JSONEncoder.iso.encode(GameLibrary(games: [own, fallout, portal]))
+        func decode(_ change: (inout [String: Any]) -> Void) throws -> GameLibrary {
+            var json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+            var games = try #require(json["games"] as? [[String: Any]])
+            change(&games[1])
+            json["games"] = games
+            return try JSONDecoder.iso.decode(GameLibrary.self, from: JSONSerialization.data(withJSONObject: json))
+        }
+        // GOG Galaxy, which earlier versions had.
+        let library = try decode { $0["store"] = "gog" }
+        #expect(library.games.map(\.name) == ["Own", "Portal"])
+        #expect(library.games.last?.store == .steam)
+        // Anything else wrong with a game still fails, rather than losing it.
+        #expect(throws: (any Error).self) { try decode { $0["id"] = nil } }
+    }
+
     @Test func everyStoreHasItsOwnFixedBottle() {
         let ids = Store.allCases.map(\.bottleID)
         #expect(Set(ids).count == Store.allCases.count)
         #expect(Store.steam.bottleID.rawValue == "E5CA5704-0000-4000-8000-000000000001")
         // Valid game ids, so they name a bottle folder like any game's.
         #expect(ids.allSatisfy { GameID(rawValue: $0.rawValue) == $0 })
-        #expect(Store.owning(bottle: Store.ubisoft.bottleID) == .ubisoft)
+        #expect(Store.epic.bottleID.rawValue == "E5CA5704-0000-4000-8000-000000000002")
+        #expect(Store.owning(bottle: Store.epic.bottleID) == .epic)
         #expect(Store.owning(bottle: .make()) == nil)
         // Settings files keep the short name.
-        #expect(Store.eaApp.rawValue == "ea")
+        #expect(Store(rawValue: "epic") == .epic)
+        // GOG Galaxy, the EA app and Ubisoft Connect, which earlier versions had.
+        #expect(["gog", "ea", "ubisoft"].allSatisfy { Store(rawValue: $0) == nil })
     }
 
     @Test func steamStartsGamesWithItsWrappedHelperUnchecked() {
@@ -192,24 +150,7 @@ private func makeBottle(in temp: TempFolder, name: String = "Bottle") throws -> 
         #expect(Store.steam.clientArguments(clientReady: false) == ["-no-cef-sandbox"])
         #expect(Store.steam.playArguments(storeID: "400") == ["-silent", "-applaunch", "400"])
         #expect(Store.steam.uninstallArguments(storeID: "400") == ["steam://uninstall/400"])
-        #expect(!Store.gog.launchesGames)
-    }
-
-    @Test func eaAppIsFoundInItsNewestVersionFolder() throws {
-        let temp = try TempFolder()
-        let bottle = try makeBottle(in: temp)
-        let root = bottle.appending(path: "drive_c/Program Files/Electronic Arts/EA Desktop")
-        for version in ["13.9.0.5900", "13.10.1.5940"] {
-            let exe = root.appending(path: "\(version)/EA Desktop/EADesktop.exe")
-            try FileManager.default.createDirectory(at: exe.deletingLastPathComponent(),
-                                                    withIntermediateDirectories: true)
-            FileManager.default.createFile(atPath: exe.path, contents: Data())
-        }
-        // The junction Wine leaves as an empty folder.
-        try FileManager.default.createDirectory(at: root.appending(path: "EA Desktop"),
-                                                withIntermediateDirectories: true)
-        #expect(Store.eaApp.client(in: bottle)?.path.contains("13.10.1.5940") == true)
-        #expect(Store.steam.client(in: bottle) == nil)
+        #expect(Store.steam.launchesGames)
     }
 
     @Test func steamsFirstUpdateIsReadFromItsLog() {

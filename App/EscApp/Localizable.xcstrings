@@ -14180,58 +14180,6 @@
         }
       }
     },
-    "Needed for EA games": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Für EA-Spiele nötig"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Necesaria para los juegos de EA"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nécessaire pour les jeux EA"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Necessario per i giochi EA"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EAのゲームに必要"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EA 게임에 필요"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нужен для игр EA"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EA 游戏需要"
-          }
-        }
-      }
-    },
     "Needed for Epic games": {
       "localizations": {
         "de": {
@@ -14280,58 +14228,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Epic 游戏需要"
-          }
-        }
-      }
-    },
-    "Needed for Ubisoft games": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Für Ubisoft-Spiele nötig"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Necesaria para los juegos de Ubisoft"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nécessaire pour les jeux Ubisoft"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Necessario per i giochi Ubisoft"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ubisoftのゲームに必要"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ubisoft 게임에 필요"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Нужен для игр Ubisoft"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ubisoft 游戏需要"
           }
         }
       }
@@ -14592,58 +14488,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "此游戏需要 Steam"
-          }
-        }
-      }
-    },
-    "Usually not needed for GOG games: their installers work by themselves": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Für GOG-Spiele meist nicht nötig: Ihre Installationsprogramme funktionieren von selbst"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No suele hacer falta para los juegos de GOG: sus instaladores funcionan por sí solos"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Généralement inutile pour les jeux GOG : leurs installeurs fonctionnent seuls"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Di solito non serve per i giochi GOG: i loro programmi di installazione funzionano da soli"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GOGのゲームには通常不要です：インストーラだけで動作します"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GOG 게임에는 보통 필요하지 않음: 설치 프로그램이 자체적으로 작동합니다"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Для игр GOG обычно не нужен: их установщики работают сами"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GOG 游戏通常不需要：其安装器可独立运行"
           }
         }
       }

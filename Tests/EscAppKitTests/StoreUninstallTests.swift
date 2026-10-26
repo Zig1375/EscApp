@@ -71,8 +71,7 @@ import Testing
         #expect(!installed.contains("Kestrel") && installed.contains("Other"))
     }
 
-    @Test func registryStoresRemoveTheirOwnGames() {
+    @Test func steamAndEpicGamesAreRemovedWithoutTheirClient() {
         #expect(StoreUninstall.canRemove(.steam) && StoreUninstall.canRemove(.epic))
-        #expect(![Store.gog, .eaApp, .ubisoft].contains(where: StoreUninstall.canRemove))
     }
 }

@@ -62,6 +62,10 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 - Wine is EscApp's own build (Wine 11.20, built and released by the sibling repo `../EscApp-Runtime`), with
   WhiskyWine 3.1.1 (Wine 11.0) still in the manifest as the older runtime. DXMT needs `macdrv_functions` exported
   from `winemac.so`, which stock and Gcenx builds lack; EscApp's build patches it in.
+- Stores: `Store` is only a store's name in `Games.json`; everything about one store is its `StoreModule`, a folder
+  per store (`Sources/EscAppKit/Stores/Steam`, `.../Epic`). A new store is a type conforming to `StoreModule` (with
+  a fixed `id` and `bottleNumber`, never reusing 3–5, which GOG Galaxy, the EA app and Ubisoft Connect had), its
+  line in `Store.allCases`, and its logo, colour and purpose in the app's `StoreBar.swift`.
 - `AppPaths` is the only place that builds paths under `~/Library/Application Support/EscApp` (`ESCAPP_HOME` overrides).
 
 ## Rules

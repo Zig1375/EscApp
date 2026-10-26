@@ -44,7 +44,7 @@
   "works_label": "対応済み：",
   "works_text": "DirectX 9〜11のゲーム、Unityのゲーム、RPGツクールXP/VX/VX Ace、Visual C++や.NETが必要なゲーム。",
   "stores_label": "ストア：",
-  "stores_text": "Steam、Epic Games Store、GOG Galaxy、EA app、Ubisoft Connectをボタンひとつでインストール。",
+  "stores_text": "SteamとEpic Games Storeをボタンひとつでインストール。",
   "later_label": "今後：",
   "later_text": "DirectX 12。",
   "needs_label": "動作環境：",

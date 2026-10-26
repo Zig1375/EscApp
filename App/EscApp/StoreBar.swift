@@ -303,7 +303,7 @@ struct StoreLogo: View {
             .strokeBorder(.white.opacity(0.18), lineWidth: max(1, size / 48))
             .frame(width: size, height: size)
             .overlay {
-                Image(store.logoAsset)
+                (store.logoAsset.map { Image($0) } ?? Image(systemName: "bag.fill"))
                     .resizable()
                     .scaledToFit()
                     .foregroundStyle(.white)
@@ -313,13 +313,13 @@ struct StoreLogo: View {
     }
 }
 
-/// Three store logos fanned like cards, so it reads as "the stores" at a glance.
+/// The store logos fanned like cards, so it reads as "the stores" at a glance.
 struct StoreStack: View {
     var size: CGFloat = 18
 
     var body: some View {
         HStack(spacing: -size * 0.4) {
-            ForEach([Store.steam, .epic, .eaApp], id: \.self) { store in
+            ForEach(Store.allCases.prefix(3), id: \.self) { store in
                 StoreLogo(store: store, size: size)
                     .overlay {
                         RoundedRectangle(cornerRadius: size / 4, style: .continuous)
@@ -343,25 +343,23 @@ extension StoreClient.Step {
     }
 }
 
+/// How a store looks in the app. A store added to EscAppKit (`Store.allCases`) adds its case here, with its logo
+/// in the asset catalog; until then it shows with a plain bag.
 extension Store {
     /// What the store is for, in the "Add a Store" window.
     var purpose: String {
         switch self {
         case .steam: String(localized: "Games from your Steam library appear in EscApp by themselves")
         case .epic: String(localized: "Needed for Epic games")
-        case .gog: String(localized: "Usually not needed for GOG games: their installers work by themselves")
-        case .eaApp: String(localized: "Needed for EA games")
-        case .ubisoft: String(localized: "Needed for Ubisoft games")
+        default: ""
         }
     }
 
-    var logoAsset: String {
+    var logoAsset: String? {
         switch self {
         case .steam: "StoreSteam"
         case .epic: "StoreEpic"
-        case .gog: "StoreGog"
-        case .eaApp: "StoreEa"
-        case .ubisoft: "StoreUbisoft"
+        default: nil
         }
     }
 
@@ -370,9 +368,7 @@ extension Store {
         switch self {
         case .steam: Color(red: 0x1B / 255, green: 0x28 / 255, blue: 0x38 / 255)
         case .epic: Color(red: 0x2A / 255, green: 0x2A / 255, blue: 0x2A / 255)
-        case .gog: Color(red: 0x5C / 255, green: 0x2D / 255, blue: 0x82 / 255)
-        case .eaApp: Color(red: 0xC2 / 255, green: 0x27 / 255, blue: 0x2D / 255)
-        case .ubisoft: Color(red: 0x1F / 255, green: 0x4A / 255, blue: 0xA8 / 255)
+        default: .gray
         }
     }
 }

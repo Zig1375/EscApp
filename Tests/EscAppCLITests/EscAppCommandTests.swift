@@ -56,9 +56,10 @@ import Testing
         let list = await home.run(["store", "list"])
         #expect(list.status == 0)
         #expect(list.stdout.contains("steam     Steam: not installed"))
-        #expect(list.stdout.contains("ea        EA app: not installed"))
+        #expect(list.stdout.contains("epic      Epic Games Store: not installed"))
         #expect(await home.run(["store", "sync"]).stdout == "No store games installed.\n")
         #expect(await home.run(["store", "install", "origin"]).status == 1)
+        #expect(await home.run(["store", "install", "gog"]).status == 1)
         #expect(await home.run(["store"]).status == 1)
     }
 

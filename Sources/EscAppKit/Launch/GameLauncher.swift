@@ -215,8 +215,7 @@ public struct GameLauncher: Sendable {
         let startedAt = Date()
         let retina = prepared.retina
         let header = Self.header(for: prepared, retina: retina, startedAt: startedAt)
-        let ready = prepared.storeClient != .steam || StoreClient.steamReady(prepared.bottle)
-        let arguments = (prepared.storeClient?.clientArguments(clientReady: ready) ?? [])
+        let arguments = (prepared.storeClient?.clientArguments(in: prepared.bottle) ?? [])
             + GameSettings.arguments(prepared.game.arguments ?? "")
             + (prepared.chromium?.arguments(forProgramIn: URL(filePath: prepared.game.executable)
                 .deletingLastPathComponent()) ?? [])

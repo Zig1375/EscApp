@@ -30,3 +30,17 @@ extension StoreClient {
         return text.flatMap { WineRegistry.string(in: $0, key: key, name: "RetinaMode") } == "y"
     }
 }
+
+extension StoreClient {
+    /// A store client opened like a game, in a bottle of its own: what Stores does for it happens there too. What
+    /// its store needs for a client the player installed comes first (Steam downloads its client, whose web
+    /// helper would otherwise run unwrapped, black, the first time), then its Chromium helpers are wrapped. Only
+    /// while nothing runs in the bottle.
+    func prepareClientProgram(_ store: Store, in bottle: URL, wine: Wine) async throws {
+        guard WineProcesses.running(in: bottle).isEmpty else { return }
+        if let client = store.client(in: bottle) {
+            try await store.module.prepareInstalledByPlayer(self, client: client, bottle: bottle, wine: wine)
+        }
+        try ChromiumHelper.wrap(store, in: bottle)
+    }
+}

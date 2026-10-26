@@ -77,7 +77,7 @@ public struct EscAppCommand: Sendable {
           game list                        List known games
           inspect <exe>                    Show what EscApp reads from an .exe: format, DirectX, name, icon
           store list                       Show which stores are installed and running
-          store install|open|close|remove steam|epic|gog|ea|ubisoft
+          store install|open|close|remove steam|epic
                                            Install a store's client in its own bottle, open it, close it,
                                            or remove it with its games
           store sync                       Add the stores' installed games to the library and list them

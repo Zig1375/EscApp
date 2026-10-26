@@ -1,8 +1,8 @@
-import Darwin
 import Foundation
 
 /// Looks after the running store clients while EscApp runs: quits one the player closed or whose game is over
-/// (`StoreQuit`), and ends the web helper processes Steam left behind (`SteamHelperSweep`).
+/// (`StoreQuit`), and lets each store tidy up after its client (`StoreModule.tidy`: the web helper processes
+/// Steam left behind).
 public actor StoreKeeper {
     /// While nothing is on screen but Wine says a window is shown (minimised, or on another Space), how long
     /// before asking Wine again: each look starts a Windows program.
@@ -31,9 +31,7 @@ public actor StoreKeeper {
                 continue
             }
             running.insert(store)
-            if store == .steam {
-                for pid in SteamHelperSweep.strays(SteamHelperSweep.helpers(in: processes)) { kill(pid, SIGKILL) }
-            }
+            store.module.tidy(processes)
             let game = busy.contains(store) || Self.playing(store, in: bottle, processes: processes)
             let oldest = processes.compactMap(\.started).min() ?? Date()
             var quit = quits[store] ?? StoreQuit(used: Date().timeIntervalSince(oldest) > Self.settledAfter)
@@ -53,10 +51,11 @@ public actor StoreKeeper {
         return running
     }
 
-    /// A game of the store's running, Steam getting one ready, or Steam downloading.
+    /// A game of the store's running, or the client busy with something quitting would break (Steam getting a
+    /// game ready, or downloading).
     static func playing(_ store: Store, in bottle: URL, processes: [WineProcesses.Process]? = nil) -> Bool {
         (processes ?? WineProcesses.running(in: bottle)).contains { !store.isClientProgram($0.program) }
-            || store == .steam && (SteamLaunches.inProgress(in: bottle) || SteamDownloads.inProgress(in: bottle))
+            || store.module.isBusy(bottle: bottle)
     }
 
     /// Whether the client shows a window: on screen, as the Mac sees it, or else minimised or on another Space,

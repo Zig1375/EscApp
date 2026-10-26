@@ -44,7 +44,7 @@
   "works_label": "已支持：",
   "works_text": "DirectX 9–11 游戏、Unity 游戏、RPG Maker XP/VX/VX Ace，以及需要 Visual C++ 或 .NET 的游戏。",
   "stores_label": "商店：",
-  "stores_text": "Steam、Epic Games Store、GOG Galaxy、EA app 和 Ubisoft Connect 一键安装。",
+  "stores_text": "Steam 和 Epic Games Store 一键安装。",
   "later_label": "以后：",
   "later_text": "DirectX 12。",
   "needs_label": "系统要求：",

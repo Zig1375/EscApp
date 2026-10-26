@@ -60,7 +60,7 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     /// The store the game is from: it runs in the store's bottle, through its client. Nil for a game from disc,
     /// an installer or a folder.
     public var store: Store?
-    /// The game's id in its store: Steam's app id, Epic's `namespace:item:app`, GOG's product id.
+    /// The game's id in its store: Steam's app id, Epic's `namespace:item:app`.
     public var storeID: String?
 
     /// The bottle the game runs in: its own, or its store's.
@@ -143,6 +143,30 @@ public struct GameLibrary: Codable, Sendable, Equatable {
 
     public init(games: [GameRecord] = []) {
         self.games = games
+    }
+
+    enum CodingKeys: String, CodingKey { case format, games }
+
+    /// A game from a store EscApp no longer has (GOG Galaxy, the EA app and Ubisoft Connect, which earlier
+    /// versions had) is left out: it can't be started without its store, and one such game made the whole file
+    /// unreadable. Any other unreadable game still is an error.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        format = try container.decodeIfPresent(Int.self, forKey: .format) ?? 1
+        var list = try container.nestedUnkeyedContainer(forKey: .games)
+        while !list.isAtEnd {
+            do {
+                games.append(try list.decode(GameRecord.self))
+            } catch {
+                // A failed decode leaves the element unread; this reads it, so the next one comes after.
+                let store = try list.decode(StoreName.self).store
+                guard let store, Store(rawValue: store) == nil else { throw error }
+            }
+        }
+    }
+
+    private struct StoreName: Decodable {
+        var store: String?
     }
 
     public subscript(id: GameID) -> GameRecord? {

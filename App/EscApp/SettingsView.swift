@@ -220,6 +220,11 @@ private struct ComponentsCard: View {
                 Text("RPG Maker Run Time Packages").frame(maxWidth: .infinity, alignment: .leading)
                 Text("Enterbrain").foregroundStyle(Color.secondaryText)
             }
+            // Installed only into the Windows of games built with them (`RedistInstaller`).
+            HStack {
+                Text("Microsoft Visual C++ and .NET").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Microsoft").foregroundStyle(Color.secondaryText)
+            }
             HStack {
                 Text("Rosetta 2").frame(maxWidth: .infinity, alignment: .leading)
                 Text("Apple").foregroundStyle(Color.secondaryText)

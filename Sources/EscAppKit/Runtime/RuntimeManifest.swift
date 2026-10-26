@@ -17,6 +17,9 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
     public var games: [KnownGame]?
     /// RPG Maker's Run Time Packages, which games made with it need (`RPGMakerGame`). Optional like `games`.
     public var rtps: [RTP]?
+    /// Microsoft's runtimes that games are built against and Wine only imitates: Visual C++ and .NET. Optional
+    /// like `games`.
+    public var redists: [Redist]?
 
     public struct Runtime: Codable, Sendable, Equatable, Identifiable {
         /// Names the runtime folder and template bottle, so it must be a plain path component.
@@ -74,6 +77,42 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
         public var engineValue: RPGMakerGame.Engine? { RPGMakerGame.Engine(rawValue: engine) }
     }
 
+    /// One of Microsoft's redistributable runtimes, as Microsoft publishes it on its own servers. `RedistInstaller`
+    /// runs the installer silently in a game's bottle when `RedistNeeds` finds the game built against it.
+    public struct Redist: Codable, Sendable, Equatable {
+        public enum Kind: String, Codable, Sendable {
+            /// Visual C++: `provides` lists its DLLs.
+            case vcrun
+            /// .NET: `provides` lists its shared frameworks by major version, `Microsoft.NETCore.App/8`.
+            case dotnet
+        }
+
+        /// Names it in a bottle's marker; a plain path component, `vcrun2010-x86`.
+        public var id: String
+        /// Shown while it installs: "Microsoft Visual C++ 2010".
+        public var name: String
+        /// A string, so a kind this app doesn't know is skipped instead of making the manifest unreadable.
+        public var kind: String
+        public var version: String
+        /// `x86` or `x64`: the programs it serves. A 32-bit game needs the 32-bit runtime even on 64-bit Windows.
+        public var architecture: String
+        public var url: URL
+        /// Lowercase hex.
+        public var sha256: String
+        public var size: Int64
+        public var license: String
+        /// The installer's switches for no window, no questions and no restart.
+        public var arguments: [String]
+        /// What a game asks for when it needs this runtime (see `Kind`), lowercased for Visual C++.
+        public var provides: [String]
+        /// Relative to `drive_c`: the folder that has it once it is installed. Visual C++ is installed when this
+        /// folder (or one inside it, for `winsxs`) has Microsoft's own copy of the first DLL in `provides`;
+        /// Wine's stand-ins are in `system32` from the start.
+        public var check: String
+
+        public var kindValue: Kind? { Kind(rawValue: kind) }
+    }
+
     /// The package a game names, for its engine.
     public func rtp(_ name: String, engine: RPGMakerGame.Engine) -> RTP? {
         rtps?.first { $0.engineValue == engine && $0.name.caseInsensitiveCompare(name) == .orderedSame }
@@ -122,6 +161,18 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
             guard Self.isSafeComponent(rtp.engine), Self.isSafeComponent(rtp.name),
                   Self.isSafeRelativePath(rtp.setup, allowEmpty: true)
             else { throw ManifestError.invalidEntry("\(label): engine, name or setup") }
+        }
+        try Self.validateRedists(redists ?? [])
+    }
+
+    private static func validateRedists(_ redists: [Redist]) throws {
+        var seen = Set<String>()
+        for redist in redists {
+            let label = "redist \(redist.id)"
+            try Self.checkPin(redist, label: label)
+            guard Self.isSafeComponent(redist.id), seen.insert(redist.id).inserted,
+                  Self.isSafeRelativePath(redist.check, allowEmpty: false), !redist.provides.isEmpty
+            else { throw ManifestError.invalidEntry("\(label): id, check or provides") }
         }
     }
 

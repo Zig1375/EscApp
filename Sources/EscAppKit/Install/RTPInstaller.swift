@@ -42,12 +42,14 @@ public struct RTPInstaller: Sendable {
     }
 
     /// Downloads and installs the package unless it is there already.
-    /// - Parameter progress: bytes received and the download's size.
     @discardableResult
     public func install(_ rtp: RuntimeManifest.RTP, runtime: RuntimeManifest.Runtime,
-                        progress: @escaping @Sendable (Int64, Int64) -> Void = { _, _ in }) async throws -> URL {
+                        progress: @escaping @Sendable (RedistInstaller.Phase) -> Void = { _ in }) async throws -> URL {
         if let folder = installed(rtp) { return folder }
-        let download = try await Downloader().fetch(rtp, into: paths.downloads) { progress($0, rtp.size) }
+        let download = try await Downloader().fetch(rtp, into: paths.downloads) {
+            progress(.downloading(received: $0, total: rtp.size))
+        }
+        progress(.installing)
 
         let fileManager = FileManager.default
         try fileManager.createDirectory(at: paths.rtps, withIntermediateDirectories: true)

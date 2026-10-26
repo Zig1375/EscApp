@@ -3,7 +3,8 @@ import Foundation
 /// Keeps the component list current. The copy inside the app always works offline; a newer list is fetched
 /// from the repository (the same file, on `main`) about once a day and cached in `EscApp/Manifest.json`.
 ///
-/// A fetched list may only point at downloads on GitHub, and RPG Maker's packages at their publishers' servers.
+/// A fetched list may only point at downloads on GitHub, RPG Maker's packages at their publishers' servers and
+/// Microsoft's runtimes at Microsoft's.
 /// The SHA-256 pins protect against a damaged or swapped file, and the host rule keeps a tampered list from
 /// sending EscApp to some other server.
 public struct ManifestUpdater: Sendable {
@@ -16,6 +17,10 @@ public struct ManifestUpdater: Sendable {
     /// Where Gotcha Gotcha Games (English) and Kadokawa (Japanese) publish the Run Time Packages, which may not be
     /// hosted anywhere else.
     static let allowedRTPHosts: Set<String> = ["assets.rpgmakerweb.com", "cdn.tkool.jp"]
+    /// Microsoft's own download servers, the only place its runtimes (`RuntimeManifest.Redist`) may come from.
+    static let allowedRedistHosts: Set<String> = [
+        "download.microsoft.com", "download.visualstudio.microsoft.com", "builds.dotnet.microsoft.com",
+    ]
 
     /// What was last fetched, and when.
     public struct Cache: Codable, Sendable, Equatable {
@@ -56,11 +61,14 @@ public struct ManifestUpdater: Sendable {
     }
 
     /// The cached list wins unless it is older than the app: a new app version may ship runtimes the cache
-    /// from last week doesn't know about yet.
+    /// from last week doesn't know about yet. A cached list from before a section existed takes the app's.
     static func choose(bundled: RuntimeManifest, cached: RuntimeManifest?) -> RuntimeManifest {
-        guard let cached else { return bundled }
+        guard var cached else { return bundled }
         let known = Set(cached.runtimes.map(\.id))
-        return bundled.runtimes.allSatisfy { known.contains($0.id) } ? cached : bundled
+        guard bundled.runtimes.allSatisfy({ known.contains($0.id) }) else { return bundled }
+        cached.rtps = cached.rtps ?? bundled.rtps
+        cached.redists = cached.redists ?? bundled.redists
+        return cached
     }
 
     public static func isDue(lastChecked: Date?, now: Date = Date()) -> Bool {
@@ -102,6 +110,11 @@ public struct ManifestUpdater: Sendable {
         for rtp in manifest.rtps ?? [] {
             guard rtp.url.scheme == "https", let host = rtp.url.host(), allowedRTPHosts.contains(host) else {
                 throw ManifestError.invalidEntry("rtp \(rtp.engine)/\(rtp.name): download host")
+            }
+        }
+        for redist in manifest.redists ?? [] {
+            guard redist.url.scheme == "https", let host = redist.url.host(), allowedRedistHosts.contains(host) else {
+                throw ManifestError.invalidEntry("redist \(redist.id): download host")
             }
         }
     }

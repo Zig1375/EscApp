@@ -4199,16 +4199,6 @@
         }
       }
     },
-    "Downloading files this game needs: %@ of %@": {
-      "localizations": {
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Загружаем файлы, нужные игре: %1$@ из %2$@"
-          }
-        }
-      }
-    },
     "RPG Maker Run Time Packages": {
       "localizations": {
         "ru": {
@@ -4220,6 +4210,59 @@
       }
     },
     "Enterbrain": {
+      "shouldTranslate": false
+    },
+    "Installing components this game needs (%lld of %lld)": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устанавливаем компоненты, нужные игре (%1$lld из %2$lld)"
+          }
+        }
+      }
+    },
+    "Installing components this game needs": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Устанавливаем компоненты, нужные игре"
+          }
+        }
+      }
+    },
+    "%@: downloading %@ of %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@: загружаем %2$@ из %3$@"
+          }
+        }
+      }
+    },
+    "%@: installing…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: устанавливаем…"
+          }
+        }
+      }
+    },
+    "Microsoft Visual C++ and .NET": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Microsoft Visual C++ и .NET"
+          }
+        }
+      }
+    },
+    "Microsoft": {
       "shouldTranslate": false
     }
   },

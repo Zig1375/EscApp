@@ -36,8 +36,8 @@ struct LaunchSheet: View {
                     .font(.system(size: 18, weight: .bold))
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
-                if let files = launch.gameFiles {
-                    Text("Downloading files this game needs: \(files.amounts.received) of \(files.amounts.total)")
+                if let component = launch.component {
+                    ComponentStatus(component: component)
                         .font(.system(size: 12))
                         .foregroundStyle(Color.secondaryText)
                         .multilineTextAlignment(.center)
@@ -51,10 +51,14 @@ struct LaunchSheet: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
-            ProgressView()
-                .progressViewStyle(.linear)
-                .tint(.brand)
-                .frame(maxWidth: 280)
+            if let component = launch.component {
+                ComponentBar(component: component).frame(maxWidth: 280)
+            } else {
+                ProgressView()
+                    .progressViewStyle(.linear)
+                    .tint(.brand)
+                    .frame(maxWidth: 280)
+            }
             Button("Cancel") { library.cancelLaunch() }
                 .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
                 .keyboardShortcut(.cancelAction)
@@ -243,5 +247,49 @@ struct LearnedToast: View {
             try? await Task.sleep(for: .seconds(20))
             dismiss()
         }
+    }
+}
+
+/// "Installing components this game needs (1 of 2)" and what it is doing now: "Microsoft Visual C++ 2010:
+/// downloading 3 MB of 9 MB", then "…: installing". Players see each thing by its own name, so a minute of
+/// waiting on a first launch says what it is for.
+struct ComponentStatus: View {
+    let component: GameLauncher.Component
+
+    var body: some View {
+        VStack(spacing: 2) {
+            if component.count > 1 {
+                Text("Installing components this game needs (\(component.number) of \(component.count))")
+            } else {
+                Text("Installing components this game needs")
+            }
+            switch component.phase {
+            case let .downloading(received, total):
+                let amounts = (received: received.formatted(.byteCount(style: .file)),
+                               total: total.formatted(.byteCount(style: .file)))
+                Text("\(component.name): downloading \(amounts.received) of \(amounts.total)")
+            case .installing:
+                Text("\(component.name): installing…")
+            }
+        }
+    }
+}
+
+/// How far the download is, or a running bar while the installer works and can't say.
+struct ComponentBar: View {
+    let component: GameLauncher.Component
+    var height: CGFloat?
+
+    var body: some View {
+        Group {
+            if case let .downloading(received, total) = component.phase, total > 0 {
+                ProgressView(value: Double(min(received, total)), total: Double(total))
+            } else {
+                ProgressView()
+            }
+        }
+        .progressViewStyle(.linear)
+        .tint(.brand)
+        .frame(height: height)
     }
 }

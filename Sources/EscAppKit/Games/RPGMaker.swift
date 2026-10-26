@@ -18,6 +18,15 @@ public struct RPGMakerGame: Sendable, Equatable {
         case rgss2 = "RGSS2"
         /// RPG Maker VX Ace: `RGSS3xx.dll`.
         case rgss3 = "RGSS3"
+
+        /// The maker's name, for "Installing RPG Maker VX RTP".
+        public var displayName: String {
+            switch self {
+            case .rgss1: "RPG Maker XP"
+            case .rgss2: "RPG Maker VX"
+            case .rgss3: "RPG Maker VX Ace"
+            }
+        }
     }
 
     public var engine: Engine

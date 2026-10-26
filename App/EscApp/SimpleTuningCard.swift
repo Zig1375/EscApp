@@ -37,11 +37,12 @@ struct SimpleTuningCard: View {
             // All three as tall as the tallest.
             .fixedSize(horizontal: false, vertical: true)
             VStack(spacing: 8) {
-                TimeBar(startedAt: tuning.startedAt)
-                if let files = launch.gameFiles {
-                    Text("Downloading files this game needs: \(files.amounts.received) of \(files.amounts.total)")
-                        .modifier(TuningHint())
+                // Installing what the game needs takes as long as it takes; the minute starts after it.
+                if let component = launch.component {
+                    ComponentBar(component: component, height: 8)
+                    ComponentStatus(component: component).modifier(TuningHint())
                 } else {
+                    TimeBar(startedAt: tuning.startedAt)
                     Text("Usually under a minute").modifier(TuningHint())
                 }
             }

@@ -31,6 +31,10 @@ public struct GameLauncher: Sendable {
         public var locale: String?
         /// RPG Maker packages linked into the bottle, as `engine/name` (`RTPInstaller`).
         public var rtps: [String] = []
+        /// Microsoft's runtimes the game needs and its bottle has (`RedistNeeds`), by manifest id.
+        public var redists: [String] = []
+        /// Lines for the game's log about what couldn't be installed, with the installer's own last words.
+        public var notes: [String] = []
     }
 
     public struct Outcome: Sendable, Equatable {
@@ -56,19 +60,6 @@ public struct GameLauncher: Sendable {
         self.host = host
     }
 
-    /// Everything up to starting the process. Throws `LaunchError` for games that can't run, before any
-    /// bottle is made for them.
-    /// What `prepare` is doing, for the "getting the game ready" sheet.
-    public enum Step: Sendable, Equatable {
-        /// Making the game's Windows; `firstTime` when the runtime's template must be built first (~30 s, once).
-        case windows(WindowsVersion, firstTime: Bool)
-        case graphics(GraphicsBackend, directX: ExecutableTraits.DirectX?)
-        /// Downloading files the game needs and Windows doesn't have (RPG Maker's packages), in bytes.
-        case gameFiles(received: Int64, total: Int64)
-        /// Everything is ready; Wine is being started.
-        case starting
-    }
-
     /// A store game's client, made ready for it, and the command that starts the game through the client.
     /// Returns whether the bottle was idle; always for a game without a store.
     private func prepareStore(for game: GameRecord, wine: Wine, retina: Bool) async throws
@@ -80,8 +71,10 @@ public struct GameLauncher: Sendable {
         return (idle, try stores.playCommand(store, storeID: id))
     }
 
-    /// - Parameter fetchGameFiles: false leaves out downloads (`gameFiles`): warming a bottle on hover mustn't
-    ///   start a 200 MB download. What is installed already is linked either way.
+    /// Everything up to starting the process. Throws `LaunchError` for games that can't run, before any
+    /// bottle is made for them.
+    /// - Parameter fetchGameFiles: false leaves out downloads and installers (`gameFiles`): warming a bottle on
+    ///   hover mustn't start a 200 MB download. What is installed already is linked either way.
     public func prepare(_ game: GameRecord, runtime: RuntimeManifest.Runtime,
                         backend override: GraphicsBackend? = nil, verboseLog: Bool = false,
                         fetchGameFiles: Bool = true,
@@ -105,7 +98,8 @@ public struct GameLauncher: Sendable {
         // A store game shares its store's bottle, and its Windows version.
         let bottle = try await bottles.ensureBottle(for: game.bottleID, runtime: runtime,
                                                     windows: game.store == nil ? game.windowsVersion : .default)
-        let files = try await gameFiles(for: game, runtime: runtime, fetch: fetchGameFiles, progress: progress)
+        let files = try await gameFiles(for: game, info: info, in: .init(bottle, runtime, runtimeFolder),
+                                        fetch: fetchGameFiles, progress: progress)
         progress(.graphics(backend, directX: info.directX.max()))
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
         // Retina only for games that say they handle high DPI; others would draw a tiny interface.
@@ -130,16 +124,16 @@ public struct GameLauncher: Sendable {
             WindowsPath.windowsPath(of: URL(filePath: game.folder, directoryHint: .isDirectory), inBottle: bottle)
         }
         let storeClient = game.store == nil ? Store.clientProgram(exe, in: bottle) : nil
-        if let storeClient { try await StoreClient(paths: paths, host: host).prepareClientProgram(storeClient,
-                                                                                                    in: bottle,
-                                                                                                    wine: wine) }
+        if let storeClient {
+            try await StoreClient(paths: paths, host: host).prepareClientProgram(storeClient, in: bottle, wine: wine)
+        }
         let chromium = game.store != nil ? nil
             : game.chromium ?? (info.chromium ? .inProcessGPU : nil)
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
                         environment: environment, log: newLogFile(for: game.id), scale: scale, retina: retina,
-                        client: client,
-                        gameFolder: folder, chromium: chromium, storeClient: storeClient, locale: files.locale,
-                        rtps: files.rtps.map { "\($0.rtp.engine)/\($0.rtp.name)" })
+                        client: client, gameFolder: folder, chromium: chromium, storeClient: storeClient,
+                        locale: files.locale, rtps: files.rtps.map { "\($0.rtp.engine)/\($0.rtp.name)" },
+                        redists: files.redists, notes: files.notes)
     }
 
     /// Ends what still runs in a game's bottle with osync the other way: the running wineserver decides, so the
@@ -228,6 +222,10 @@ public struct GameLauncher: Sendable {
                 .deletingLastPathComponent()) ?? [])
         var extra = arguments.isEmpty ? [] : ["[EscApp] Arguments \(arguments.joined(separator: " "))"]
         if !prepared.rtps.isEmpty { extra.append("[EscApp] RPG Maker \(prepared.rtps.joined(separator: ", "))") }
+        if !prepared.redists.isEmpty {
+            extra.append("[EscApp] Microsoft runtimes \(prepared.redists.joined(separator: ", "))")
+        }
+        extra += prepared.notes
         if let store = prepared.game.store {
             extra.append("[EscApp] Store \(store.name) \(prepared.game.storeID ?? "")")
         }
@@ -323,6 +321,19 @@ public struct GameLauncher: Sendable {
 
     func pruneLogs(for game: GameID) {
         LogRotation.prune(paths.logs(forGame: game))
+    }
+}
+
+extension GameLauncher {
+    /// What `prepare` is doing, for the "getting the game ready" sheet.
+    public enum Step: Sendable, Equatable {
+        /// Making the game's Windows; `firstTime` when the runtime's template must be built first (~30 s, once).
+        case windows(WindowsVersion, firstTime: Bool)
+        case graphics(GraphicsBackend, directX: ExecutableTraits.DirectX?)
+        /// Installing what the game needs and Windows doesn't have: RPG Maker's packages, Visual C++, .NET.
+        case component(Component)
+        /// Everything is ready; Wine is being started.
+        case starting
     }
 }
 

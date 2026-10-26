@@ -10,16 +10,6 @@ extension LibraryModel {
     struct Launch: Identifiable, Equatable {
         enum StepState: Equatable { case waiting, active, done }
 
-        struct GameFiles: Equatable {
-            var received: Int64
-            var total: Int64
-
-            /// "12 MB of 190 MB".
-            var amounts: (received: String, total: String) {
-                (received.formatted(.byteCount(style: .file)), total.formatted(.byteCount(style: .file)))
-            }
-        }
-
         enum Phase: Equatable {
             case preparing
             case retrying(Retry)
@@ -54,8 +44,8 @@ extension LibraryModel {
         var windowsState: StepState = .active
         var graphics: String?
         var startState: StepState = .waiting
-        /// Files the game needs being downloaded (RPG Maker's packages): bytes so far and in all.
-        var gameFiles: GameFiles?
+        /// What the game needs being installed (RPG Maker's packages, Visual C++, .NET).
+        var component: GameLauncher.Component?
         /// Set after a while without a game window, to say that this can take a minute.
         var slow = false
         /// A first launch looking for its settings (FirstRun.dc.html), shown over the game's windows.
@@ -219,23 +209,30 @@ extension LibraryModel {
             current.windows = version
             current.windowsFirstTime = firstTime
             current.windowsState = .active
-        case let .gameFiles(received, total):
-            current.gameFiles = .init(received: received, total: total)
+        case let .component(component):
+            current.component = component
         case let .graphics(backend, directX):
             current.windowsState = .done
-            current.gameFiles = nil
-            let api: String? = switch directX {
-            case .legacy?: "DirectDraw"
-            case .d3d9?: "DirectX 9"
-            case .d3d11?: "DirectX 11"
-            case .d3d12?: "DirectX 12"
-            case nil: nil
-            }
-            current.graphics = api.map { "\(backend.displayName) (\($0))" } ?? backend.displayName
+            // The search's minute (`Tuning.startedAt`) starts once what the game needs is in.
+            if current.component != nil { current.tuning?.startedAt = Date() }
+            current.component = nil
+            current.graphics = Self.graphicsName(backend, directX: directX)
         case .starting:
             current.startState = .active
         }
         launch = current
+    }
+
+    /// "DXVK (DirectX 11)".
+    private static func graphicsName(_ backend: GraphicsBackend, directX: ExecutableTraits.DirectX?) -> String {
+        let api: String? = switch directX {
+        case .legacy?: "DirectDraw"
+        case .d3d9?: "DirectX 9"
+        case .d3d11?: "DirectX 11"
+        case .d3d12?: "DirectX 12"
+        case nil: nil
+        }
+        return api.map { "\(backend.displayName) (\($0))" } ?? backend.displayName
     }
 
     /// Says so when the window takes long: Wine's first start under Rosetta can need most of a minute.

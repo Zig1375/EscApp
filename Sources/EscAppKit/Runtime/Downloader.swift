@@ -27,6 +27,7 @@ public protocol PinnedDownload: Sendable {
 
 extension RuntimeManifest.Component: PinnedDownload {}
 extension RuntimeManifest.RTP: PinnedDownload {}
+extension RuntimeManifest.Redist: PinnedDownload {}
 
 /// Downloads one manifest entry into `folder`, checking its SHA-256 as the bytes arrive.
 ///

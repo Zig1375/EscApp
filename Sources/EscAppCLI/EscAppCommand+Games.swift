@@ -47,6 +47,9 @@ extension EscAppCommand {
                 let screen = game.screen.map { "\($0.width)×\($0.height)" } ?? "size unknown"
                 return "\(game.engine.rawValue), \(rtps), \(screen)"
             }
+            let known = (try? manifest())?.redists ?? []
+            let redists = RedistNeeds.read(executable: URL(filePath: path), info: info)
+                .map { RedistNeeds.needed($0, from: known).map(\.id) } ?? []
             return success([
                 "Format: \(info.format.rawValue)",
                 "Name: \(info.productName ?? "-")",
@@ -57,6 +60,7 @@ extension EscAppCommand {
                 "Graphics plan: \(plan)",
                 "RPG Maker: \(rpgMaker ?? "-")",
                 "Language: \(GameLanguage.locale(forGameIn: folder) ?? "the Mac's")",
+                "Microsoft runtimes: \(redists.isEmpty ? "-" : redists.joined(separator: ", "))",
                 "Imports: \(info.imports.sorted().joined(separator: " "))",
             ].joined(separator: "\n"))
         } catch {
@@ -116,6 +120,9 @@ extension EscAppCommand {
             "The game asks for its CD (\"\(text)\"). Give it one with --disc <image>."
         case let .tuning(order):
             "First launch: looking for settings that work, trying \(order.map(\.displayName).joined(separator: ", "))."
+        case let .preparing(.component(component)):
+            component.phase == .installing
+                ? "Installing \(component.name) (\(component.number) of \(component.count))…" : nil
         case .preparing, .checking:
             nil
         }

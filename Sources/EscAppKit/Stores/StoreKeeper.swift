@@ -13,6 +13,8 @@ public actor StoreKeeper {
 
     private let client: StoreClient
     private var quits: [Store: StoreQuit] = [:]
+    /// When the oldest process in each store's bottle started: a later one is the client started again.
+    private var sessions: [Store: Date] = [:]
     private var shownOffScreen: [Store: Date] = [:]
 
     public init(paths: AppPaths) { client = StoreClient(paths: paths) }
@@ -28,12 +30,19 @@ public actor StoreKeeper {
             guard !processes.isEmpty, let wine = client.runningWine(store) else {
                 quits[store] = nil
                 shownOffScreen[store] = nil
+                sessions[store] = nil
                 continue
             }
             running.insert(store)
             store.module.tidy(processes)
             let game = busy.contains(store) || Self.playing(store, in: bottle, processes: processes)
-            let oldest = processes.compactMap(\.started).min() ?? Date()
+            let started = processes.compactMap(\.started).min()
+            if Self.restarted(seen: sessions[store], oldest: started) {
+                quits[store] = nil
+                shownOffScreen[store] = nil
+            }
+            sessions[store] = started ?? sessions[store]
+            let oldest = started ?? Date()
             var quit = quits[store] ?? StoreQuit(used: Date().timeIntervalSince(oldest) > Self.settledAfter)
             // A client first seen with nothing on screen may be minimised: ask Wine once.
             let windows = await shown(store, processes: processes, wine: wine,
@@ -49,6 +58,14 @@ public actor StoreKeeper {
             }
         }
         return running
+    }
+
+    /// Whether everything in the bottle started again since the last look: Epic's launcher restarted by
+    /// `watchEpicUpdates`, or closed and opened between two looks. That is a new client, not yet used: kept as
+    /// the old one, it was seen without a window while starting up and quit 8 s later, before its window opened.
+    static func restarted(seen: Date?, oldest: Date?) -> Bool {
+        guard let seen, let oldest else { return false }
+        return oldest.timeIntervalSince(seen) > 1
     }
 
     /// A game of the store's running, or the client busy with something quitting would break (Steam getting a

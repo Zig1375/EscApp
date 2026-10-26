@@ -45,6 +45,16 @@ import Testing
         #expect(look(&quit, windows: false, game: false, at: 61))
     }
 
+    @Test func aClientStartedAgainIsANewOne() {
+        let first = Date(timeIntervalSince1970: 1000)
+        #expect(StoreKeeper.restarted(seen: first, oldest: first.addingTimeInterval(80)))
+        #expect(!StoreKeeper.restarted(seen: first, oldest: first))
+        // A process that started earlier was only missed by the first look.
+        #expect(!StoreKeeper.restarted(seen: first, oldest: first.addingTimeInterval(-5)))
+        #expect(!StoreKeeper.restarted(seen: nil, oldest: first))
+        #expect(!StoreKeeper.restarted(seen: first, oldest: nil))
+    }
+
     @Test func helperOutputParses() {
         let output = "2688\t1\tSteam\n0024:err:module:something\n2688\t0\tfoxisfox666\n12\t0\t\n"
         #expect(StoreWindows.parse(output) == [

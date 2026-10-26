@@ -38,7 +38,8 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
   it per game (`BOTTLE.json`). `SharedProfile` links AppData and Saved Games to `EscApp/Profile` in the template.
   `WineRegistry` edits `user.reg` as text (only while the bottle's wineserver is stopped).
 - Games: `GameIdentifier` finds the game for an exe by the `.escapp` file in its root folder, and by nothing else; an
-  exe without one is a new game. `GameLibrary` is `Games.json`. `escapp game identify|prepare|list` exercises both.
+  exe without one is a new game. `.escapp` also carries `RecommendedSettings` (what the game last worked with), so a
+  folder from another Mac tries those first and falls back to the usual search. `GameLibrary` is `Games.json`. `escapp game identify|prepare|list` exercises both.
 - Launching: `ExecutableInfo` reads an exe (format, imports → DirectX, name, icon, DPI) with a bounds-checked
   PE reader (`unityplayer.dll` counts as Direct3D 11: Unity loads it at run time); `BackendPlan` orders backends
   by the newest Direct3D (11 → DXVK, DXMT, WineD3D; 9 and older → WineD3D; none found → DXVK, WineD3D);

@@ -127,6 +127,10 @@ import Testing
         #expect(BackendPlan.order(plan, remembered: .wined3d, known: nil) == [.wined3d, .dxvk, .dxmt])
         #expect(BackendPlan.order(plan, remembered: .dxmt, known: .wined3d) == [.dxmt, .wined3d, .dxvk])
         #expect(BackendPlan.order([.wined3d], remembered: nil, known: .dxvk) == [.dxvk, .wined3d])
+        #expect(BackendPlan.order(plan, remembered: nil, recommended: .wined3d, known: .dxmt)
+            == [.wined3d, .dxmt, .dxvk])
+        #expect(BackendPlan.order(plan, remembered: .dxmt, recommended: .wined3d, known: nil)
+            == [.dxmt, .wined3d, .dxvk])
     }
 }
 

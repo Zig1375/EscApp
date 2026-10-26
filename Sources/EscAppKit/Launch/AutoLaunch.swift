@@ -108,20 +108,14 @@ public struct AutoLaunch: Sendable {
             try update(game.id) { $0.windowsVersion = windows }
         }
 
-        let order: [GraphicsBackend]
+        // Settings that came with the game's folder are tried first while nothing has worked here yet.
+        let fromFile = override == nil && game.chosenBackend == nil && game.backend == nil
+            ? GameIdentifier.recommended(for: game) : nil
+        let standard = (windows: game.windowsVersion, chromium: game.chromium)
+        if let fromFile { Self.apply(fromFile, to: &game) }
+        let order = Self.order(for: game, override: override, info: info, recommended: fromFile, known: known)
         // Graphics picked in Advanced works like `--backend`: that one only, no retries.
-        if let override = override ?? game.chosenBackend {
-            order = [override]
-            control.stopRetrying()
-        } else if case let .attempts(plan)? = info.map({ BackendPlan.forTraits($0.traits) }) {
-            let planned = BackendPlan.order(plan, remembered: game.backend, known: known?.preferredBackend)
-            // A store game gets one try: another backend means restarting the store's client, and its first start
-            // may sit behind the store's sign-in or an update for as long as those take.
-            order = game.store == nil ? planned : Array(planned.prefix(1))
-        } else {
-            // Unsupported or unreadable: `prepare` throws the reason.
-            order = [game.backend ?? .dxvk]
-        }
+        if override ?? game.chosenBackend != nil { control.stopRetrying() }
 
         if Self.isTuning(game, order: order, retrying: control.retrying) { events(.tuning(order)) }
         var attempts: [LaunchAttempt] = []
@@ -137,7 +131,12 @@ public struct AutoLaunch: Sendable {
                 ran = try await attempt(backend, of: game, number: index + 1, of: order.count, context: context)
                 attempts.append(ran.attempt)
             }
-            if ran.worked, let mode = game.chromium { try update(game.id) { $0.chromium = mode } }
+            if ran.worked {
+                try keep(game, workingWith: backend)
+            } else if fromFile != nil, index == 0 {
+                // The settings that came with the game don't work here: the rest is the usual search.
+                (game.windowsVersion, game.chromium) = standard
+            }
             let last = index == order.count - 1 || !ran.attempt.diagnosis.retryHelps || !control.retrying
             if ran.worked || !ran.judged || last {
                 // A run that wasn't judged (the player said not to retry) only teaches its play time.
@@ -316,7 +315,7 @@ public struct AutoLaunch: Sendable {
         try GameLibrary.modify(paths.library) { $0.recordPlay(of: id, duration: duration, working: working) }
     }
 
-    private func update(_ id: GameID, _ change: (inout GameRecord) -> Void) throws {
+    func update(_ id: GameID, _ change: (inout GameRecord) -> Void) throws {
         try GameLibrary.modify(paths.library) { library in
             guard var game = library[id] else { return }
             change(&game)

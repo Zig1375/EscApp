@@ -26,6 +26,8 @@ struct LaunchSettingsCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             Button("Find Launch Settings Again") {
                 library.changeSetting(of: game.id) { $0.forgetLaunchSettings() }
+                // The same settings in the game's folder would only be tried first again.
+                GameIdentifier.recommend(nil, for: game)
             }
             .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
             .disabled(!game.hasLaunchSettings || library.isPlaying(game.id))

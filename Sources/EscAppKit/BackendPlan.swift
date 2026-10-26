@@ -69,12 +69,13 @@ public enum BackendPlan: Sendable, Equatable {
 }
 
 extension BackendPlan {
-    /// Which backends a launch tries, in order: the one that worked last time, then the game database's choice,
-    /// then the rules. A backend that crashed for this game is still tried again, just later.
-    public static func order(_ plan: [GraphicsBackend], remembered: GraphicsBackend?, known: GraphicsBackend?)
-        -> [GraphicsBackend] {
+    /// Which backends a launch tries, in order: the one that worked last time, then the one the game's `.escapp`
+    /// recommends (it worked on the Mac the folder came from), then the game database's choice, then the rules.
+    /// A backend that crashed for this game is still tried again, just later.
+    public static func order(_ plan: [GraphicsBackend], remembered: GraphicsBackend?,
+                             recommended: GraphicsBackend? = nil, known: GraphicsBackend?) -> [GraphicsBackend] {
         var order: [GraphicsBackend] = []
-        for backend in [remembered, known].compactMap(\.self) + plan where !order.contains(backend) {
+        for backend in [remembered, recommended, known].compactMap(\.self) + plan where !order.contains(backend) {
             order.append(backend)
         }
         return order

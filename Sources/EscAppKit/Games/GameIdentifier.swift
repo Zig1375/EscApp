@@ -26,6 +26,8 @@ public struct GameIdentifier: Sendable {
     struct Marker: Codable {
         var format = 1
         var id: GameID
+        /// What the game last worked with (`RecommendedSettings`). Older versions ignore it.
+        var recommended: RecommendedSettings?
     }
 
     let paths: AppPaths
@@ -122,15 +124,24 @@ public struct GameIdentifier: Sendable {
     }
 
     func readMarker(in folder: URL) -> GameID? {
-        let file = folder.appending(path: Self.markerName)
-        guard let data = try? Data(contentsOf: file) else { return nil }
-        return (try? JSONDecoder().decode(Marker.self, from: data))?.id
+        Self.marker(in: folder)?.id
     }
 
+    /// Names the game in `folder`. Settings already in the file stay: a copied folder keeps what worked for the
+    /// original.
     func writeMarker(_ id: GameID, in folder: URL) throws {
+        try Self.write(Marker(id: id, recommended: Self.marker(in: folder)?.recommended), in: folder)
+    }
+
+    static func marker(in folder: URL) -> Marker? {
+        guard let data = try? Data(contentsOf: folder.appending(path: markerName)) else { return nil }
+        return try? JSONDecoder().decode(Marker.self, from: data)
+    }
+
+    static func write(_ marker: Marker, in folder: URL) throws {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys
-        try encoder.encode(Marker(id: id)).write(to: folder.appending(path: Self.markerName), options: .atomic)
+        try encoder.encode(marker).write(to: folder.appending(path: markerName), options: .atomic)
     }
 
     private func newRecord(exe: URL, folder: URL, now: Date) -> GameRecord {

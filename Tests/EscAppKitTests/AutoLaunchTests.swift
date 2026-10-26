@@ -77,6 +77,7 @@ import Testing
         let scripts: [GraphicsBackend: Script]
         let logs: URL
         private let state = Mutex<[(GraphicsBackend, FakeAttempt)]>([])
+        private let games = Mutex<[GameRecord]>([])
 
         init(_ scripts: [GraphicsBackend: Script], logs: URL) {
             self.scripts = scripts
@@ -84,6 +85,8 @@ import Testing
         }
 
         var started: [(GraphicsBackend, FakeAttempt)] { state.withLock { $0 } }
+        /// The game as each attempt got it.
+        var startedGames: [GameRecord] { games.withLock { $0 } }
 
         func start(_ game: GameRecord, runtime: RuntimeManifest.Runtime, backend: GraphicsBackend, verboseLog: Bool,
                    progress: @Sendable (GameLauncher.Step) -> Void) async throws -> any GameAttempt {
@@ -91,6 +94,7 @@ import Testing
             let attempt = FakeAttempt(script: scripts[backend] ?? .showsNothing, pid: pid,
                                       logFile: logs.appending(path: "\(pid).log"))
             state.withLock { $0.append((backend, attempt)) }
+            games.withLock { $0.append(game) }
             return attempt
         }
 

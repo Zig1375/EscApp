@@ -131,7 +131,9 @@ struct AdvancedPage: View {
     private func controls(_ game: GameRecord) -> some View {
         Card(title: "Controls and launch") {
             SettingRow(title: "⌘ works as Ctrl", detail: "Ctrl+S, Ctrl+C and other shortcuts with ⌘") {
-                Switch(isOn: flag(game, \.commandAsControl))
+                Switch(isOn: Binding(get: { game.commandAsControl != false }, set: { value in
+                    library.changeSetting(of: game.id) { $0.commandAsControl = value ? nil : false }
+                }))
             }
             VStack(alignment: .leading, spacing: 6) {
                 Text("Launch parameters").font(.system(size: 14))

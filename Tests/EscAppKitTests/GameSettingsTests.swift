@@ -101,7 +101,8 @@ import Testing
         let scale = try GameLauncher.configure(bottle: bottle, for: game(), retina: false, screen: screen)
         #expect(scale == 1)
         #expect(try value(#"Software\Wine\Mac Driver"#, "RetinaMode") == "n")
-        #expect(try value(#"Software\Wine\Mac Driver"#, "LeftCommandIsCtrl") == "n")
+        #expect(try value(#"Software\Wine\Mac Driver"#, "LeftCommandIsCtrl") == "y")
+        #expect(try value(#"Software\Wine\Mac Driver"#, "RightCommandIsCtrl") == "y")
         #expect(try value(#"Software\Wine\X11 Driver"#, "EmulateModeset") == "y")
         #expect(try value(#"Software\Wine\X11 Driver"#, "StretchWindows") == "y")
         #expect(try userReg().contains(#""ShowCrashDialog"=dword:00000000"#))
@@ -110,12 +111,12 @@ import Testing
 
     @Test func settingsAndTheLearnedWindowReachTheBottle() throws {
         var record = game()
-        record.commandAsControl = true
+        record.commandAsControl = false
         record.window = GameScaling.LearnedWindow(width: 640, height: 480, fullScreen: false)
         let scale = try GameLauncher.configure(bottle: bottle, for: record, retina: false, screen: screen)
         #expect(scale == 2)
         #expect(try userReg().contains(#""LogPixels"=dword:000000c0"#))
-        #expect(try value(#"Software\Wine\Mac Driver"#, "RightCommandIsCtrl") == "y")
+        #expect(try value(#"Software\Wine\Mac Driver"#, "RightCommandIsCtrl") == "n")
 
         // Retina on: the game draws for it, nothing is enlarged.
         #expect(try GameLauncher.configure(bottle: bottle, for: record, retina: true, screen: screen) == 1)

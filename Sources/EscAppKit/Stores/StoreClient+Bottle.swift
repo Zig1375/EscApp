@@ -21,6 +21,9 @@ extension StoreClient {
     static func setUpForGames(_ bottle: URL) throws {
         try BottleManager.disableCrashDialog(bottle: bottle)
         try BottleManager.enableScaling(bottle: bottle)
+        // Every game's default (`GameRecord.commandAsControl`); it also lets ⌘V paste into the client's own
+        // sign-in fields.
+        try BottleManager.setCommandAsControl(bottle: bottle, true)
     }
 
     /// Whether the bottle's Wine draws in Retina mode, as written before its client started (`drawSharp`).

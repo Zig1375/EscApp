@@ -169,10 +169,8 @@ public struct GameLauncher: Sendable {
         let macDriver = #"Software\Wine\Mac Driver"#
         try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: "RetinaMode",
                                             value: retina ? "y" : "n")
-        let command = game.commandAsControl == true ? "y" : "n"
-        for side in ["LeftCommandIsCtrl", "RightCommandIsCtrl"] {
-            try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: side, value: command)
-        }
+        let command = game.commandAsControl != false
+        try BottleManager.setCommandAsControl(bottle: bottle, command)
         // Full-screen games get an emulated display mode, small windowed ones a system DPI that enlarges them
         // (`GameScaling`), and fixed-size windows can be stretched.
         try BottleManager.enableScaling(bottle: bottle)

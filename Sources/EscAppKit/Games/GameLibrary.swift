@@ -41,7 +41,9 @@ public struct GameRecord: Codable, Sendable, Equatable, Identifiable {
     public var retina: GameScaling.Setting?
     /// Metal's frame counter over the game.
     public var fpsCounter: Bool?
-    /// ⌘ works as Ctrl, so Ctrl+S, Ctrl+C and the rest can be pressed the Mac way.
+    /// ⌘ works as Ctrl, so Ctrl+S, Ctrl+C and the rest can be pressed the Mac way. Like `fastSync`, nil is on:
+    /// ⌘C and ⌘V did nothing in a game's text fields, which surprised every Mac player; only `false` turns it
+    /// off, for a game that binds ⌘ (the Windows key) itself.
     public var commandAsControl: Bool?
     /// osync (`WineEnvironment.fastSync(for:wine:)`); unlike the others nil is on, and only `false` turns it off,
     /// for a game that hangs with it.

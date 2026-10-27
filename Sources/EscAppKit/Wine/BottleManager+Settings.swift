@@ -12,6 +12,13 @@ extension BottleManager {
         try setRegistryString(bottle: bottle, key: key, name: "StretchWindows", value: "y")
     }
 
+    /// Both ⌘ keys reach Windows as Ctrl (`GameRecord.commandAsControl`); off, they are the Windows key.
+    static func setCommandAsControl(bottle: URL, _ on: Bool) throws {
+        for side in ["LeftCommandIsCtrl", "RightCommandIsCtrl"] {
+            try setRegistryString(bottle: bottle, key: #"Software\Wine\Mac Driver"#, name: side, value: on ? "y" : "n")
+        }
+    }
+
     static func disableCrashDialog(bottle: URL) throws {
         let userReg = bottle.appending(path: "user.reg")
         let text = try String(contentsOf: userReg, encoding: .utf8)

@@ -14,6 +14,8 @@ struct GameCard: View {
     @State private var isAboutHovered = false
 
     private var state: LibraryModel.PlayState? { library.states[game.id] }
+    /// Components are updating: the card shows that it has to wait instead of offering Play.
+    private var waitsForUpdate: Bool { state == nil && library.isUpdatingComponents }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -43,6 +45,7 @@ struct GameCard: View {
         .contextMenu {
             if state == nil {
                 Button("Play") { library.play(game) }
+                    .disabled(!library.canPlay(game))
             }
             Button("About", action: showDetails)
             if case .running? = state {
@@ -66,7 +69,7 @@ struct GameCard: View {
 
     private func activate() {
         switch state {
-        case nil: library.play(game)
+        case nil: if library.canPlay(game) { library.play(game) }
         case .running?: library.showGame(game)
         case .starting?: break
         }
@@ -88,12 +91,12 @@ struct GameCard: View {
                     .allowsHitTesting(false)
             }
             .overlay {
-                Image(systemName: "play.fill")
+                Image(systemName: waitsForUpdate ? "hourglass" : "play.fill")
                     .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(.white)
-                    .offset(x: 2)
+                    .offset(x: waitsForUpdate ? 0 : 2)
                     .frame(width: 52, height: 52)
-                    .background(Color.brand, in: .circle)
+                    .background(waitsForUpdate ? Color.gray : Color.brand, in: .circle)
                     // A white ring keeps the amber circle apart from a brown or orange cover.
                     .overlay { Circle().strokeBorder(.white.opacity(0.9), lineWidth: 2) }
                     .shadow(color: .black.opacity(0.4), radius: 10, y: 3)
@@ -140,7 +143,15 @@ struct GameCard: View {
                 runningButtons { Image(systemName: "arrow.up.forward.app") }
             }
         case nil:
-            aboutButton
+            VStack(spacing: 6) {
+                if waitsForUpdate {
+                    Text("Playable after the update")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                }
+                aboutButton
+            }
             .opacity(isHovered ? 1 : 0)
             .offset(y: isHovered ? 0 : 8)
             .allowsHitTesting(isHovered)
@@ -281,6 +292,8 @@ struct PlayButton: View {
                     .padding(.horizontal, large ? 12 : 0)
             }
             .buttonStyle(BrandButtonStyle(kind: .primary, height: large ? 40 : 34))
+            .disabled(!library.canPlay(game))
+            .help(library.isUpdatingComponents ? Text("Playable after the update") : Text(verbatim: ""))
         }
     }
 }

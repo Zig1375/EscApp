@@ -25,6 +25,9 @@ struct EscAppApp: App {
                     components.removeOldRuntimes()
                 }
             }
+            .onChange(of: components.updating != nil, initial: true) {
+                delegate.library.isUpdatingComponents = components.updating != nil
+            }
             .task {
                 // Once an hour is plenty: the updater itself only goes to the network once a day.
                 while !Task.isCancelled {

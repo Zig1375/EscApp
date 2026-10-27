@@ -61,7 +61,7 @@ extension LibraryModel {
     }
 
     func play(_ game: GameRecord) {
-        guard states[game.id] == nil else { return }
+        guard states[game.id] == nil, !waitsForUpdate(game) else { return }
         states[game.id] = .starting
         launch = Launch(id: game.id, name: game.name, firstTime: (game.launches ?? 0) == 0)
         let control = LaunchControl()
@@ -106,6 +106,15 @@ extension LibraryModel {
                                 message: String(describing: error))
             }
         }
+    }
+
+    /// Components are updating, so the game can't start yet. The buttons are off meanwhile; this tells the
+    /// ways in that have none (an installer's last step) why nothing happens.
+    private func waitsForUpdate(_ game: GameRecord) -> Bool {
+        guard isUpdatingComponents else { return false }
+        notice = Notice(title: String(localized: "Components are being updated"),
+                        message: String(localized: "\(game.name) can be started once the update finishes."))
+        return true
     }
 
     /// "Cancel" in the launch sheet: stop whatever has started and forget the launch.

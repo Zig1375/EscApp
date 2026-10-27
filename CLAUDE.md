@@ -70,6 +70,10 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 
 ## Rules
 
+- There is exactly one copy of the sources: this folder, with its uncommitted changes. Never copy the sources
+  anywhere (scratchpad, `/tmp`, `git archive`, a clone, a worktree) to edit, build or run them. Build into
+  `.build/xcode` from here; the app the user runs is `.build/xcode/Build/Products/Debug/EscApp.app`. A build from a
+  copy once ran without the fixes in this folder, and a fix looked broken.
 - Logic that can be "input → result" is a pure function with tests (environment, backend order, scaling,
   game identity, log parsing). Processes, files and the registry stay a thin layer on top.
 - Anything EscApp puts into a bottle is recorded in a marker so EscApp only ever removes its own files.

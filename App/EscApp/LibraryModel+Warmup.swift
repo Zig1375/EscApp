@@ -31,7 +31,8 @@ extension LibraryModel {
     }
 
     func warmUp(_ game: GameRecord) {
-        guard WarmPolicy.mayWarm(ready: isReady, appActive: NSApp.isActive, gamesRunning: !states.isEmpty),
+        guard !isUpdatingComponents,
+              WarmPolicy.mayWarm(ready: isReady, appActive: NSApp.isActive, gamesRunning: !states.isEmpty),
               let (runtime, _) = try? currentRuntime() else { return }
         Task { await warmer.warm(game, runtime: runtime) }
     }

@@ -49,6 +49,27 @@ struct EpicStore: StoreModule {
         stores.watchEpicUpdates(client, wine: wine)
     }
 
+    /// The launcher saves the player's sign-in only when it exits by itself. Ended with the rest of its bottle
+    /// (`wineserver -k`), it kept the token from before, which Epic's server refused at the next start
+    /// (`invalid_grant`), so the player was signed out every time. `taskkill` without `/F` sends its window
+    /// `WM_CLOSE`, as its close button does, and the launcher exited properly 3 s later (`LogExit: Exiting.`).
+    /// `wineboot --end-session` and `SIGINT` ended it without that.
+    func askToQuit(_ stores: StoreClient, client: URL, bottle: URL, wine: Wine,
+                   environment: [String: String]) async {
+        guard WineProcesses.running(in: bottle).contains(where: Self.isLauncher) else { return }
+        _ = try? await ProcessRunner.run(wine.wine.path, ["taskkill", "/IM", "EpicGamesLauncher.exe"],
+                                         environment: environment, timeout: 10)
+        let deadline = Date().addingTimeInterval(20)
+        while WineProcesses.running(in: bottle).contains(where: Self.isLauncher), Date() < deadline {
+            try? await Task.sleep(for: .milliseconds(500))
+        }
+    }
+
+    static func isLauncher(_ process: WineProcesses.Process) -> Bool {
+        let name = process.program.replacingOccurrences(of: "\\", with: "/").split(separator: "/").last ?? ""
+        return name.lowercased() == "epicgameslauncher.exe"
+    }
+
     // MARK: Library
 
     struct Item: Decodable {

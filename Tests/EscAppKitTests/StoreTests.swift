@@ -334,6 +334,16 @@ extension EpicUpdateTests {
         #expect(WineProcesses.cpuTime(of: getpid()) != nil)
     }
 
+    @Test func theLauncherIsToldFromItsHelpers() {
+        func process(_ program: String) -> WineProcesses.Process {
+            WineProcesses.Process(pid: 1, executable: "/wine/bin/wine", program: program)
+        }
+        #expect(EpicStore.isLauncher(
+            process(#"C:\Program Files\Epic Games\Launcher\Portal\Binaries\Win64\EpicGamesLauncher.exe"#)))
+        #expect(!EpicStore.isLauncher(
+            process("C:/Program Files/Epic Games/Launcher/Engine/Binaries/Win64/EpicWebHelper.exe")))
+    }
+
     @Test func aLauncherOnItsLogoIsToldFromOneShowingItsPages() {
         let stuck = """
             [2026.10.24-12.26.57:534][101]LogInit: AllCheckComplete SelfUpdate=1 SignedIn=0 RequiresRestart=0

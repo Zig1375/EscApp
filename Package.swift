@@ -12,6 +12,7 @@ let package = Package(
     ],
     targets: [
         .target(name: "EscAppKit", resources: [.copy("Resources/runtime-manifest.json"),
+                                                .copy("Resources/game-modules.json"),
                                                 .copy("Resources/chromium-helper.exe"),
                                                 .copy("Resources/window-keeper.exe"),
                                                 .copy("Resources/store-windows.exe")]),

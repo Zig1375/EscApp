@@ -4,7 +4,7 @@ import Foundation
 /// `escapp`: a debugging tool that shows what the app would do. It never touches games or settings;
 /// `runtime install` installs components exactly as the app's setup screen does.
 public struct EscAppCommand: Sendable {
-    public static let version = "0.1.0"
+    public static let version = "1.0"
 
     public struct Output: Equatable, Sendable {
         public var stdout: String
@@ -47,8 +47,8 @@ public struct EscAppCommand: Sendable {
             return env(rest)
         case "runtime":
             return await runtime(rest)
-        case "game":
-            return await game(rest)
+        case "game", "module":
+            return command == "game" ? await game(rest) : await module(rest)
         case "inspect", "store":
             return command == "inspect" ? inspect(rest) : await store(rest)
         case "run", "install":
@@ -75,6 +75,8 @@ public struct EscAppCommand: Sendable {
           game prepare <exe> [--windows winxp|win7|win10|win11]
                                            Identify the game and make its bottle (needs the runtime)
           game list                        List known games
+          module list|update               Show the game settings EscApp has, or fetch the newest
+          module show <game id|exe>        Show the settings EscApp has for a game
           inspect <exe>                    Show what EscApp reads from an .exe: format, DirectX, name, icon
           store list                       Show which stores are installed and running
           store install|open|close|remove steam|epic

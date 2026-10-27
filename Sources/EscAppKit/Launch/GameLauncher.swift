@@ -133,7 +133,7 @@ public struct GameLauncher: Sendable {
                         environment: environment, log: newLogFile(for: game.id), scale: scale, retina: retina,
                         client: client, gameFolder: folder, chromium: chromium, storeClient: storeClient,
                         locale: files.locale, rtps: files.rtps.map { "\($0.rtp.engine)/\($0.rtp.name)" },
-                        redists: files.redists, notes: files.notes)
+                        redists: files.redists, notes: files.notes + moduleNotes(game, info, runtime))
     }
 
     /// Ends what still runs in a game's bottle with osync the other way: the running wineserver decides, so the

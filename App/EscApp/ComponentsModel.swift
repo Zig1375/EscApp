@@ -74,7 +74,11 @@ final class ComponentsModel {
 
     /// Called on launch and every hour; checks at most once a day, and never if the user turned it off.
     func checkIfDue() async {
-        guard autoCheck, ManifestUpdater.isDue(lastChecked: updater.cached()?.checkedAt) else { return }
+        guard autoCheck else { return }
+        // The settings EscApp knows for particular games, fetched whole and quietly; the next launch uses them.
+        let modules = GameModulesUpdater(paths: paths)
+        if GameModulesUpdater.isDue(lastChecked: modules.cached()?.checkedAt) { _ = try? await modules.check() }
+        guard ManifestUpdater.isDue(lastChecked: updater.cached()?.checkedAt) else { return }
         await checkQuietly()
         // The new runtime replaces the current one; games move to it at their next launch.
         if catalog?.updateAvailable == true { await installUpdate() }

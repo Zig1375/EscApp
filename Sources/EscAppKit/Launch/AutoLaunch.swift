@@ -75,9 +75,11 @@ public struct AutoLaunch: Sendable {
     /// - Parameters:
     ///   - backend: plays with exactly this backend, without retrying (`escapp run --backend`).
     ///   - knownGames: the manifest's game database.
+    ///   - modules: the game modules (`GameModules`); nil reads the current index.
     ///   - warmer: holds the game's bottle warm, if it does; the game takes it over once it runs.
     public func play(_ game: GameRecord, runtime: RuntimeManifest.Runtime, backend override: GraphicsBackend? = nil,
-                     knownGames: [KnownGame] = [], verboseLog: Bool = false, control: LaunchControl = LaunchControl(),
+                     knownGames: [KnownGame] = [], modules: [GameModule]? = nil, verboseLog: Bool = false,
+                     control: LaunchControl = LaunchControl(),
                      warmer: (any WarmBottles)? = nil,
                      events: @escaping @Sendable (Event) -> Void = { _ in }) async throws -> Result {
         // The other warm bottles go: the game gets the memory. Its own is handed over once it runs.
@@ -86,8 +88,10 @@ public struct AutoLaunch: Sendable {
         let disc = game.disc.map { URL(filePath: $0) }
         do {
             let chromium = (try? ExecutableInfo.read(URL(filePath: game.executable)))?.chromium ?? false
-            let result = try await attempts(game, runtime: runtime, backend: override, knownGames: knownGames,
-                                            context: Context(runtime: runtime, verboseLog: verboseLog,
+            let modules = modules ?? GameModulesUpdater(paths: paths).current().modules
+            let result = try await attempts(game, runtime: runtime, backend: override,
+                                            context: Context(runtime: runtime, knownGames: knownGames,
+                                                             modules: modules, verboseLog: verboseLog,
                                                              control: control, warmer: warmer, events: events,
                                                              chromiumProgram: chromium))
             if let disc { await DiscImage.detach(image: disc, paths: paths) }
@@ -99,27 +103,25 @@ public struct AutoLaunch: Sendable {
     }
 
     private func attempts(_ game: GameRecord, runtime: RuntimeManifest.Runtime, backend override: GraphicsBackend?,
-                          knownGames: [KnownGame], context: Context) async throws -> Result {
+                          context: Context) async throws -> Result {
         let control = context.control
         let events = context.events
         var game = game
         let exe = URL(filePath: game.executable)
         try noticeUpdate(of: &game, exe: exe)
         let info = try? ExecutableInfo.read(exe)
-        let known = KnownGame.find(in: knownGames, executable: exe, productName: info?.productName)
-        if (game.launches ?? 0) == 0, let windows = known?.windowsVersion, windows != game.windowsVersion {
-            game.windowsVersion = windows
-            try update(game.id) { $0.windowsVersion = windows }
-        }
+        let (known, module) = try knownSettings(for: &game, info: info, context: context)
 
         // Settings that came with the game's folder are tried first while nothing has worked here yet.
         let fromFile = override == nil && game.chosenBackend == nil && game.backend == nil
             ? GameIdentifier.recommended(for: game) : nil
         let standard = (windows: game.windowsVersion, chromium: game.chromium)
         if let fromFile { Self.apply(fromFile, to: &game) }
-        var order = Self.order(for: game, override: override, info: info, recommended: fromFile, known: known)
-        // Graphics picked in Advanced works like `--backend`: that one only, no retries.
-        if override ?? game.chosenBackend != nil { control.stopRetrying() }
+        var order = Self.order(for: game, override: override, info: info, recommended: fromFile, known: known,
+                               module: module)
+        // Graphics picked in Advanced works like `--backend`: that one only, no retries. So does a module's
+        // `require`.
+        if override ?? game.chosenBackend ?? module.requireBackend != nil { control.stopRetrying() }
 
         if Self.isTuning(game, order: order, retrying: control.retrying) { events(.tuning(order)) }
         var attempts: [LaunchAttempt] = []
@@ -167,6 +169,10 @@ public struct AutoLaunch: Sendable {
     /// What one launch keeps the same across its attempts.
     struct Context: Sendable {
         let runtime: RuntimeManifest.Runtime
+        /// The manifest's game database.
+        let knownGames: [KnownGame]
+        /// The game modules (`GameModules`).
+        let modules: [GameModule]
         let verboseLog: Bool
         let control: LaunchControl
         let warmer: (any WarmBottles)?

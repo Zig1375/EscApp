@@ -375,6 +375,15 @@ revert <игра>`.
 
 ## Этапы
 
+**Сделано** (первая игра — Before We Leave из Epic, DXMT вместо чёрного окна DXVK): репозиторий `EscApp-Games` с
+`tools/check.py`, `tools/build_index.py` и CI, который собирает `games.json`; `GameModuleIndex`, `GameModulesUpdater`
+(раз в сутки, копия в приложении, свежее выигрывает), `GameModules.find` (магазин, SHA-256 exe, имя с ProductName,
+имя), `requires.minApp` и `requires.wine`, условия `wine`, `store`, `exeSha256`, и из `launch` — бэкенд (`prefer`,
+`require`) и версия Windows с приоритетами из «Порядка приоритетов»; строка `[EscApp] Game settings <id> revision
+<n>` в логе запуска; `escapp module list|show|update`. Группа с условием `backend` или `steamBuild` пока не
+применяется. Остальное из этапа 1 впереди: `retina`, `scaling`, `chromium`, `fastSync`, `arguments`, `environment`,
+`dllOverrides`, `components`, общие модули, `escapp module needs`, перенос `KnownGame`, строка в «Дополнительно».
+
 1. **Основа.** Формат, индекс, `GameModulesUpdater` и копия в приложении, валидатор. `match` по магазину, exe и
    SHA-256. Действия `launch`, `dllOverrides`, `components`. `GameModuleNeeds` с общими модулями и
    `requires.wine`, `escapp module needs`. Перенос `KnownGame`. Строка и переключатель в «Дополнительно».

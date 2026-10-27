@@ -66,6 +66,11 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
   per store (`Sources/EscAppKit/Stores/Steam`, `.../Epic`). A new store is a type conforming to `StoreModule` (with
   a fixed `id` and `bottleNumber`, never reusing 3–5, which GOG Galaxy, the EA app and Ubisoft Connect had), its
   line in `Store.allCases`, and its logo, colour and purpose in the app's `StoreBar.swift`.
+- Game modules (`docs/GAME-MODULES.md`): what particular games need, as data in the sibling repo `../EscApp-Games`,
+  whose CI builds `games.json`. `GameModulesUpdater` fetches it daily into `GameModules.json` (the app's copy is
+  `Resources/game-modules.json`, rebuilt with `tools/build_index.py --output` there); `GameModules` finds a game's
+  module (store id, exe SHA-256, exe name with ProductName, exe name) and turns its `launch` into a backend order
+  and Windows version. Only `launch` (backend, Windows) is applied so far. `escapp module list|show|update`.
 - `AppPaths` is the only place that builds paths under `~/Library/Application Support/EscApp` (`ESCAPP_HOME` overrides).
 
 ## Rules

@@ -49,6 +49,8 @@ public struct AppPaths: Sendable, Equatable {
     public var library: URL { root.appending(path: "Games.json", directoryHint: .notDirectory) }
     /// Settings for all games (`SharedSettings`).
     public var settings: URL { root.appending(path: "Settings.json", directoryHint: .notDirectory) }
+    /// The game modules last fetched (`GameModulesUpdater`).
+    public var gameModules: URL { root.appending(path: "GameModules.json", directoryHint: .notDirectory) }
 
     public func runtime(_ id: String) -> URL { runtimes.appending(path: id, directoryHint: .isDirectory) }
     public func template(forRuntime id: String) -> URL { templates.appending(path: id, directoryHint: .isDirectory) }

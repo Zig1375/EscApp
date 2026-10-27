@@ -262,7 +262,7 @@ public struct GameInstaller: Sendable {
         FileManager.default.createFile(atPath: log.path, contents: nil)
         let handle = try FileHandle(forWritingTo: log)
         defer { try? handle.close() }
-        handle.write(Data("[EscApp] Install \(arguments.joined(separator: " "))\n".utf8))
+        handle.write(Data((LogHeader.text(wine: wine) + "[EscApp] Install \(arguments.joined(separator: " "))\n").utf8))
         let process = Process()
         process.executableURL = wine.wine
         process.arguments = arguments

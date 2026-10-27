@@ -256,8 +256,8 @@ public struct GameLauncher: Sendable {
 
     /// The log's first lines: what this launch is made of.
     private static func header(for prepared: Prepared, retina: Bool, startedAt: Date) -> [String] {
-        [
-            "[EscApp] Launch \(ISO8601DateFormatter().string(from: startedAt))",
+        ["[EscApp] Launch \(ISO8601DateFormatter().string(from: startedAt))"]
+            + LogHeader.lines(wine: prepared.wine) + [
             "[EscApp] Game \(prepared.game.name) (\(prepared.game.id))",
             "[EscApp] Executable \(prepared.game.executable)",
             "[EscApp] Backend \(prepared.backend.rawValue)",
@@ -269,7 +269,7 @@ public struct GameLauncher: Sendable {
             "[EscApp] osync \(WineEnvironment.fastSyncIsOn(prepared.environment) ? "on" : "off")",
             "[EscApp] Chromium \(prepared.chromium?.rawValue ?? "no")",
             "[EscApp] Language \(prepared.locale ?? "Mac's")",
-        ]
+            ]
     }
 
     /// Steam stuck at start (`SteamStartCheck`): closed, everything in its bottle killed, and the game started

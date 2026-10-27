@@ -259,10 +259,14 @@ public struct Wine: Sendable {
     /// Whether this Wine has osync, read from the runtime it belongs to (`RUNTIME.json` next to every tree,
     /// `wine` and the backends' clones alike). False for a tree outside a runtime folder.
     public var supportsFastSync: Bool {
+        runtime?.wineHas(WineEnvironment.fastSyncFeature) ?? false
+    }
+
+    /// The runtime this tree belongs to, from its `RUNTIME.json`; nil for a tree outside a runtime folder.
+    public var runtime: RuntimeManifest.Runtime? {
         let marker = root.deletingLastPathComponent().appending(path: RuntimeInstaller.markerName)
-        guard let data = try? Data(contentsOf: marker),
-              let runtime = try? JSONDecoder().decode(RuntimeManifest.Runtime.self, from: data) else { return false }
-        return runtime.wineHas(WineEnvironment.fastSyncFeature)
+        guard let data = try? Data(contentsOf: marker) else { return nil }
+        return try? JSONDecoder().decode(RuntimeManifest.Runtime.self, from: data)
     }
 }
 

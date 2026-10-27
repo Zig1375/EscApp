@@ -3,9 +3,11 @@ import Foundation
 /// "Copy report" after a game didn't start: plain text for an issue or a forum post. Only what the launch saw:
 /// the game, the attempts, and the error lines of the last log. Nothing is sent anywhere by EscApp.
 public enum LaunchReport {
-    public static func text(_ result: AutoLaunch.Result, runtime: String, macOS: String, app: String) -> String {
+    public static func text(_ result: AutoLaunch.Result, runtime: String, macOS: String, app: String,
+                            system: SystemInfo = .current) -> String {
         var lines = [
             "EscApp \(app), macOS \(macOS), runtime \(runtime)",
+            "Mac: \(system.summary)",
             "Game: \(result.game.name)",
             "Executable: \(URL(filePath: result.game.executable).lastPathComponent)",
             "Windows: \(result.game.windowsVersion.displayName)",
@@ -30,11 +32,13 @@ public enum LaunchReport {
     }
 
     /// Advanced → "Copy Report": the same, from the game's last log instead of a launch that just happened.
-    public static func text(game: GameRecord, log: URL, runtime: String, macOS: String, app: String) -> String {
+    public static func text(game: GameRecord, log: URL, runtime: String, macOS: String, app: String,
+                            system: SystemInfo = .current) -> String {
         let run = LaunchHistory.runs(in: log.deletingLastPathComponent()).first { $0.log == log }
         let diagnosis = LogDiagnosis(log: LogDiagnosis.read(log) ?? "")
         var lines = [
             "EscApp \(app), macOS \(macOS), runtime \(runtime)",
+            "Mac: \(system.summary)",
             "Game: \(game.name)",
             "Executable: \(URL(filePath: game.executable).lastPathComponent)",
             "Windows: \(game.windowsVersion.displayName)",

@@ -189,9 +189,15 @@ import Testing
                           log: log),
             LaunchAttempt(backend: .dxvk, seconds: 3, failure: .closed(exitCode: 5), diagnosis: crash, log: log),
         ], working: nil, log: log)
-        let text = LaunchReport.text(result, runtime: "wine-11.0-escapp-2", macOS: "26.1", app: "0.1.0")
+        let text = LaunchReport.text(result, runtime: "wine-11.0-escapp-2", macOS: "26.1", app: "0.1.0",
+                                     system: LogHeaderTests.mac)
 
-        #expect(text.hasPrefix("EscApp 0.1.0, macOS 26.1, runtime wine-11.0-escapp-2\nGame: Diablo II\n"))
+        #expect(text.hasPrefix("""
+            EscApp 0.1.0, macOS 26.1, runtime wine-11.0-escapp-2
+            Mac: MacBook Pro (16-inch, 2023) (Mac14,6), Apple M2 Max, 8P + 4E cores, 32 GB memory
+            Game: Diablo II
+
+            """))
         #expect(text.contains("Executable: Game.exe"))
         #expect(text.contains("- DXVK: closed after 3 s, exit code 5\n  wine: Unhandled page fault"))
         #expect(text.contains("- WineD3D: no window after 60 s"))

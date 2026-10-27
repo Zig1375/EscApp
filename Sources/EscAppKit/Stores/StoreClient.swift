@@ -186,6 +186,7 @@ public struct StoreClient: Sendable {
         FileManager.default.createFile(atPath: log.path, contents: nil)
         let handle = try FileHandle(forWritingTo: log)
         defer { try? handle.close() }
+        handle.write(Data(LogHeader.text(wine: wine).utf8))
         let process = Process()
         process.executableURL = wine.wine
         process.arguments = [client.path(percentEncoded: false)] + arguments
@@ -216,7 +217,7 @@ public struct StoreClient: Sendable {
         FileManager.default.createFile(atPath: log.path, contents: nil)
         let handle = try FileHandle(forWritingTo: log)
         defer { try? handle.close() }
-        handle.write(Data("[EscApp] Run \(arguments.joined(separator: " "))\n".utf8))
+        handle.write(Data((LogHeader.text(wine: wine) + "[EscApp] Run \(arguments.joined(separator: " "))\n").utf8))
         let process = Process()
         process.executableURL = wine.wine
         process.arguments = arguments

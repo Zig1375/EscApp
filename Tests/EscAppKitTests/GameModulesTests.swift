@@ -34,6 +34,21 @@ import Testing
         #expect(launch.requireBackend == .dxmt)
     }
 
+    /// One module covers every copy of the game: each store's own id, and the exe's name for a copy from a store
+    /// the module doesn't list or from no store at all.
+    @Test func bundledModuleCoversEveryCopy() throws {
+        let modules = try GameModuleIndex.bundled().modules
+        let copies = [
+            game(store: .epic, storeID: Self.epicID, exe: "/g/Other.exe"),
+            game(store: .steam, storeID: "1073910", exe: "/g/Other.exe"),
+            game(store: .steam, storeID: "1"),
+            game(),
+        ]
+        for copy in copies {
+            #expect(GameModules.find(for: copy, in: modules, app: nil)?.id == "before-we-leave")
+        }
+    }
+
     /// A module that doesn't decode costs only itself; one in a newer format is decoded but never matched.
     @Test func brokenModuleIsLeftOut() throws {
         let json = """

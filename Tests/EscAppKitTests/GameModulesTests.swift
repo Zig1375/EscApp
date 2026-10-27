@@ -23,14 +23,15 @@ import Testing
 
     // MARK: The index
 
-    /// The app's copy of the index decodes, and has the module Before We Leave needs: DXMT first.
+    /// The app's copy of the index decodes, and has the module Before We Leave needs: DXMT, whatever was
+    /// remembered.
     @Test func bundledIndexHasBeforeWeLeave() throws {
         let index = try GameModuleIndex.bundled()
         #expect(index.format == 1)
         let found = GameModules.find(for: game(store: .epic, storeID: Self.epicID), in: index.modules, app: nil)
         #expect(found?.id == "before-we-leave")
         let launch = try GameModules.launch(of: try #require(found), store: .epic, wine: wine)
-        #expect(launch.preferBackends == [.dxmt])
+        #expect(launch.requireBackend == .dxmt)
     }
 
     /// A module that doesn't decode costs only itself; one in a newer format is decoded but never matched.

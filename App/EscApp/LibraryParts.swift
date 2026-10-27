@@ -12,7 +12,19 @@ struct UpdateStrip: View {
                 .font(.system(size: 13, weight: .semibold))
             Text(message)
                 .frame(maxWidth: .infinity, alignment: .leading)
-            if components.updating == nil {
+            if let progress = components.updating {
+                // A gigabyte download behind a bare "Downloading Wine…" looked stuck; unpacking has no
+                // fraction, so the bar runs indeterminate then.
+                ProgressView(value: progress.fraction)
+                    .progressViewStyle(.linear)
+                    .tint(.brand)
+                    .frame(width: 220)
+                if let fraction = progress.fraction {
+                    Text(fraction, format: .percent.precision(.fractionLength(0)))
+                        .monospacedDigit()
+                        .frame(width: 40, alignment: .trailing)
+                }
+            } else {
                 Button("Update") { Task { await components.installUpdate() } }
                     .buttonStyle(.plain)
                     .fontWeight(.semibold)

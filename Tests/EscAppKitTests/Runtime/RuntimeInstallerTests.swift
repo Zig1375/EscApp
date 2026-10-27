@@ -91,6 +91,54 @@ import Testing
                                                 withIntermediateDirectories: true)
         #expect(RuntimeInstaller(paths: paths).installed(runtime) == nil)
     }
+
+    @Test func anUpdateTakesUnchangedComponentsFromTheInstalledRuntime() async throws {
+        let (temp, paths) = try setUp()
+        let oldWine = try makeArchive(["bin/wine": "old"], in: temp.url)
+        let newWine = try makeArchive(["bin/wine": "new"], in: temp.url)
+        let dxvk = try makeArchive(["x64/d3d11.dll": "dxvk"], in: temp.url)
+        let dxvkURL = try publish(dxvk, in: temp)
+        let installer = RuntimeInstaller(paths: paths)
+        try await installer.install(RuntimeManifest.Runtime(
+            id: "r1", minApp: version("0.1"), minMacOS: version("15"),
+            components: [component(url: try publish(oldWine, in: temp), data: oldWine),
+                         component(url: dxvkURL, data: dxvk, kind: .dxvk, into: "dxvk")]))
+
+        // DXVK can't be downloaded any more, so the update only works by taking the installed copy.
+        try FileManager.default.removeItem(at: dxvkURL)
+        let folder = try await installer.install(RuntimeManifest.Runtime(
+            id: "r2", minApp: version("0.1"), minMacOS: version("15"),
+            components: [component(url: try publish(newWine, in: temp), data: newWine),
+                         component(url: dxvkURL, data: dxvk, kind: .dxvk, into: "dxvk")]))
+
+        #expect(try String(contentsOf: folder.appending(path: "wine/bin/wine"), encoding: .utf8) == "new")
+        #expect(try String(contentsOf: folder.appending(path: "dxvk/x64/d3d11.dll"), encoding: .utf8) == "dxvk")
+    }
+
+    @Test func onlyTheSameFileInTheSamePlaceIsReused() throws {
+        let url = try #require(URL(string: "https://example.com/a.tar.gz"))
+        let folder = URL(filePath: "/R/r1")
+        func part(_ data: String, kind: RuntimeManifest.Component.Kind = .wine, from: String = "",
+                  into: String = "wine") -> RuntimeManifest.Component {
+            component(url: url, data: Data(data.utf8), kind: kind, from: from, into: into)
+        }
+        func runtime(_ components: [RuntimeManifest.Component]) -> [(folder: URL, runtime: RuntimeManifest.Runtime)] {
+            [(folder, RuntimeManifest.Runtime(id: "r1", minApp: version("0.1"), minMacOS: version("15"),
+                                              components: components))]
+        }
+
+        #expect(RuntimeInstaller.reusable(part("dxvk", kind: .dxvk, into: "dxvk"),
+                                          from: runtime([part("wine"), part("dxvk", kind: .dxvk, into: "dxvk")]))
+                == folder.appending(path: "dxvk", directoryHint: .isDirectory))
+        #expect(RuntimeInstaller.reusable(part("wine"), from: runtime([part("other")])) == nil)
+        #expect(RuntimeInstaller.reusable(part("wine"), from: runtime([part("wine", from: "Wine.app")])) == nil)
+        #expect(RuntimeInstaller.reusable(part("wine"), from: runtime([part("wine", into: "wine2")])) == nil)
+        // Wine with Wine Mono unpacked inside it is more than this Wine.
+        #expect(RuntimeInstaller.reusable(part("wine"), from: runtime([
+            part("wine"), part("mono", kind: .mono, into: "wine/share/wine/mono"),
+        ])) == nil)
+        #expect(RuntimeInstaller.reusable(part("wine"), from: []) == nil)
+    }
 }
 
 @Suite struct RosettaTests {

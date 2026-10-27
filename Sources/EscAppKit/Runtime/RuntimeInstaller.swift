@@ -106,7 +106,13 @@ public struct RuntimeInstaller: Sendable {
         progress: @escaping @Sendable (Step) -> Void
     ) async throws -> URL {
         let fileManager = FileManager.default
+        let installed = installedRuntimes().map { (folder: paths.runtime($0.id), runtime: $0) }
         for component in runtime.components {
+            if let source = Self.reusable(component, from: installed),
+               fileManager.fileExists(atPath: source.path) {
+                try reuse(source, for: component, in: staging)
+                continue
+            }
             let total = component.size
             let archive = try await downloader.fetch(component, into: paths.downloads) { received in
                 progress(.downloading(component.kind, received: received, total: total))
@@ -127,6 +133,35 @@ public struct RuntimeInstaller: Sendable {
         // Downloads is left over from a runtime that's no longer wanted, so it goes too.
         try? fileManager.removeItem(at: paths.downloads)
         return destination
+    }
+
+    /// Where `component` already lies unpacked: the same file, taken from the same folder, in an installed
+    /// runtime. Updating from Wine 11.20 build 8 to build 9 downloaded the unchanged DXVK and DXMT again, because
+    /// the archives are deleted after every install. A folder that held another component of its runtime (Wine
+    /// Mono inside `wine`) isn't taken: it would bring that one along.
+    static func reusable(
+        _ component: RuntimeManifest.Component,
+        from installed: [(folder: URL, runtime: RuntimeManifest.Runtime)]
+    ) -> URL? {
+        for (folder, runtime) in installed {
+            guard runtime.components.contains(where: {
+                $0.sha256 == component.sha256 && $0.from == component.from && $0.into == component.into
+            }) else { continue }
+            let nested = runtime.components.contains { $0.into.hasPrefix(component.into + "/") }
+            if !nested { return folder.appending(path: component.into, directoryHint: .isDirectory) }
+        }
+        return nil
+    }
+
+    /// An APFS clone of the installed copy: no download and almost no space.
+    func reuse(_ source: URL, for component: RuntimeManifest.Component, in staging: URL) throws {
+        let destination = staging.appending(path: component.into)
+        guard !FileManager.default.fileExists(atPath: destination.path) else {
+            throw InstallError.destinationExists(component.kind, component.into)
+        }
+        try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(),
+                                                withIntermediateDirectories: true)
+        try BottleManager.clone(source, to: destination)
     }
 
     /// Unpacks into a scratch folder inside staging, then moves the manifest's `from` folder to `into`.

@@ -111,6 +111,12 @@ public struct AutoLaunch: Sendable {
         try noticeUpdate(of: &game, exe: exe)
         let info = try? ExecutableInfo.read(exe)
         let (known, module) = try knownSettings(for: &game, info: info, context: context)
+        let d3dmetal = D3DMetal.isReady(paths: paths, runtime: runtime)
+        // A module that requires D3DMetal knows the game won't start on anything else: the launch would only fall
+        // back to DXVK and fail, so it stops where a Direct3D 12 exe does, at the DirectX 12 setup.
+        if !d3dmetal, override == nil, DirectX12Need.of(traits: nil, module: module) == .gameSettings {
+            throw LaunchError.unsupported(.directX12)
+        }
 
         // Settings that came with the game's folder are tried first while nothing has worked here yet.
         let fromFile = override == nil && game.chosenBackend == nil && game.backend == nil
@@ -118,7 +124,7 @@ public struct AutoLaunch: Sendable {
         let standard = (windows: game.windowsVersion, chromium: game.chromium)
         if let fromFile { Self.apply(fromFile, to: &game) }
         var order = Self.order(for: game, override: override, info: info, recommended: fromFile, known: known,
-                               module: module, d3dmetal: D3DMetal.isReady(paths: paths, runtime: runtime))
+                               module: module, d3dmetal: d3dmetal)
         // Graphics picked in Advanced works like `--backend`: that one only, no retries. So does a module's
         // `require`.
         if override ?? game.chosenBackend ?? module.requireBackend != nil { control.stopRetrying() }

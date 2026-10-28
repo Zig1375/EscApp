@@ -17,8 +17,8 @@ extension LibraryModel {
             case needsDisc(GameID, message: String?)
             /// The game quit because Steam wasn't running (`[S_API FAIL]` in its log).
             case needsSteam(GameID)
-            /// A DirectX 12 game, and D3DMetal isn't added yet (Settings › DirectX 12).
-            case needsDirectX12
+            /// A DirectX 12 game, and D3DMetal isn't added yet (Settings › DirectX 12), with how EscApp knows.
+            case needsDirectX12(DirectX12Need)
         }
 
         let id = UUID()

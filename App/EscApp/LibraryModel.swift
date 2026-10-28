@@ -33,6 +33,8 @@ final class LibraryModel {
     /// Games whose cover the player chose, which "Remove Cover" can take away.
     private(set) var customCovers: Set<GameID> = []
     private(set) var infos: [GameID: ExecutableInfo] = [:]
+    /// DirectX 12 games that can't start until D3DMetal is added (`LibraryModel+DirectX12`).
+    var directX12Needs: [GameID: DirectX12Need] = [:]
     var states: [GameID: PlayState] = [:]
     var notice: Notice?
     /// The game that asked for DirectX 12, offered to start once the DirectX 12 window has added D3DMetal.
@@ -126,6 +128,7 @@ final class LibraryModel {
         for game in games where icons[game.id] == nil { loadIcon(for: game) }
         // Asked again on each reload: Steam downloads a new game's cover some time after the game appears.
         for game in games where covers[game.id] == nil { loadCover(for: game) }
+        refreshDirectX12Needs()
         refreshDefaultHandler()
         newGameRetina = SharedSettings.load(from: paths.settings).newGameRetina ?? .auto
     }
@@ -170,6 +173,7 @@ final class LibraryModel {
         do {
             let game = try GameIdentifier(paths: paths).identify(executable: url).record
             reload()
+            checkDirectX12Need(of: game)
             play(game)
         } catch {
             notice = Notice(title: String(localized: "EscApp can't open this file"),

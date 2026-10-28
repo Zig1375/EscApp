@@ -61,7 +61,7 @@ extension LibraryModel {
     }
 
     func play(_ game: GameRecord) {
-        guard states[game.id] == nil, !waitsForUpdate(game) else { return }
+        guard states[game.id] == nil, !waitsForUpdate(game), !askedForDirectX12(game) else { return }
         states[game.id] = .starting
         launch = Launch(id: game.id, name: game.name, firstTime: (game.launches ?? 0) == 0)
         let control = LaunchControl()
@@ -110,10 +110,7 @@ extension LibraryModel {
     private func launchFailed(_ game: GameRecord, _ error: any Error) {
         launch = nil
         if case LaunchError.unsupported(.directX12)? = error as? LaunchError {
-            directX12Game = game.id
-            problem = Problem(kind: .needsDirectX12)
-            NSApp.activate()
-            return
+            return askForDirectX12(game, directX12Needs[game.id] ?? .directX12)
         }
         notice = Notice(title: String(localized: "\(game.name) can't start"), message: String(describing: error))
     }

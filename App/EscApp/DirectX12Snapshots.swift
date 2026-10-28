@@ -35,7 +35,14 @@ enum DirectX12Snapshots {
         model.showForSnapshot(.start, problem: nil, found: nil)
         save(DirectX12Card(model: model, components: ComponentsModel()).frame(width: 640).padding(24)
                 .background(Color.windowBackground), "\(language)-settings", in: folder)
-        save(ProblemSheet(problem: .init(kind: .needsDirectX12), library: library), "\(language)-problem", in: folder)
+        save(ProblemSheet(problem: .init(kind: .needsDirectX12(.directX12)), library: library),
+             "\(language)-problem", in: folder)
+        save(ProblemSheet(problem: .init(kind: .needsDirectX12(.gameSettings)), library: library),
+             "\(language)-problem-module", in: folder)
+        let game = GameRecord(id: .make(), name: "Probe", executable: "/Games/Probe/probe.exe", folder: "/Games/Probe",
+                              hasMarker: true, addedAt: Date())
+        save(DirectX12Tip(game: game, library: library).frame(width: 460).padding(24)
+                .background(Color.windowBackground), "\(language)-page-tip", in: folder)
         exit(0)
     }
 

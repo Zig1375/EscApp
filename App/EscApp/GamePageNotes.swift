@@ -40,6 +40,43 @@ struct RetinaClicksTip: View {
     }
 }
 
+/// Under the actions of a DirectX 12 game while D3DMetal isn't added (`DirectX12Need`): what the game needs and
+/// the way to it, before the player tries Play and learns it from a message.
+struct DirectX12Tip: View {
+    let game: GameRecord
+    let library: LibraryModel
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "cpu")
+                .font(.system(size: 13, weight: .medium))
+                .padding(.top, 1)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("""
+                    This game needs DirectX 12. Add it once, from Apple: it's free and takes a couple of minutes. \
+                    EscApp shows you how.
+                    """)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("Set Up DirectX 12…") {
+                    library.directX12Game = game.id
+                    openWindow(id: DirectX12Window.id)
+                }
+                .buttonStyle(CompactButtonStyle(kind: .primary))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .font(.system(size: 13))
+        .foregroundStyle(Color.warnText)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .frame(maxWidth: 460, alignment: .leading)
+        .background(Color.warnBackground, in: .rect(cornerRadius: 10, style: .continuous))
+        .overlay { RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Color.warnBorder) }
+    }
+}
+
 /// Over a running game's settings, which are locked until it ends (`LibraryModel.isPlaying`).
 struct ClosedGameNote: View {
     var body: some View {

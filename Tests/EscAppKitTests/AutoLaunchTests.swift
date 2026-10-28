@@ -361,3 +361,20 @@ extension AutoLaunchTests {
         #expect(!AutoLaunch.isTuning(next, order: [.dxvk, .dxmt], retrying: true))
     }
 }
+
+extension AutoLaunchTests {
+    /// A module that requires D3DMetal, without D3DMetal added: the launch stops at the DirectX 12 setup instead
+    /// of starting the game on DXVK to fail.
+    @Test func aModuleRequiringD3DMetalWithoutItStartsNothing() async throws {
+        let module = GameModule(id: "dx12", revision: 1, format: 1, name: "DX12",
+                                match: .init(exe: [.init(name: "game.exe")]),
+                                fixes: [.init(launch: .init(require: .init(backend: ["d3dmetal"])))])
+        let starter = try FakeStarter([.dxvk: .works], logs: logs())
+        await #expect(throws: LaunchError.self) {
+            try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
+                                 measure: { _ in nil }, timing: timing)
+                .play(game, runtime: runtime, modules: [module])
+        }
+        #expect(starter.started.isEmpty)
+    }
+}

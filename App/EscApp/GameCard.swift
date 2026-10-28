@@ -144,6 +144,16 @@ struct GameCard: View {
                 runningButtons { Text("Show Game") }
                 runningButtons { Image(systemName: "arrow.up.forward.app") }
             }
+        // A DirectX 12 game without D3DMetal says so before the click, which opens the explanation.
+        case nil where library.directX12Needs[game.id] != nil && !waitsForUpdate && !isHovered:
+            HStack(spacing: 6) {
+                Image(systemName: "exclamationmark.circle")
+                Text("Needs DirectX 12").lineLimit(1)
+            }
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
+            .padding(.leading, 4)
         case nil where startsAfterUpdate && !isHovered:
             HStack(spacing: 6) {
                 Image(systemName: "hourglass")

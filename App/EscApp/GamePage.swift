@@ -87,6 +87,10 @@ struct GamePage: View {
                         HStack(spacing: 8) { secondaryActions(game) }
                     }
                 }
+                if library.directX12Needs[game.id] != nil {
+                    DirectX12Tip(game: game, library: library)
+                        .padding(.top, 4)
+                }
                 if GameSettings.retina(game.retina, dpiAware: library.infos[game.id]?.dpiAware ?? false) {
                     RetinaClicksTip(game: game, library: library)
                         .padding(.top, 4)

@@ -28,6 +28,12 @@ struct EscAppApp: App {
             }
             .onChange(of: components.updating != nil, initial: true) {
                 delegate.library.isUpdatingComponents = components.updating != nil
+                // New components may be the ones that can run D3DMetal.
+                delegate.library.refreshDirectX12Needs()
+            }
+            // Added in the DirectX 12 window or removed in Settings: the cards' "Needs DirectX 12" follows.
+            .onChange(of: directX12.installed) {
+                delegate.library.d3dmetalChanged(added: directX12.installed != nil)
             }
             .task {
                 // Once an hour is plenty: the updater itself only goes to the network once a day.

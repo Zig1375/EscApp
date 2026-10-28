@@ -24322,6 +24322,162 @@
           }
         }
       }
+    },
+    "EscApp knows this game: it runs only with DirectX 12": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp kennt dieses Spiel: Es läuft nur mit DirectX 12"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp conoce este juego: solo funciona con DirectX 12"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp connaît ce jeu : il ne fonctionne qu'avec DirectX 12"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp conosce questo gioco: funziona solo con DirectX 12"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp はこのゲームを把握しています：DirectX 12 でのみ動作します"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp이 아는 게임입니다: DirectX 12에서만 실행됩니다"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp знает эту игру: она работает только с DirectX 12"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 认识这款游戏：它只能在 DirectX 12 下运行"
+          }
+        }
+      }
+    },
+    "Needs DirectX 12": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Braucht DirectX 12"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necesita DirectX 12"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nécessite DirectX 12"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Richiede DirectX 12"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 が必要"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 필요"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нужен DirectX 12"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要 DirectX 12"
+          }
+        }
+      }
+    },
+    "This game needs DirectX 12. Add it once, from Apple: it's free and takes a couple of minutes. EscApp shows you how.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Spiel braucht DirectX 12. Füge es einmal hinzu, von Apple: kostenlos und in ein paar Minuten. EscApp zeigt dir, wie."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este juego necesita DirectX 12. Añádelo una vez, desde Apple: es gratis y lleva un par de minutos. EscApp te muestra cómo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce jeu nécessite DirectX 12. Ajoutez-le une fois, depuis Apple : c'est gratuit et ne prend que quelques minutes. EscApp vous montre comment."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo gioco richiede DirectX 12. Aggiungilo una volta, da Apple: è gratis e richiede un paio di minuti. EscApp ti mostra come."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このゲームには DirectX 12 が必要です。Apple から一度だけ追加してください。無料で、数分で終わります。手順は EscApp が案内します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 게임에는 DirectX 12가 필요합니다. Apple에서 한 번만 추가하면 됩니다. 무료이며 몇 분이면 끝납니다. 방법은 EscApp이 안내합니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этой игре нужен DirectX 12. Добавьте его один раз, от Apple: это бесплатно и займёт пару минут. EscApp покажет, как."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此游戏需要 DirectX 12。只需从 Apple 添加一次：免费，几分钟即可完成。EscApp 会一步步告诉你怎么做。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

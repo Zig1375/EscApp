@@ -163,7 +163,8 @@ struct ProblemSheet: View {
         case let .needsDisc(_, message?): "The game said: “\(message)”"
         case .needsDisc(_, nil): nil
         case .needsSteam: "Found in the game's log: SteamAPI_Init() failed"
-        case .needsDirectX12: "The game's file uses d3d12.dll"
+        case .needsDirectX12(.directX12): "The game's file uses d3d12.dll"
+        case .needsDirectX12(.gameSettings): "EscApp knows this game: it runs only with DirectX 12"
         }
     }
 }

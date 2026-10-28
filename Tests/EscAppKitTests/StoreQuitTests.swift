@@ -65,23 +65,6 @@ import Testing
         #expect(StoreWindows.parse("").isEmpty)
     }
 
-    @Test func shownWindows() {
-        #expect(StoreWindows.Shown([]) == .nothing)
-        #expect(StoreWindows.Shown([.init(pid: 1, minimised: true, title: "Epic Games Launcher")]) == .minimised)
-        #expect(StoreWindows.Shown([.init(pid: 1, minimised: true, title: ""),
-                                    .init(pid: 1, minimised: false, title: "")]) == .windows)
-    }
-
-    /// Epic closed by the player: minimised first, hidden a moment later. Asked in between, the next look comes
-    /// 3 s later, not 20; a client minimised for a while is asked rarely again.
-    @Test func closingClientIsAskedSooner() {
-        let left = Date(timeIntervalSince1970: 1000)
-        #expect(StoreKeeper.askAgain(asked: left, minimised: true, offScreenSince: left, now: left + 3))
-        #expect(!StoreKeeper.askAgain(asked: left, minimised: false, offScreenSince: left, now: left + 3))
-        #expect(!StoreKeeper.askAgain(asked: left + 40, minimised: true, offScreenSince: left, now: left + 43))
-        #expect(StoreKeeper.askAgain(asked: left + 40, minimised: true, offScreenSince: left, now: left + 60))
-    }
-
     @Test func helperIsBundled() {
         #expect(StoreWindows.program != nil)
     }

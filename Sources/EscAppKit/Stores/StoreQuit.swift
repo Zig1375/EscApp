@@ -62,25 +62,8 @@ public enum StoreWindows {
         }
     }
 
-    /// What Windows shows in a bottle.
-    enum Shown: Equatable {
-        case nothing
-        /// Only minimised windows: the player's, or a client closing. Epic minimises its window when the player
-        /// closes it and hides it a moment later.
-        case minimised
-        case windows
-
-        init(_ windows: [Window]) {
-            if windows.isEmpty {
-                self = .nothing
-            } else {
-                self = windows.allSatisfy(\.minimised) ? .minimised : .windows
-            }
-        }
-    }
-
-    /// What `bottle` has shown; nil when the helper couldn't run, which counts as a window.
-    static func shown(in bottle: URL, wine: Wine, host: [String: String]) async -> Shown? {
+    /// Whether anything in `bottle` has a window shown; nil when the helper couldn't run, which counts as yes.
+    static func anyShown(in bottle: URL, wine: Wine, host: [String: String]) async -> Bool? {
         guard let program else { return nil }
         let environment = WineEnvironment.make(host: host, bottle: bottle.path,
                                                fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
@@ -88,6 +71,6 @@ public enum StoreWindows {
         guard let result = try? await ProcessRunner.run(wine.wine.path, [program.path(percentEncoded: false)],
                                                         environment: environment, timeout: 8),
               result.status == 0 else { return nil }
-        return Shown(parse(result.output))
+        return !parse(result.output).isEmpty
     }
 }

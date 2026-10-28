@@ -60,11 +60,11 @@
   "dx_needs_mac": "구성 요소가 최신인 EscApp(설정 › 구성 요소).",
   "dx_steps_title": "추가하는 방법",
   "dx_step1_title": "EscApp 설정에서 DirectX 12 열기",
-  "dx_step1_text": "설정 › DirectX 12를 엽니다. DirectX 12 게임이 시작되지 않을 때도 EscApp이 <strong>DirectX 12 설정…</strong>으로 같은 화면을 안내합니다.",
+  "dx_step1_text": "설정 › DirectX 12를 열고 <strong>DirectX 12 설정…</strong>을 클릭하면 'DirectX 12 추가' 창이 열립니다. DirectX 12 게임이 시작되지 않을 때도 EscApp이 이 창을 안내합니다.",
   "dx_step2_title": "Apple에서 다운로드",
   "dx_step2_text": "1. EscApp의 <strong>Apple 다운로드 페이지 열기</strong>를 클릭하세요. 브라우저에서 열립니다.<br>2. Apple 계정(Apple ID)으로 로그인하세요. 유료 개발자 멤버십 없이 무료 계정이면 충분합니다. 처음에는 Apple이 개발자 약관에 동의하라고 하는데, 이것도 무료입니다.<br>3. 목록에서 <strong>Evaluation environment for Windows games 3.0</strong>(파란색 아이콘) 또는 더 새로운 버전을 찾으세요. <em>Game Porting Toolkit</em>(빨간색 아이콘)는 다른 다운로드입니다.<br>4. 그 아래의 <strong>View Details</strong>를 클릭한 다음 <strong>Evaluation_environment_for_Windows_games_3.0.dmg</strong>(약 25MB)를 클릭하세요. 파일은 열지 마세요.",
   "dx_step3_title": "EscApp로 돌아오기",
-  "dx_step3_text": "EscApp이 다운로드 폴더에서 파일을 직접 찾아 그 이름의 버튼을 보여 줍니다. 클릭하세요. 다른 곳에 저장했다면 <strong>파일 선택…</strong>을 클릭하거나 파일을 EscApp의 단계 위로 끌어다 놓으세요. EscApp이 파일이 정말 Apple에서 온 것인지 확인합니다. 아직 아무것도 추가되지 않습니다.",
+  "dx_step3_text": "EscApp로 돌아오면 창이 다운로드 폴더의 파일을 알아서 찾아 정말 Apple에서 온 것인지 확인합니다. 다른 곳에 저장했다면 <strong>파일이 다른 곳에 있음…</strong>을 클릭하거나 파일을 창으로 끌어다 놓으세요.",
   "dx_step4_title": "Apple 라이선스에 동의",
   "dx_step4_text": "EscApp이 파일과 함께 온 라이선스를 보여 줍니다. <strong>동의하고 추가</strong>를 클릭하세요. 이걸로 끝입니다. 이제 DirectX 12 게임도 다른 게임처럼 시작됩니다.",
   "dx_license_title": "Apple 라이선스 안내",
@@ -78,5 +78,9 @@
   "dx_trouble_game_a": "아직 모든 DirectX 12 게임이 D3DMetal로 실행되지는 않으며, 커널 수준 안티치트를 쓰는 게임은 Mac에서 전혀 실행되지 않습니다. 게임이 시작되지 않았다고 알려 주는 창의 <strong>보고서 복사</strong>로 무슨 일이 있었는지 알 수 있습니다.",
   "dx_trouble_remove_q": "업데이트하거나 제거하려면?",
   "dx_trouble_remove_a": "설정 › DirectX 12에서 <strong>교체…</strong>는 Apple의 새 다운로드를 가져오고, <strong>제거</strong>는 Mac에서 D3DMetal을 삭제합니다.",
-  "dx_trademarks": "Apple, Metal, D3DMetal은 Apple Inc.의 상표입니다. DirectX는 Microsoft의 상표입니다. EscApp은 두 회사와 제휴하거나 승인을 받지 않았습니다."
+  "dx_trademarks": "Apple, Metal, D3DMetal은 Apple Inc.의 상표입니다. DirectX는 Microsoft의 상표입니다. EscApp은 두 회사와 제휴하거나 승인을 받지 않았습니다.",
+  "dx_fig_this": "이것",
+  "dx_fig_not": "이것 아님",
+  "dx_fig_click": "클릭",
+  "dx_fig_alt": "Apple 다운로드 페이지: 빨간색 Game Porting Toolkit이 아니라 파란색 Evaluation environment for Windows games"
 }

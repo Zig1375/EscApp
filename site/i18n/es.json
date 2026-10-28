@@ -60,11 +60,11 @@
   "dx_needs_mac": "EscApp con los componentes al día (Ajustes › Componentes).",
   "dx_steps_title": "Cómo añadirlo",
   "dx_step1_title": "Abre DirectX 12 en los ajustes de EscApp",
-  "dx_step1_text": "Abre Ajustes › DirectX 12. Cuando un juego DirectX 12 no puede arrancar, EscApp ofrece la misma pantalla con <strong>Configurar DirectX 12…</strong>",
+  "dx_step1_text": "Abre Ajustes › DirectX 12 y haz clic en <strong>Configurar DirectX 12…</strong>: se abre la ventana «Añadir DirectX 12». Cuando un juego DirectX 12 no puede arrancar, EscApp ofrece esa misma ventana.",
   "dx_step2_title": "Descárgalo de Apple",
   "dx_step2_text": "1. Haz clic en EscApp en <strong>Abrir la página de descargas de Apple</strong>: se abre en el navegador.<br>2. Inicia sesión con tu cuenta de Apple (Apple ID). Basta con una gratuita, sin membresía de desarrollador de pago. La primera vez, Apple te pide aceptar sus condiciones para desarrolladores; también es gratis.<br>3. En la lista, busca <strong>Evaluation environment for Windows games 3.0</strong> (icono azul) o una más reciente. No <em>Game Porting Toolkit</em> (icono rojo): es otra descarga.<br>4. Haz clic en <strong>View Details</strong> debajo y luego en <strong>Evaluation_environment_for_Windows_games_3.0.dmg</strong> (unos 25 MB). No abras el archivo.",
   "dx_step3_title": "Vuelve a EscApp",
-  "dx_step3_text": "EscApp encuentra el archivo en tu carpeta Descargas por sí solo y muestra un botón con su nombre: haz clic en él. ¿Lo guardaste en otro sitio? Haz clic en <strong>Elegir archivo…</strong> o arrastra el archivo sobre los pasos en EscApp. EscApp comprueba que el archivo viene de verdad de Apple; todavía no se añade nada.",
+  "dx_step3_text": "Vuelve a EscApp: la ventana detecta sola el archivo en Descargas y comprueba que viene de verdad de Apple. ¿Lo guardaste en otro sitio? Haz clic en <strong>El archivo está en otro sitio…</strong> o arrastra el archivo a la ventana.",
   "dx_step4_title": "Acepta la licencia de Apple",
   "dx_step4_text": "EscApp te muestra la licencia que venía con el archivo. Haz clic en <strong>Aceptar y añadir</strong>. Eso es todo: los juegos DirectX 12 ya arrancan como cualquier otro.",
   "dx_license_title": "Sobre la licencia de Apple",
@@ -78,5 +78,9 @@
   "dx_trouble_game_a": "Todavía no todos los juegos DirectX 12 funcionan con D3DMetal, y los juegos con antitrampas a nivel de kernel no funcionan en Mac. <strong>Copiar informe</strong>, en la ventana que dice que el juego no arrancó, cuenta lo que pasó.",
   "dx_trouble_remove_q": "¿Cómo lo actualizo o lo quito?",
   "dx_trouble_remove_a": "En Ajustes › DirectX 12: <strong>Reemplazar…</strong> toma una descarga más reciente de Apple y <strong>Quitar</strong> borra D3DMetal de tu Mac.",
-  "dx_trademarks": "Apple, Metal y D3DMetal son marcas de Apple Inc. DirectX es una marca de Microsoft. EscApp no está afiliado a ninguna de ellas ni cuenta con su respaldo."
+  "dx_trademarks": "Apple, Metal y D3DMetal son marcas de Apple Inc. DirectX es una marca de Microsoft. EscApp no está afiliado a ninguna de ellas ni cuenta con su respaldo.",
+  "dx_fig_this": "Este",
+  "dx_fig_not": "Este no",
+  "dx_fig_click": "Clic",
+  "dx_fig_alt": "Página de descargas de Apple: la azul Evaluation environment for Windows games, no la roja Game Porting Toolkit"
 }

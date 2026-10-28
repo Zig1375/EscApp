@@ -6,6 +6,7 @@ struct EscAppApp: App {
     @NSApplicationDelegateAdaptor private var delegate: AppDelegate
     @State private var setup = RuntimeSetup()
     @State private var components = ComponentsModel()
+    @State private var directX12 = DirectX12Model()
 
     var body: some Scene {
         Window("EscApp", id: "library") {
@@ -54,8 +55,13 @@ struct EscAppApp: App {
         }
 
         Settings {
-            SettingsView(components: components, library: delegate.library)
+            SettingsView(components: components, library: delegate.library, directX12: directX12)
         }
+
+        Window("DirectX 12", id: DirectX12Window.id) {
+            DirectX12Window(model: directX12, library: delegate.library)
+        }
+        .windowResizability(.contentSize)
     }
 }
 

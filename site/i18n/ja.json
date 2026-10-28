@@ -60,11 +60,11 @@
   "dx_needs_mac": "コンポーネントが最新の EscApp(「設定」›「コンポーネント」)。",
   "dx_steps_title": "追加の手順",
   "dx_step1_title": "EscApp の設定で DirectX 12 を開く",
-  "dx_step1_text": "「設定」›「DirectX 12」を開きます。DirectX 12 のゲームが起動できないときも、EscApp が <strong>「DirectX 12 を設定…」</strong> で同じ画面を案内します。",
+  "dx_step1_text": "「設定」›「DirectX 12」を開き、<strong>「DirectX 12 を設定…」</strong>をクリックすると「DirectX 12 を追加」ウインドウが開きます。DirectX 12 のゲームが起動できないときは、EscApp が自動でこのウインドウを案内します。",
   "dx_step2_title": "Apple からダウンロード",
   "dx_step2_text": "1. EscApp の <strong>「Apple のダウンロードページを開く」</strong> をクリックします。ブラウザで開きます。<br>2. Apple アカウント(Apple ID)でサインインします。無料のアカウントで十分で、有料のデベロッパメンバーシップは不要です。初回は Apple のデベロッパ規約への同意を求められますが、これも無料です。<br>3. 一覧から <strong>Evaluation environment for Windows games 3.0</strong>(青いアイコン)かそれより新しいものを探します。<em>Game Porting Toolkit</em>(赤いアイコン)は別のダウンロードなので選ばないでください。<br>4. その下の <strong>View Details</strong> をクリックし、<strong>Evaluation_environment_for_Windows_games_3.0.dmg</strong>(約 25 MB)をクリックします。ファイルは開かないでください。",
   "dx_step3_title": "EscApp に戻る",
-  "dx_step3_text": "EscApp が「ダウンロード」フォルダのファイルを自動で見つけ、その名前のボタンを表示します。クリックしてください。別の場所に保存した場合は <strong>「ファイルを選択…」</strong> をクリックするか、ファイルをEscApp の手順の上にドラッグします。EscApp がファイルが本当に Apple のものか確認します。この段階ではまだ何も追加されません。",
+  "dx_step3_text": "EscApp に戻ると、ウインドウが「ダウンロード」のファイルを自動で見つけ、本当に Apple のものか確認します。別の場所に保存した場合は<strong>「ファイルは別の場所にある…」</strong>をクリックするか、ファイルをウインドウにドラッグします。",
   "dx_step4_title": "Apple のライセンスに同意",
   "dx_step4_text": "EscApp がファイルに含まれていたライセンスを表示します。<strong>「同意して追加」</strong> をクリックします。これで完了です。DirectX 12 のゲームもほかのゲームと同じように起動します。",
   "dx_license_title": "Apple のライセンスについて",
@@ -78,5 +78,9 @@
   "dx_trouble_game_a": "すべての DirectX 12 のゲームがまだ D3DMetal で動くわけではなく、カーネルレベルのアンチチートを使うゲームは Mac では動きません。ゲームが起動しなかったことを伝えるウインドウの <strong>「レポートをコピー」</strong> で、何が起きたか分かります。",
   "dx_trouble_remove_q": "アップデートや削除の方法は?",
   "dx_trouble_remove_a": "「設定」›「DirectX 12」で、<strong>「置き換える…」</strong> は Apple の新しいダウンロードを取り込み、<strong>「削除」</strong> は D3DMetal を Mac から消去します。",
-  "dx_trademarks": "Apple、Metal、D3DMetal は Apple Inc. の商標です。DirectX は Microsoft の商標です。EscApp はどちらとも提携しておらず、承認も受けていません。"
+  "dx_trademarks": "Apple、Metal、D3DMetal は Apple Inc. の商標です。DirectX は Microsoft の商標です。EscApp はどちらとも提携しておらず、承認も受けていません。",
+  "dx_fig_this": "これ",
+  "dx_fig_not": "これではない",
+  "dx_fig_click": "クリック",
+  "dx_fig_alt": "Apple のダウンロードページ:青い Evaluation environment for Windows games を選び、赤い Game Porting Toolkit は選ばない"
 }

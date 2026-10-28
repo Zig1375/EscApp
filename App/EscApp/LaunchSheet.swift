@@ -183,7 +183,7 @@ struct LaunchSheet: View {
 }
 
 /// The tinted box with an icon: amber for "trying again", red for "nothing helped".
-private struct Callout<Content: View>: View {
+struct Callout<Content: View>: View {
     enum Tone { case warning, error }
 
     let tone: Tone

@@ -278,3 +278,18 @@ footer a { color: var(--muted); }
 .howto p { margin: 0; color: var(--muted); font-size: 15.5px; }
 .faq dt { font-weight: 600; margin-top: 18px; }
 .faq dd { margin: 4px 0 0; color: var(--muted); }
+
+.sketch { display: block; width: 100%; max-width: 560px; height: auto; margin-top: 14px; font-family: inherit; }
+.sk-card { fill: var(--bg); stroke: var(--border); }
+.sk-dot { fill: var(--border); }
+.sk-line { stroke: var(--border); }
+.sk-url { fill: var(--muted); font-size: 12px; }
+.sk-take { fill: none; stroke: #2e9d57; stroke-width: 2; }
+.sk-name { fill: var(--text); font-size: 14px; font-weight: 600; }
+.sk-no { fill: var(--muted); text-decoration: line-through; }
+.sk-ok { fill: #2e9d57; font-size: 13px; font-weight: 600; }
+.sk-not { fill: var(--muted); font-size: 13px; font-weight: 600; }
+.sk-link { fill: var(--text); font-size: 13px; font-weight: 600; }
+.sk-file { fill: var(--brand); font-size: 13px; font-weight: 600; text-decoration: underline; }
+.sk-pill { fill: var(--brand); }
+.sk-pill-t { fill: #fff; font-size: 11px; font-weight: 700; }

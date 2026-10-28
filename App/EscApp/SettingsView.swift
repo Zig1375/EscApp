@@ -26,7 +26,7 @@ struct SettingsView: View {
     let library: LibraryModel
     /// Remembered, and set by "Check for Component Updates…" to land on Components.
     @AppStorage(SettingsView.sectionKey) private var section: Section = .general
-    @State private var directX12 = DirectX12Model()
+    let directX12: DirectX12Model
 
     var body: some View {
         HStack(spacing: 0) {

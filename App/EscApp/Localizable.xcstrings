@@ -7992,58 +7992,6 @@
         }
       }
     },
-    "It needs DirectX 12, which EscApp doesn't support yet.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Es braucht DirectX 12, das EscApp noch nicht unterstützt."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Necesita DirectX 12, que EscApp aún no admite."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Il nécessite DirectX 12, qu’EscApp ne prend pas encore en charge."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Richiede DirectX 12, che EscApp non supporta ancora."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DirectX 12が必要ですが、EscAppはまだ対応していません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "DirectX 12가 필요하지만 EscApp은 아직 이를 지원하지 않습니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ей нужен DirectX 12, а EscApp его пока не поддерживает."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "它需要 DirectX 12，而 EscApp 尚不支持。"
-          }
-        }
-      }
-    },
     "It uses %@ anti-cheat, which doesn't run on a Mac.": {
       "localizations": {
         "de": {
@@ -22503,58 +22451,6 @@
         }
       }
     },
-    "Choose File…": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Datei auswählen …"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elegir archivo…"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choisir un fichier…"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scegli file…"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ファイルを選択…"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "파일 선택…"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выбрать файл…"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "选取文件…"
-          }
-        }
-      }
-    },
     "Choose the disk image you downloaded from Apple.": {
       "localizations": {
         "de": {
@@ -22811,58 +22707,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "DirectX 12 游戏会自动用它启动。"
-          }
-        }
-      }
-    },
-    "Download it from Apple": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Bei Apple herunterladen"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Descárgalo de Apple"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Téléchargez-le chez Apple"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scaricalo da Apple"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple からダウンロード"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple에서 다운로드"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Скачайте у Apple"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "从 Apple 下载"
           }
         }
       }
@@ -23231,214 +23075,6 @@
         }
       }
     },
-    "Step-by-step guide": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Schritt-für-Schritt-Anleitung"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Guía paso a paso"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Guide pas à pas"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Guida passo passo"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "手順を詳しく見る"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "단계별 안내"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Пошаговая инструкция"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "分步指南"
-          }
-        }
-      }
-    },
-    "1. Click **Open Apple's Download Page** below: it opens in your browser.\n2. Sign in with your Apple Account (Apple ID). A free account is enough, no paid developer membership. The first time, Apple asks you to agree to its developer terms; that's free too.\n3. In the list, find **Evaluation environment for Windows games 3.0** (blue icon) or a newer one. Not *Game Porting Toolkit* (red icon): that's a different download.\n4. Click **View Details** under it, then **Evaluation_environment_for_Windows_games_3.0.dmg** (about 25 MB). Don't open the file.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1. Klicke unten auf **Download-Seite von Apple öffnen**: Sie öffnet sich im Browser.\n2. Melde dich mit deinem Apple Account (Apple ID) an. Ein kostenloser genügt, keine bezahlte Entwicklermitgliedschaft. Beim ersten Mal bittet Apple dich, seinen Entwicklerbedingungen zuzustimmen; auch das ist kostenlos.\n3. Suche in der Liste **Evaluation environment for Windows games 3.0** (blaues Symbol) oder eine neuere Version. Nicht *Game Porting Toolkit* (rotes Symbol): Das ist ein anderer Download.\n4. Klicke darunter auf **View Details**, dann auf **Evaluation_environment_for_Windows_games_3.0.dmg** (etwa 25 MB). Öffne die Datei nicht."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1. Haz clic abajo en **Abrir la página de descargas de Apple**: se abre en el navegador.\n2. Inicia sesión con tu cuenta de Apple (Apple ID). Basta con una gratuita, sin membresía de desarrollador de pago. La primera vez, Apple te pide aceptar sus condiciones para desarrolladores; también es gratis.\n3. En la lista, busca **Evaluation environment for Windows games 3.0** (icono azul) o una más reciente. No *Game Porting Toolkit* (icono rojo): es otra descarga.\n4. Haz clic en **View Details** debajo y luego en **Evaluation_environment_for_Windows_games_3.0.dmg** (unos 25 MB). No abras el archivo."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1. Cliquez ci-dessous sur **Ouvrir la page de téléchargement d’Apple** : elle s’ouvre dans le navigateur.\n2. Connectez-vous avec votre compte Apple (identifiant Apple). Un compte gratuit suffit, sans abonnement développeur payant. La première fois, Apple vous demande d’accepter ses conditions pour les développeurs ; c’est gratuit aussi.\n3. Dans la liste, trouvez **Evaluation environment for Windows games 3.0** (icône bleue) ou une version plus récente. Pas *Game Porting Toolkit* (icône rouge) : c’est un autre téléchargement.\n4. Cliquez sur **View Details** en dessous, puis sur **Evaluation_environment_for_Windows_games_3.0.dmg** (environ 25 Mo). N’ouvrez pas le fichier."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1. Fai clic qui sotto su **Apri la pagina di download di Apple**: si apre nel browser.\n2. Accedi con il tuo Account Apple (ID Apple). Ne basta uno gratuito, senza abbonamento sviluppatore a pagamento. La prima volta Apple ti chiede di accettare i suoi termini per sviluppatori; anche questo è gratuito.\n3. Nell’elenco trova **Evaluation environment for Windows games 3.0** (icona blu) o una più recente. Non *Game Porting Toolkit* (icona rossa): è un altro download.\n4. Fai clic su **View Details** sotto, poi su **Evaluation_environment_for_Windows_games_3.0.dmg** (circa 25 MB). Non aprire il file."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1. 下の **「Apple のダウンロードページを開く」** をクリックします。ブラウザで開きます。\n2. Apple アカウント(Apple ID)でサインインします。無料のアカウントで十分で、有料のデベロッパメンバーシップは不要です。初回は Apple のデベロッパ規約への同意を求められますが、これも無料です。\n3. 一覧から **Evaluation environment for Windows games 3.0**(青いアイコン)かそれより新しいものを探します。*Game Porting Toolkit*(赤いアイコン)は別のダウンロードなので選ばないでください。\n4. その下の **View Details** をクリックし、**Evaluation_environment_for_Windows_games_3.0.dmg**(約 25 MB)をクリックします。ファイルは開かないでください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1. 아래의 **Apple 다운로드 페이지 열기**를 클릭하세요. 브라우저에서 열립니다.\n2. Apple 계정(Apple ID)으로 로그인하세요. 유료 개발자 멤버십 없이 무료 계정이면 충분합니다. 처음에는 Apple이 개발자 약관에 동의하라고 하는데, 이것도 무료입니다.\n3. 목록에서 **Evaluation environment for Windows games 3.0**(파란색 아이콘) 또는 더 새로운 버전을 찾으세요. *Game Porting Toolkit*(빨간색 아이콘)는 다른 다운로드입니다.\n4. 그 아래의 **View Details**를 클릭한 다음 **Evaluation_environment_for_Windows_games_3.0.dmg**(약 25MB)를 클릭하세요. 파일은 열지 마세요."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1. Нажмите ниже **«Открыть страницу загрузки Apple»** — она откроется в браузере.\n2. Войдите со своим аккаунтом Apple (Apple ID). Хватит бесплатного, платная подписка разработчика не нужна. В первый раз Apple попросит принять условия для разработчиков — это тоже бесплатно.\n3. Найдите в списке **Evaluation environment for Windows games 3.0** (синяя иконка) или более новую версию. Не *Game Porting Toolkit* (красная иконка) — это другая загрузка.\n4. Нажмите под ней **View Details**, затем **Evaluation_environment_for_Windows_games_3.0.dmg** (около 25 МБ). Открывать файл не нужно."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1. 点按下方的 **“打开 Apple 下载页面”**，它会在浏览器中打开。\n2. 用你的 Apple 账户（Apple ID）登录。免费账户即可，无需付费开发者会员。首次登录时，Apple 会请你同意其开发者条款，这同样免费。\n3. 在列表中找到 **Evaluation environment for Windows games 3.0**（蓝色图标）或更新的版本。不要选 *Game Porting Toolkit*（红色图标），那是另一个下载。\n4. 点按它下方的 **View Details**，然后点按 **Evaluation_environment_for_Windows_games_3.0.dmg**（约 25 MB）。不要打开该文件。"
-          }
-        }
-      }
-    },
-    "Come back to EscApp": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zurück zu EscApp"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vuelve a EscApp"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Revenez dans EscApp"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Torna a EscApp"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp に戻る"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp로 돌아오기"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Вернитесь в EscApp"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "回到 EscApp"
-          }
-        }
-      }
-    },
-    "EscApp finds the file in your Downloads folder by itself and shows a button with its name: click it. Saved it somewhere else? Click **Choose File…** or drag the file onto these steps. EscApp checks that the file really comes from Apple; nothing is added yet.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp findet die Datei in deinem Ordner „Downloads“ von selbst und zeigt eine Taste mit ihrem Namen: Klicke darauf. Woanders gesichert? Klicke auf **Datei auswählen …** oder zieh die Datei auf diese Schritte. EscApp prüft, dass die Datei wirklich von Apple stammt; noch wird nichts hinzugefügt."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp encuentra el archivo en tu carpeta Descargas por sí solo y muestra un botón con su nombre: haz clic en él. ¿Lo guardaste en otro sitio? Haz clic en **Elegir archivo…** o arrastra el archivo sobre estos pasos. EscApp comprueba que el archivo viene de verdad de Apple; todavía no se añade nada."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp trouve le fichier tout seul dans votre dossier Téléchargements et affiche un bouton à son nom : cliquez dessus. Enregistré ailleurs ? Cliquez sur **Choisir un fichier…** ou faites glisser le fichier sur ces étapes. EscApp vérifie que le fichier vient bien d’Apple ; rien n’est encore ajouté."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp trova da solo il file nella cartella Download e mostra un pulsante con il suo nome: fai clic. L’hai salvato altrove? Fai clic su **Scegli file…** o trascina il file su questi passaggi. EscApp controlla che il file provenga davvero da Apple; per ora non viene aggiunto nulla."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp が「ダウンロード」フォルダのファイルを自動で見つけ、その名前のボタンを表示します。クリックしてください。別の場所に保存した場合は **「ファイルを選択…」** をクリックするか、ファイルをこの手順の上にドラッグします。EscApp がファイルが本当に Apple のものか確認します。この段階ではまだ何も追加されません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp이 다운로드 폴더에서 파일을 직접 찾아 그 이름의 버튼을 보여 줍니다. 클릭하세요. 다른 곳에 저장했다면 **파일 선택…**을 클릭하거나 파일을 이 단계들 위로 끌어다 놓으세요. EscApp이 파일이 정말 Apple에서 온 것인지 확인합니다. 아직 아무것도 추가되지 않습니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp сам найдёт файл в папке «Загрузки» и покажет кнопку с его именем — нажмите её. Сохранили в другое место? Нажмите **«Выбрать файл…»** или перетащите файл на эти шаги. EscApp проверит, что файл действительно от Apple; пока ничего не добавляется."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp 会自动在“下载”文件夹中找到该文件，并显示一个带有文件名的按钮：点按它。存到了其他位置？点按 **“选取文件…”** 或把文件拖到这些步骤上。EscApp 会确认文件确实来自 Apple；此时还不会添加任何内容。"
-          }
-        }
-      }
-    },
     "Waiting for the file in Downloads…": {
       "localizations": {
         "de": {
@@ -23491,54 +23127,1146 @@
         }
       }
     },
-    "EscApp shows the license that came with the file. Click **Agree and Add**. That's all: DirectX 12 games now start like any other.": {
+    "Add DirectX 12": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "EscApp zeigt dir die Lizenz, die mit der Datei kam. Klicke auf **Zustimmen und hinzufügen**. Das ist alles: DirectX-12-Spiele starten jetzt wie alle anderen."
+            "value": "DirectX 12 hinzufügen"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "EscApp te muestra la licencia que venía con el archivo. Haz clic en **Aceptar y añadir**. Eso es todo: los juegos DirectX 12 ya arrancan como cualquier otro."
+            "value": "Añadir DirectX 12"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "EscApp affiche la licence fournie avec le fichier. Cliquez sur **Accepter et ajouter**. C’est tout : les jeux DirectX 12 démarrent désormais comme les autres."
+            "value": "Ajouter DirectX 12"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "EscApp mostra la licenza arrivata con il file. Fai clic su **Accetta e aggiungi**. Ecco fatto: i giochi DirectX 12 ora si avviano come tutti gli altri."
+            "value": "Aggiungi DirectX 12"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "EscApp がファイルに含まれていたライセンスを表示します。**「同意して追加」** をクリックします。これで完了です。DirectX 12 のゲームもほかのゲームと同じように起動します。"
+            "value": "DirectX 12 を追加"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "EscApp이 파일과 함께 온 라이선스를 보여 줍니다. **동의하고 추가**를 클릭하세요. 이걸로 끝입니다. 이제 DirectX 12 게임도 다른 게임처럼 시작됩니다."
+            "value": "DirectX 12 추가"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "EscApp покажет лицензию, пришедшую вместе с файлом. Нажмите **«Согласиться и добавить»**. Вот и всё: игры на DirectX 12 теперь запускаются как любые другие."
+            "value": "Добавить DirectX 12"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "EscApp 会显示文件附带的许可协议。点按 **“同意并添加”**。就这样：DirectX 12 游戏现在可以像其他游戏一样启动了。"
+            "value": "添加 DirectX 12"
+          }
+        }
+      }
+    },
+    "Some games need DirectX 12. On a Mac it runs on D3DMetal, Apple's own component. Apple doesn't let EscApp include it, so you download it from Apple yourself: it's free and takes a couple of minutes, once.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manche Spiele brauchen DirectX 12. Auf dem Mac läuft es mit D3DMetal, einer Komponente von Apple. Apple erlaubt EscApp nicht, sie mitzuliefern, deshalb lädst du sie selbst bei Apple: Das ist kostenlos und dauert einmalig ein paar Minuten."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algunos juegos necesitan DirectX 12. En el Mac funciona con D3DMetal, un componente de la propia Apple. Apple no permite que EscApp lo incluya, así que lo descargas tú de Apple: es gratis y lleva un par de minutos, una sola vez."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Certains jeux ont besoin de DirectX 12. Sur Mac, il passe par D3DMetal, un composant d’Apple. Apple ne permet pas à EscApp de l’inclure, vous le téléchargez donc vous-même chez Apple : c’est gratuit et ne prend que quelques minutes, une seule fois."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alcuni giochi richiedono DirectX 12. Sul Mac funziona con D3DMetal, un componente di Apple. Apple non permette a EscApp di includerlo, quindi lo scarichi tu da Apple: è gratis e ci vogliono un paio di minuti, una volta sola."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 が必要なゲームがあります。Mac では Apple 自身のコンポーネント D3DMetal で動きます。Apple は EscApp への同梱を認めていないため、Apple から自分でダウンロードします。無料で、最初に一度だけ数分で済みます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일부 게임에는 DirectX 12가 필요합니다. Mac에서는 Apple의 구성 요소인 D3DMetal로 실행됩니다. Apple은 EscApp에 포함하는 것을 허용하지 않으므로 Apple에서 직접 다운로드합니다. 무료이며 처음 한 번, 몇 분이면 됩니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Некоторым играм нужен DirectX 12. На Mac он работает через D3DMetal — компонент от самой Apple. Apple не разрешает включать его в EscApp, поэтому вы скачиваете его у Apple сами: это бесплатно и займёт пару минут, один раз."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "有些游戏需要 DirectX 12。在 Mac 上，它通过 Apple 自己的组件 D3DMetal 运行。Apple 不允许 EscApp 内置它，所以需要你自己从 Apple 下载：免费，只需一次，几分钟即可。"
+          }
+        }
+      }
+    },
+    "You need an Apple Account (Apple ID). A free one is enough, no paid developer membership.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du brauchst einen Apple Account (Apple ID). Ein kostenloser genügt, keine bezahlte Entwicklermitgliedschaft."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necesitas una cuenta de Apple (Apple ID). Basta con una gratuita, sin membresía de desarrollador de pago."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il vous faut un compte Apple (identifiant Apple). Un compte gratuit suffit, sans abonnement développeur payant."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ti serve un Account Apple (ID Apple). Ne basta uno gratuito, senza abbonamento sviluppatore a pagamento."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple アカウント(Apple ID)が必要です。無料のもので十分で、有料のデベロッパメンバーシップは不要です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple 계정(Apple ID)이 필요합니다. 유료 개발자 멤버십 없이 무료 계정이면 충분합니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нужен аккаунт Apple (Apple ID). Хватит бесплатного, платная подписка разработчика не нужна."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "需要一个 Apple 账户（Apple ID）。免费账户即可，无需付费开发者会员。"
+          }
+        }
+      }
+    },
+    "I Already Have the File…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ich habe die Datei schon …"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya tengo el archivo…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "J’ai déjà le fichier…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ho già il file…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイルはもうある…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이미 파일이 있음…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файл уже есть…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "我已有该文件…"
+          }
+        }
+      }
+    },
+    "In your browser": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In deinem Browser"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En tu navegador"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dans votre navigateur"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nel tuo browser"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ブラウザで"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "브라우저에서"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В браузере"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在浏览器中"
+          }
+        }
+      }
+    },
+    "Sign in with your Apple Account. The first time, agree to Apple's developer terms; it's free.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melde dich mit deinem Apple Account an. Stimme beim ersten Mal den Entwicklerbedingungen von Apple zu; das ist kostenlos."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inicia sesión con tu cuenta de Apple. La primera vez, acepta las condiciones para desarrolladores de Apple; es gratis."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connectez-vous avec votre compte Apple. La première fois, acceptez les conditions d’Apple pour les développeurs ; c’est gratuit."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accedi con il tuo Account Apple. La prima volta accetta i termini di Apple per sviluppatori; è gratuito."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple アカウントでサインインします。初回は Apple のデベロッパ規約に同意します(無料です)。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple 계정으로 로그인하세요. 처음에는 Apple 개발자 약관에 동의하세요. 무료입니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Войдите с аккаунтом Apple. В первый раз примите условия Apple для разработчиков — это бесплатно."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用你的 Apple 账户登录。首次登录时同意 Apple 的开发者条款，这是免费的。"
+          }
+        }
+      }
+    },
+    "Find **Evaluation environment for Windows games** with the blue icon, click **View Details**, then the **.dmg** file.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suche **Evaluation environment for Windows games** mit dem blauen Symbol, klicke auf **View Details** und dann auf die **.dmg**-Datei."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Busca **Evaluation environment for Windows games** con el icono azul, haz clic en **View Details** y luego en el archivo **.dmg**."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouvez **Evaluation environment for Windows games** à l’icône bleue, cliquez sur **View Details**, puis sur le fichier **.dmg**."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trova **Evaluation environment for Windows games** con l’icona blu, fai clic su **View Details**, poi sul file **.dmg**."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "青いアイコンの **Evaluation environment for Windows games** を探し、**View Details** をクリックしてから **.dmg** ファイルをクリックします。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파란색 아이콘의 **Evaluation environment for Windows games**을 찾아 **View Details**를 클릭한 다음 **.dmg** 파일을 클릭하세요."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найдите **Evaluation environment for Windows games** с синей иконкой, нажмите **View Details**, затем файл **.dmg**."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找到带蓝色图标的 **Evaluation environment for Windows games**，点按 **View Details**，然后点按 **.dmg** 文件。"
+          }
+        }
+      }
+    },
+    "Don't open the file. EscApp sees it in Downloads and goes on by itself.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne die Datei nicht. EscApp sieht sie in „Downloads“ und macht von selbst weiter."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No abras el archivo. EscApp lo ve en Descargas y sigue solo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "N’ouvrez pas le fichier. EscApp le voit dans Téléchargements et continue tout seul."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non aprire il file. EscApp lo vede in Download e prosegue da solo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイルは開かないでください。EscApp が「ダウンロード」で見つけて自動で先に進みます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파일은 열지 마세요. EscApp이 다운로드 폴더에서 파일을 보고 알아서 다음으로 넘어갑니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открывать файл не нужно. EscApp увидит его в «Загрузках» и сам перейдёт дальше."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不要打开该文件。EscApp 会在“下载”中看到它并自动继续。"
+          }
+        }
+      }
+    },
+    "Open Apple's Page Again": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seite von Apple erneut öffnen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a abrir la página de Apple"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rouvrir la page d’Apple"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Riapri la pagina di Apple"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple のページをもう一度開く"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple 페이지 다시 열기"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть страницу Apple снова"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再次打开 Apple 页面"
+          }
+        }
+      }
+    },
+    "The File Is Somewhere Else…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datei liegt woanders …"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El archivo está en otro sitio…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le fichier est ailleurs…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il file è altrove…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイルは別の場所にある…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파일이 다른 곳에 있음…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файл в другом месте…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文件在其他位置…"
+          }
+        }
+      }
+    },
+    "Back": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zurück"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atrás"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Retour"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Indietro"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "戻る"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "뒤로"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Назад"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "返回"
+          }
+        }
+      }
+    },
+    "Checking the file from Apple…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datei von Apple wird geprüft …"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprobando el archivo de Apple…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vérification du fichier d’Apple…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controllo del file di Apple…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple のファイルを確認しています…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple 파일을 확인하는 중…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверяю файл от Apple…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在检查来自 Apple 的文件…"
+          }
+        }
+      }
+    },
+    "DirectX 12 is ready": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 ist bereit"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 está listo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 est prêt"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 è pronto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 の準備ができました"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 준비 완료"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 готов"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 已就绪"
+          }
+        }
+      }
+    },
+    "DirectX 12 games now start like any other.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX-12-Spiele starten jetzt wie alle anderen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los juegos DirectX 12 ya arrancan como cualquier otro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les jeux DirectX 12 démarrent désormais comme les autres."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ora i giochi DirectX 12 si avviano come tutti gli altri."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 のゲームもほかのゲームと同じように起動します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이제 DirectX 12 게임도 다른 게임처럼 시작됩니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игры на DirectX 12 теперь запускаются как любые другие."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DirectX 12 游戏现在可以像其他游戏一样启动了。"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fertig"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fine"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完了"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "완료"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完成"
+          }
+        }
+      }
+    },
+    "Start %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ starten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lancer %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avvia %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ を起動"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 시작"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запустить %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "启动 %@"
+          }
+        }
+      }
+    },
+    "Step %lld of %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schritt %1$lld von %2$lld"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paso %1$lld de %2$lld"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Étape %1$lld sur %2$lld"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passaggio %1$lld di %2$lld"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ステップ %1$lld/%2$lld"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%2$lld단계 중 %1$lld단계"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Шаг %1$lld из %2$lld"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "第 %1$lld 步，共 %2$lld 步"
+          }
+        }
+      }
+    },
+    "This one": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Celui-ci"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "これ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이것"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вот это"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "选这个"
+          }
+        }
+      }
+    },
+    "Not this one": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht diese"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este no"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas celui-ci"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non questo"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "これではない"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이것 아님"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не это"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不是这个"
+          }
+        }
+      }
+    },
+    "Click": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Klicken"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clic"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clic"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clic"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "クリック"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "클릭"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажать"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "点按"
+          }
+        }
+      }
+    },
+    "Not added yet": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch nicht hinzugefügt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aún no añadido"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pas encore ajouté"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Non ancora aggiunto"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "まだ追加されていません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "아직 추가되지 않음"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пока не добавлен"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "尚未添加"
+          }
+        }
+      }
+    },
+    "This is Game Porting Toolkit, a different download from the same page. Download the one with the blue icon: Evaluation environment for Windows games.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das ist Game Porting Toolkit, ein anderer Download von derselben Seite. Lade den mit dem blauen Symbol: Evaluation environment for Windows games."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto es Game Porting Toolkit, otra descarga de la misma página. Descarga la del icono azul: Evaluation environment for Windows games."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "C’est Game Porting Toolkit, un autre téléchargement de la même page. Téléchargez celui à l’icône bleue : Evaluation environment for Windows games."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Questo è Game Porting Toolkit, un altro download della stessa pagina. Scarica quello con l’icona blu: Evaluation environment for Windows games."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "これは同じページにある別のダウンロード、Game Porting Toolkit です。青いアイコンの Evaluation environment for Windows games をダウンロードしてください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이것은 같은 페이지의 다른 다운로드인 Game Porting Toolkit입니다. 파란색 아이콘의 Evaluation environment for Windows games를 다운로드하세요."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это Game Porting Toolkit — другая загрузка с той же страницы. Скачайте ту, что с синей иконкой: Evaluation environment for Windows games."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这是同一页面上的另一个下载 Game Porting Toolkit。请下载带蓝色图标的 Evaluation environment for Windows games。"
           }
         }
       }

@@ -60,11 +60,11 @@
   "dx_needs_mac": "组件为最新的 EscApp（“设置”›“组件”）。",
   "dx_steps_title": "添加步骤",
   "dx_step1_title": "在 EscApp 设置中打开 DirectX 12",
-  "dx_step1_text": "打开“设置”›“DirectX 12”。DirectX 12 游戏无法启动时，EscApp 也会通过<strong>“设置 DirectX 12…”</strong>带你来到这个界面。",
+  "dx_step1_text": "打开“设置”›“DirectX 12”，点按<strong>“设置 DirectX 12…”</strong>，会打开“添加 DirectX 12”窗口。DirectX 12 游戏无法启动时，EscApp 也会自动提供这个窗口。",
   "dx_step2_title": "从 Apple 下载",
   "dx_step2_text": "1. 在 EscApp 中点按 <strong>“打开 Apple 下载页面”</strong>，它会在浏览器中打开。<br>2. 用你的 Apple 账户（Apple ID）登录。免费账户即可，无需付费开发者会员。首次登录时，Apple 会请你同意其开发者条款，这同样免费。<br>3. 在列表中找到 <strong>Evaluation environment for Windows games 3.0</strong>（蓝色图标）或更新的版本。不要选 <em>Game Porting Toolkit</em>（红色图标），那是另一个下载。<br>4. 点按它下方的 <strong>View Details</strong>，然后点按 <strong>Evaluation_environment_for_Windows_games_3.0.dmg</strong>（约 25 MB）。不要打开该文件。",
   "dx_step3_title": "回到 EscApp",
-  "dx_step3_text": "EscApp 会自动在“下载”文件夹中找到该文件，并显示一个带有文件名的按钮：点按它。存到了其他位置？点按 <strong>“选取文件…”</strong> 或把文件拖到 EscApp 的步骤上。EscApp 会确认文件确实来自 Apple；此时还不会添加任何内容。",
+  "dx_step3_text": "回到 EscApp：窗口会自动发现“下载”中的文件，并确认它确实来自 Apple。存到了其他位置？点按<strong>“文件在其他位置…”</strong>或把文件拖到窗口中。",
   "dx_step4_title": "接受 Apple 的许可协议",
   "dx_step4_text": "EscApp 会显示文件附带的许可协议。点按 <strong>“同意并添加”</strong>。就这样：DirectX 12 游戏现在可以像其他游戏一样启动了。",
   "dx_license_title": "关于 Apple 的许可协议",
@@ -78,5 +78,9 @@
   "dx_trouble_game_a": "并非所有 DirectX 12 游戏都已能用 D3DMetal 运行，使用内核级反作弊的游戏完全无法在 Mac 上运行。在提示游戏未能启动的窗口中点按<strong>“拷贝报告”</strong>，即可了解发生了什么。",
   "dx_trouble_remove_q": "如何更新或移除？",
   "dx_trouble_remove_a": "在“设置”›“DirectX 12”中：<strong>“替换…”</strong>会采用 Apple 的较新下载，<strong>“移除”</strong>会从你的 Mac 上删除 D3DMetal。",
-  "dx_trademarks": "Apple、Metal 和 D3DMetal 是 Apple Inc. 的商标。DirectX 是 Microsoft 的商标。EscApp 与两者均无关联，也未获其认可。"
+  "dx_trademarks": "Apple、Metal 和 D3DMetal 是 Apple Inc. 的商标。DirectX 是 Microsoft 的商标。EscApp 与两者均无关联，也未获其认可。",
+  "dx_fig_this": "选这个",
+  "dx_fig_not": "不是这个",
+  "dx_fig_click": "点按",
+  "dx_fig_alt": "Apple 下载页面：选蓝色的 Evaluation environment for Windows games，而不是红色的 Game Porting Toolkit"
 }

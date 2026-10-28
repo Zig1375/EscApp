@@ -110,6 +110,7 @@ extension LibraryModel {
     private func launchFailed(_ game: GameRecord, _ error: any Error) {
         launch = nil
         if case LaunchError.unsupported(.directX12)? = error as? LaunchError {
+            directX12Game = game.id
             problem = Problem(kind: .needsDirectX12)
             NSApp.activate()
             return

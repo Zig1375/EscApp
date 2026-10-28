@@ -5,25 +5,28 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// Adding D3DMetal for DirectX 12 games (`D3DMetal`): the player downloads Apple's disk image themselves, EscApp
-/// checks it and, once they accept Apple's license, copies D3DMetal from it. EscApp never ships it.
+/// checks it and, once they accept Apple's license, copies D3DMetal from it. EscApp never ships it. The DirectX 12
+/// window (`DirectX12Window`) walks through it one step at a time (`D3DMetalSetup`); Settings shows what is there.
 @MainActor @Observable
 final class DirectX12Model {
-    enum Stage: Equatable {
-        case idle
-        case checking
-        /// Signed by Apple and copied aside, waiting for the player to accept Apple's license.
-        case review(D3DMetalCandidate, license: AttributedString)
-    }
-
-    /// Where Apple lists the download. A search, so it still lands right when Apple renames the page.
+    /// Where Apple lists the download. A search, so it still lands right when Apple renames the page; signed out,
+    /// Apple's sign-in comes back to it afterwards.
     static let applePage = URL(
         string: "https://developer.apple.com/download/all/?q=Evaluation%20environment%20for%20Windows%20games")!
 
     private(set) var installed: D3DMetal.Installed?
-    private(set) var stage = Stage.idle
-    private(set) var error: String?
-    /// An image from Apple already in Downloads, offered so the player doesn't have to look for it.
+    private(set) var step = D3DMetalSetup.Step.start
+    /// Signed by Apple and copied aside, waiting for the player to accept Apple's license.
+    private(set) var candidate: D3DMetalCandidate?
+    private(set) var license = AttributedString()
+    /// Why the last file couldn't be used, shown on the download step.
+    private(set) var problem: String?
+    /// An image from Apple already in Downloads, offered on the first step.
     private(set) var found: URL?
+    /// Files that failed the check, so watching Downloads doesn't try them again and again.
+    private var rejected: Set<String> = []
+    /// Set by Replace…, so the window starts over instead of saying D3DMetal is there.
+    private var replacing = false
     let paths: AppPaths
 
     init(paths: AppPaths = .standard()) {
@@ -31,22 +34,45 @@ final class DirectX12Model {
         reload()
     }
 
+    /// Reads what is installed and what is in Downloads. On the download step a new image is checked right away:
+    /// the player comes back from the browser and the window goes on by itself.
     func reload() {
         installed = D3DMetal.installed(paths: paths)?.info
-        found = installed == nil ? Self.downloadedImage() : nil
+        guard let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first else {
+            return
+        }
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: downloads.path)) ?? []
+        let seen = D3DMetalSetup.downloads(names)
+        found = seen.image.flatMap { rejected.contains($0) ? nil : downloads.appending(path: $0) }
+        if step == .download, let found {
+            Task { await check(found) }
+        } else if step == .download, seen.image == nil, seen.portingToolkit, problem == nil {
+            problem = Self.message(for: .portingToolkit)
+        }
+    }
+
+    /// The first step again, for adding D3DMetal over one that is there (Replace…).
+    func restart() {
+        discardCandidate()
+        problem = nil
+        step = .start
+        replacing = installed != nil
+    }
+
+    /// Where the window opens: the end, when D3DMetal is there and the player didn't ask to replace it.
+    func opened() {
+        reload()
+        if installed != nil, step == .start, !replacing { step = .done }
     }
 
     func openApplePage() {
         NSWorkspace.shared.open(Self.applePage)
+        step = D3DMetalSetup.next(step, on: .openedApplePage)
     }
 
-    /// The same steps on EscApp's site (`site/directx12.html`), in the app's language.
-    func openGuide() {
-        let languages = ["de", "es", "fr", "it", "ja", "ko", "ru", "zh-Hans"]
-        let language = Bundle.main.preferredLocalizations.first.flatMap { languages.contains($0) ? $0 + "/" : nil }
-        if let url = URL(string: "https://zig1375.github.io/EscApp/\(language ?? "")directx12.html") {
-            NSWorkspace.shared.open(url)
-        }
+    func back() {
+        discardCandidate()
+        step = D3DMetalSetup.next(step, on: .back)
     }
 
     func chooseFile() {
@@ -59,77 +85,81 @@ final class DirectX12Model {
     }
 
     func check(_ image: URL) async {
-        guard stage == .idle else { return }
-        error = nil
-        stage = .checking
+        guard step == .start || step == .download else { return }
+        problem = nil
+        step = D3DMetalSetup.next(step, on: .gotFile)
         do {
             let candidate = try await D3DMetal.prepare(image: image, paths: paths)
-            let license = (try? NSAttributedString(url: candidate.license, options: [:], documentAttributes: nil))
+            license = (try? NSAttributedString(url: candidate.license, options: [:], documentAttributes: nil))
                 .map { AttributedString($0.string) } ?? AttributedString()
-            stage = .review(candidate, license: license)
+            self.candidate = candidate
+            step = D3DMetalSetup.next(step, on: .checked)
         } catch {
-            stage = .idle
-            self.error = Self.message(for: error)
+            rejected.insert(image.lastPathComponent)
+            found = nil
+            problem = (error as? D3DMetal.ImportError)
+                .map { Self.message(for: D3DMetalSetup.problem($0, image: image.lastPathComponent)) }
+                ?? error.localizedDescription
+            step = D3DMetalSetup.next(step, on: .checkFailed)
         }
     }
 
     func agree() {
-        guard case let .review(candidate, _) = stage else { return }
+        guard let candidate else { return }
         do {
             try D3DMetal.install(candidate, paths: paths)
+            self.candidate = nil
+            replacing = false
+            step = D3DMetalSetup.next(step, on: .agreed)
         } catch {
-            D3DMetal.discard(candidate)
-            self.error = String(localized: "Couldn't add D3DMetal: \(error.localizedDescription)")
+            discardCandidate()
+            problem = String(localized: "Couldn't add D3DMetal: \(error.localizedDescription)")
+            step = .download
         }
-        stage = .idle
         reload()
-    }
-
-    func cancel() {
-        if case let .review(candidate, _) = stage { D3DMetal.discard(candidate) }
-        stage = .idle
     }
 
     func remove() {
         do { try D3DMetal.remove(paths: paths) } catch {
-            self.error = String(localized: "Couldn't remove D3DMetal: \(error.localizedDescription)")
+            problem = String(localized: "Couldn't remove D3DMetal: \(error.localizedDescription)")
         }
+        restart()
         reload()
     }
 
-    /// The newest `Evaluation_environment_for_Windows_games_*.dmg` in Downloads.
-    static func downloadedImage() -> URL? {
-        guard let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first,
-              let names = try? FileManager.default.contentsOfDirectory(atPath: downloads.path) else { return nil }
-        return names.filter { $0.hasPrefix("Evaluation_environment_for_Windows_games") && $0.hasSuffix(".dmg") }
-            .max { $0.localizedStandardCompare($1) == .orderedAscending }
-            .map { downloads.appending(path: $0) }
+    private func discardCandidate() {
+        if let candidate { D3DMetal.discard(candidate) }
+        candidate = nil
     }
 
-    static func message(for error: any Error) -> String {
-        switch error as? D3DMetal.ImportError {
-        case .notD3DMetal?:
+    static func message(for problem: D3DMetalSetup.Problem) -> String {
+        switch problem {
+        case .portingToolkit:
+            String(localized: """
+                This is Game Porting Toolkit, a different download from the same page. Download the one with the \
+                blue icon: Evaluation environment for Windows games.
+                """)
+        case .notD3DMetal:
             String(localized: """
                 This file doesn't contain D3DMetal. Download “Evaluation environment for Windows games” from \
                 Apple's page, not “Game Porting Toolkit”.
                 """)
-        case .notSignedByApple?:
+        case .notSignedByApple:
             String(localized: """
                 This file isn't signed by Apple. It may be damaged: download it again from Apple's page.
                 """)
-        case .cantAttach?:
+        case .unreadable:
             String(localized: "This file can't be opened. It may be damaged or still downloading.")
-        case nil:
-            error.localizedDescription
         }
     }
 }
 
-/// Settings › DirectX 12: what it is, and the three steps to add it.
+/// Settings › DirectX 12: what it is, whether it is there, and the way to add, replace or remove it. Adding happens
+/// in the DirectX 12 window, one step at a time.
 struct DirectX12Card: View {
     let model: DirectX12Model
     let components: ComponentsModel
-    @State private var dropTargeted = false
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -140,29 +170,24 @@ struct DirectX12Card: View {
                     couple of minutes, once.
                     """)
                     .fixedSize(horizontal: false, vertical: true)
-                Button("Step-by-step guide") { model.openGuide() }
-                    .buttonStyle(.plain)
-                    .font(.system(size: 13))
-                    .foregroundStyle(Color.brand)
                 if let installed = model.installed {
                     ready(installed)
                 } else {
-                    steps
-                }
-                if let error = model.error {
-                    Text(error)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.brand)
-                        .fixedSize(horizontal: false, vertical: true)
+                    HStack(spacing: 12) {
+                        Text("Not added yet").foregroundStyle(Color.secondaryText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Button("Set Up DirectX 12…") {
+                            model.restart()
+                            openWindow(id: DirectX12Window.id)
+                        }
+                        .buttonStyle(CompactButtonStyle(kind: .primary))
+                    }
                 }
                 if !runtimeReady {
                     Note(text: """
                         DirectX 12 games also need the newest EscApp components. Update them in Components.
                         """)
                 }
-            }
-            if case let .review(candidate, license) = model.stage {
-                review(candidate, license: license)
             }
             SettingsCard {
                 Text("About Apple's license").font(.system(size: 14, weight: .semibold))
@@ -175,13 +200,7 @@ struct DirectX12Card: View {
                     """)
             }
         }
-        // The player downloads in the browser and comes back: the file in Downloads shows up without a click.
-        .task {
-            while !Task.isCancelled {
-                model.reload()
-                try? await Task.sleep(for: .seconds(2))
-            }
-        }
+        .onAppear { model.reload() }
     }
 
     private var runtimeReady: Bool {
@@ -198,106 +217,13 @@ struct DirectX12Card: View {
                     .foregroundStyle(Color.okText)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            Button("Replace…") { model.chooseFile() }
-                .buttonStyle(CompactButtonStyle())
+            Button("Replace…") {
+                model.restart()
+                openWindow(id: DirectX12Window.id)
+            }
+            .buttonStyle(CompactButtonStyle())
             Button("Remove", role: .destructive) { model.remove() }
                 .buttonStyle(CompactButtonStyle())
-        }
-    }
-
-    private var steps: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            step(1, title: "Download it from Apple", text: """
-                1. Click **Open Apple's Download Page** below: it opens in your browser.
-                2. Sign in with your Apple Account (Apple ID). A free account is enough, no paid developer \
-                membership. The first time, Apple asks you to agree to its developer terms; that's free too.
-                3. In the list, find **Evaluation environment for Windows games 3.0** (blue icon) or a newer one. \
-                Not *Game Porting Toolkit* (red icon): that's a different download.
-                4. Click **View Details** under it, then **Evaluation_environment_for_Windows_games_3.0.dmg** \
-                (about 25 MB). Don't open the file.
-                """) {
-                Button("Open Apple's Download Page") { model.openApplePage() }
-                    .buttonStyle(CompactButtonStyle(kind: .primary))
-            }
-            step(2, title: "Come back to EscApp", text: """
-                EscApp finds the file in your Downloads folder by itself and shows a button with its name: click it. \
-                Saved it somewhere else? Click **Choose File…** or drag the file onto these steps. EscApp checks that \
-                the file really comes from Apple; nothing is added yet.
-                """) {
-                HStack(spacing: 12) {
-                    if let found = model.found {
-                        Button("Use \(found.lastPathComponent)") { Task { await model.check(found) } }
-                            .buttonStyle(CompactButtonStyle(kind: .primary))
-                    }
-                    Button("Choose File…") { model.chooseFile() }
-                        .buttonStyle(CompactButtonStyle(kind: model.found == nil ? .primary : .plain))
-                    if model.stage == .checking {
-                        ProgressView().controlSize(.small)
-                        Text("Checking…").font(.system(size: 12)).foregroundStyle(Color.secondaryText)
-                    } else if model.found == nil {
-                        ProgressView().controlSize(.small)
-                        Text("Waiting for the file in Downloads…")
-                            .font(.system(size: 12))
-                            .foregroundStyle(Color.secondaryText)
-                    }
-                }
-            }
-            step(3, title: "Accept Apple's license", text: """
-                EscApp shows the license that came with the file. Click **Agree and Add**. That's all: DirectX 12 \
-                games now start like any other.
-                """) { EmptyView() }
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(dropTargeted ? Color.brand.opacity(0.08) : .clear, in: .rect(cornerRadius: 10))
-        .overlay {
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(dropTargeted ? Color.brand : Color.cardBorder,
-                              style: StrokeStyle(lineWidth: 1, dash: [5]))
-        }
-        .dropDestination(for: URL.self) { urls, _ in
-            guard let image = urls.first(where: { $0.pathExtension.lowercased() == "dmg" }) else { return false }
-            Task { await model.check(image) }
-            return true
-        } isTargeted: { dropTargeted = $0 }
-    }
-
-    private func step(_ number: Int, title: LocalizedStringKey, text: LocalizedStringKey,
-                      @ViewBuilder action: () -> some View) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Text(String(number))
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(.white)
-                .frame(width: 22, height: 22)
-                .background(Color.brand, in: .circle)
-            VStack(alignment: .leading, spacing: 6) {
-                Text(title).font(.system(size: 14, weight: .semibold))
-                Note(text: text)
-                action()
-            }
-        }
-    }
-
-    private func review(_ candidate: D3DMetalCandidate, license: AttributedString) -> some View {
-        SettingsCard {
-            Text("D3DMetal \(candidate.version), signed by Apple").font(.system(size: 14, weight: .semibold))
-            Note(text: "Apple's license for it, from your download:")
-            ScrollView {
-                Text(license)
-                    .font(.system(size: 12))
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(10)
-            }
-            .frame(height: 220)
-            .background(Color.windowBackground, in: .rect(cornerRadius: 8))
-            HStack(spacing: 12) {
-                Spacer()
-                Button("Cancel") { model.cancel() }
-                    .buttonStyle(CompactButtonStyle())
-                Button("Agree and Add") { model.agree() }
-                    .buttonStyle(CompactButtonStyle(kind: .primary))
-            }
         }
     }
 }

@@ -35,6 +35,8 @@ final class LibraryModel {
     private(set) var infos: [GameID: ExecutableInfo] = [:]
     var states: [GameID: PlayState] = [:]
     var notice: Notice?
+    /// The game that asked for DirectX 12, offered to start once the DirectX 12 window has added D3DMetal.
+    var directX12Game: GameID?
     /// The game "Delete" asks about (`DeleteGameSheet`).
     var deleting: GameRecord?
     /// The game "Rename…" on its card asks a new name for.

@@ -5,7 +5,7 @@ import SwiftUI
 struct ProblemSheet: View {
     let problem: LibraryModel.Problem
     let library: LibraryModel
-    @Environment(\.openSettings) private var openSettings
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -57,12 +57,14 @@ struct ProblemSheet: View {
             .buttonStyle(BrandButtonStyle(kind: .primary, height: 32, radius: 8))
             .keyboardShortcut(.defaultAction)
         } else if case .needsDirectX12 = problem.kind {
-            Button("Not Now") { library.problem = nil }
+            Button("Not Now") {
+                library.problem = nil
+                library.directX12Game = nil
+            }
                 .keyboardShortcut(.cancelAction)
             Button("Set Up DirectX 12…") {
                 library.problem = nil
-                UserDefaults.standard.set(SettingsView.Section.directX12.rawValue, forKey: SettingsView.sectionKey)
-                openSettings()
+                openWindow(id: DirectX12Window.id)
             }
             .buttonStyle(BrandButtonStyle(kind: .primary, height: 32, radius: 8))
             .keyboardShortcut(.defaultAction)

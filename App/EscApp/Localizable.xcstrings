@@ -21411,110 +21411,6 @@
     "Microsoft": {
       "shouldTranslate": false
     },
-    "Components are being updated": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Komponenten werden aktualisiert"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se están actualizando los componentes"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mise à jour des composants en cours"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Aggiornamento dei componenti in corso"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "コンポーネントを更新しています"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "구성 요소를 업데이트하는 중"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Компоненты обновляются"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "正在更新组件"
-          }
-        }
-      }
-    },
-    "%@ can be started once the update finishes.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ kann gestartet werden, sobald die Aktualisierung abgeschlossen ist."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ podrá iniciarse cuando termine la actualización."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ pourra être lancé une fois la mise à jour terminée."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ potrà essere avviato al termine dell'aggiornamento."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "アップデートが完了すると%@を起動できます。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "업데이트가 끝나면 %@을(를) 시작할 수 있습니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ можно будет запустить, когда обновление закончится."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "更新完成后即可启动 %@。"
-          }
-        }
-      }
-    },
     "Playable after the update": {
       "localizations": {
         "de": {
@@ -21563,6 +21459,266 @@
           "stringUnit": {
             "state": "translated",
             "value": "更新后即可游玩"
+          }
+        }
+      }
+    },
+    "%@ will start after the update": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ startet nach der Aktualisierung"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ se iniciará después de la actualización"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ se lancera après la mise à jour"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ si avvierà dopo l'aggiornamento"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@はアップデート後に起動します"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@은(는) 업데이트 후 시작됩니다"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ запустится после обновления"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 将在更新后启动"
+          }
+        }
+      }
+    },
+    "The game is in your library. EscApp is installing what games need to run and will start it by itself when that's done.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Spiel ist in deiner Bibliothek. EscApp installiert gerade, was Spiele zum Laufen brauchen, und startet es danach von selbst."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El juego ya está en tu biblioteca. EscApp está instalando lo que los juegos necesitan para funcionar y lo iniciará por sí solo cuando termine."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le jeu est dans ta bibliothèque. EscApp installe ce dont les jeux ont besoin pour fonctionner et le lancera tout seul une fois terminé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il gioco è nella tua libreria. EscApp sta installando ciò che serve ai giochi per funzionare e lo avvierà da solo al termine."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゲームはライブラリに追加されました。EscAppはゲームの実行に必要なものをインストールしています。完了すると自動的に起動します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "게임이 라이브러리에 추가되었습니다. EscApp이 게임 실행에 필요한 것을 설치하는 중이며, 완료되면 자동으로 시작합니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Игра добавлена в библиотеку. EscApp устанавливает то, что нужно для запуска игр, и запустит её сам, когда закончит."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "游戏已加入你的游戏库。EscApp 正在安装运行游戏所需的内容，完成后会自动启动它。"
+          }
+        }
+      }
+    },
+    "EscApp will open this once the update finishes": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp öffnet dies nach der Aktualisierung"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp lo abrirá cuando termine la actualización"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp l'ouvrira une fois la mise à jour terminée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp lo aprirà al termine dell'aggiornamento"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アップデート完了後にEscAppが開きます"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트가 끝나면 EscApp이 엽니다"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp откроет это после обновления"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新完成后 EscApp 会打开它"
+          }
+        }
+      }
+    },
+    "EscApp is installing what games need to run. %@ opens by itself when that's done.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp installiert gerade, was Spiele zum Laufen brauchen. %@ öffnet sich danach von selbst."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp está instalando lo que los juegos necesitan para funcionar. %@ se abrirá solo cuando termine."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp installe ce dont les jeux ont besoin pour fonctionner. %@ s'ouvrira tout seul une fois terminé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp sta installando ciò che serve ai giochi per funzionare. %@ si aprirà da solo al termine."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscAppはゲームの実行に必要なものをインストールしています。完了すると%@が自動的に開きます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp이 게임 실행에 필요한 것을 설치하는 중입니다. 완료되면 %@이(가) 자동으로 열립니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp устанавливает то, что нужно для запуска игр. %@ откроется сам, когда установка закончится."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 正在安装运行游戏所需的内容。完成后 %@ 会自动打开。"
+          }
+        }
+      }
+    },
+    "Starts after the update": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startet nach der Aktualisierung"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se inicia tras la actualización"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se lance après la mise à jour"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si avvia dopo l'aggiornamento"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アップデート後に起動"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "업데이트 후 시작"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Запустится после обновления"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "更新后启动"
           }
         }
       }

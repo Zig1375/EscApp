@@ -117,15 +117,6 @@ extension LibraryModel {
         notice = Notice(title: String(localized: "\(game.name) can't start"), message: String(describing: error))
     }
 
-    /// Components are updating, so the game can't start yet. The buttons are off meanwhile; this tells the
-    /// ways in that have none (an installer's last step) why nothing happens.
-    private func waitsForUpdate(_ game: GameRecord) -> Bool {
-        guard isUpdatingComponents else { return false }
-        notice = Notice(title: String(localized: "Components are being updated"),
-                        message: String(localized: "\(game.name) can be started once the update finishes."))
-        return true
-    }
-
     /// "Cancel" in the launch sheet: stop whatever has started and forget the launch.
     func cancelLaunch() {
         guard let current = launch else { return }

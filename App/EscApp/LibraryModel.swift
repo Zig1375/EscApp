@@ -91,19 +91,18 @@ final class LibraryModel {
     var launchTasks: [GameID: Task<Void, Never>] = [:]
     /// The checking of the launch that's showing; "Don't Retry" stops it.
     var launchControl: LaunchControl?
-    /// Files opened before the components were installed, or while they update; played once that finishes.
-    private var pending: [URL] = []
+    /// Files opened before the components were installed, or discs and installers opened while they update;
+    /// opened once that finishes.
+    var pending: [URL] = []
     private(set) var isReady = false
     /// Components are downloading or installing (`ComponentsModel.updating`). A game started meanwhile did
     /// nothing: the player could press Play and wait for a game that never came. Until it ends, Play is off.
     var isUpdatingComponents = false {
-        didSet {
-            guard oldValue, !isUpdatingComponents else { return }
-            let waiting = pending
-            pending = []
-            for url in waiting { open(url) }
-        }
+        didSet { if oldValue, !isUpdatingComponents { updateFinished() } }
     }
+    /// Games opened (a double-click on their exe) while components update: they are in the library already and
+    /// start by themselves once the update finishes.
+    var startsAfterUpdate: [GameID] = []
     /// Keeps the next game's Wine running so it starts at once (`BottleWarmer`).
     let warmer: BottleWarmer
     /// Cools the warm bottles a few seconds after EscApp loses focus.
@@ -158,10 +157,11 @@ final class LibraryModel {
 
     /// A file from Finder, the Dock icon or the window.
     func open(_ url: URL) {
-        guard isReady, !isUpdatingComponents else {
+        guard isReady else {
             pending.append(url)
             return
         }
+        if waitsForUpdate(url) { return }
         if DiscImage.isImage(url) { return openDisc(url) }
         if let kind = InstallerKind.detect(url) { return openInstaller(url, kind: kind) }
         if let kind = Self.problem(with: url) { return problem = Problem(kind: kind) }
@@ -192,11 +192,6 @@ final class LibraryModel {
         games.compactMap { game in
             if case let .running(since)? = states[game.id] { (game, since) } else { nil }
         }
-    }
-
-    /// Whether Play does anything now: not while the game already starts or runs, nor while components update.
-    func canPlay(_ game: GameRecord) -> Bool {
-        states[game.id] == nil && !isUpdatingComponents
     }
 
     /// A game starting or running, or one being installed: EscApp mustn't quit when its window closes.

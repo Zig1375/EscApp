@@ -16,6 +16,8 @@ struct GameCard: View {
     private var state: LibraryModel.PlayState? { library.states[game.id] }
     /// Components are updating: the card shows that it has to wait instead of offering Play.
     private var waitsForUpdate: Bool { state == nil && library.isUpdatingComponents }
+    /// Opened during the update (a double-click on its exe): it starts by itself when the update finishes.
+    private var startsAfterUpdate: Bool { waitsForUpdate && library.startsAfterUpdate.contains(game.id) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -87,7 +89,7 @@ struct GameCard: View {
                 LinearGradient(stops: [.init(color: .clear, location: 0.45), .init(color: .black.opacity(0.72),
                                                                                     location: 1)],
                                startPoint: .top, endPoint: .bottom)
-                    .opacity(isHovered || state != nil ? 1 : 0)
+                    .opacity(isHovered || state != nil || startsAfterUpdate ? 1 : 0)
                     .allowsHitTesting(false)
             }
             .overlay {
@@ -142,13 +144,28 @@ struct GameCard: View {
                 runningButtons { Text("Show Game") }
                 runningButtons { Image(systemName: "arrow.up.forward.app") }
             }
+        case nil where startsAfterUpdate && !isHovered:
+            HStack(spacing: 6) {
+                Image(systemName: "hourglass")
+                Text("Starts after the update").lineLimit(1)
+            }
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
+            .padding(.leading, 4)
         case nil:
             VStack(spacing: 6) {
                 if waitsForUpdate {
-                    Text("Playable after the update")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
+                    Group {
+                        if startsAfterUpdate {
+                            Text("Starts after the update")
+                        } else {
+                            Text("Playable after the update")
+                        }
+                    }
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
                 }
                 aboutButton
             }

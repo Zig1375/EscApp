@@ -17,10 +17,10 @@ struct DirectX12Window: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .padding(28)
-        // Fixed width, height from the step: a long file name in a button once made the content wider than the
-        // window, which cut off both sides. Nothing in a step may be wider than the window; names are truncated.
-        .frame(width: 600)
-        .frame(minHeight: 420)
+        // One size for every step, set by the tallest: the browser step with an error, 655 points in Russian
+        // (`DirectX12Snapshots`). The window doesn't grow with a step, so a taller one had its heading and buttons
+        // cut off. A long file name in a button once made a step wider than the window; names are truncated.
+        .frame(width: 600, height: 680)
         .background(Color.windowBackground)
         .background(dropTargeted ? Color.brand.opacity(0.06) : .clear)
         // The design has no keyboard focus rings; macOS drew a blue one around the first button.

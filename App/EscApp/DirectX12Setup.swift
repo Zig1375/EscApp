@@ -127,6 +127,17 @@ final class DirectX12Model {
         reload()
     }
 
+    #if DEBUG
+    /// For `DirectX12Snapshots`: a step as it would look, with a sample of Apple's license.
+    func showForSnapshot(_ step: D3DMetalSetup.Step, problem: String?, found: URL?) {
+        self.step = step
+        self.problem = problem
+        self.found = found
+        license = AttributedString(String(repeating: "Apple Inc. Software License Agreement for Game Porting Toolkit. ",
+                                          count: 30))
+    }
+    #endif
+
     private func discardCandidate() {
         if let candidate { D3DMetal.discard(candidate) }
         candidate = nil

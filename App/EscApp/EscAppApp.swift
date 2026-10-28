@@ -74,6 +74,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let library = LibraryModel()
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        DirectX12Snapshots.runIfAsked()
+        #endif
         AppAppearance.saved.apply()
     }
 

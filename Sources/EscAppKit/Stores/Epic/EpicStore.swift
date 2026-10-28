@@ -155,15 +155,37 @@ struct EpicStore: StoreModule {
 
     let removesGamesWithoutClient = true
 
-    /// The game's `.item` in the Manifests folder.
+    /// The game's `.item` in the Manifests folder, and its `.egi` in Epic Online Services' InstallHelper. The
+    /// launcher writes the `.item` back from the `.egi` at its next start: Before We Leave, deleted in EscApp,
+    /// was in the list again after Epic restarted, pointing at a folder in the Trash.
     func records(ofGame id: String, folder: URL, bottle: URL) -> [URL] {
         let manifests = Self.manifests(bottle)
         let appName = Self.appName(id)
         let names = (try? FileManager.default.contentsOfDirectory(atPath: manifests.path)) ?? []
-        return names.filter { $0.hasSuffix(".item") }.map { manifests.appending(path: $0) }.filter { file in
+        let items = names.filter { $0.hasSuffix(".item") }.map { manifests.appending(path: $0) }.filter { file in
             (try? Data(contentsOf: file)).flatMap { try? JSONDecoder().decode(Item.self, from: $0) }?
                 .appName == appName
         }
+        let helper = Self.installHelperItems(bottle)
+        let installs = ((try? FileManager.default.contentsOfDirectory(atPath: helper.path)) ?? [])
+            .filter { $0.hasSuffix(".egi") }.map { helper.appending(path: $0) }
+            .filter { file in (try? Data(contentsOf: file)).map { Self.installHelperItem($0, is: id) } ?? false }
+        return items + installs
+    }
+
+    static func installHelperItems(_ bottle: URL) -> URL {
+        bottle.appending(path: "drive_c/ProgramData/Epic/EpicOnlineServices/InstallHelper/InstalledItems",
+                         directoryHint: .isDirectory)
+    }
+
+    /// An `.egi`: `{"v4": {"sandboxId": …, "itemId": …, "artifactId": …}}`, the parts of EscApp's Epic id.
+    static func installHelperItem(_ data: Data, is id: String) -> Bool {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let install = json.values.compactMap({ $0 as? [String: Any] }).first,
+              let artifact = install["artifactId"] as? String, artifact == appName(id) else { return false }
+        let parts = id.split(separator: ":").map(String.init)
+        guard parts.count == 3 else { return true }
+        return install["sandboxId"] as? String == parts[0] && install["itemId"] as? String == parts[1]
     }
 
     func forgetGame(_ id: String, bottle: URL) throws {

@@ -57,6 +57,13 @@ import Testing
         try Data(other.utf8).write(to: data.appending(path: "EpicGamesLauncher/Data/Manifests/B.item"))
         let list = #"{"InstallationList": [{"AppName": "Kestrel"}, {"AppName": "Other"}]}"#
         try Data(list.utf8).write(to: data.appending(path: "UnrealEngineLauncher/LauncherInstalled.dat"))
+        // Epic Online Services' copy, which the launcher writes the .item back from.
+        let helper = "EpicOnlineServices/InstallHelper/InstalledItems/"
+        let install = #"{"v4": {"state": "Installed", "sandboxId": "ns", "itemId": "item", "artifactId": "Kestrel"}}"#
+        let otherInstall = #"{"v4": {"sandboxId": "ns2", "itemId": "item2", "artifactId": "Other"}}"#
+        try make([helper + "A.egi", helper + "B.egi", helper + "Revision.json"], under: data)
+        try Data(install.utf8).write(to: data.appending(path: helper + "A.egi"))
+        try Data(otherInstall.utf8).write(to: data.appending(path: helper + "B.egi"))
 
         try StoreUninstall.remove(record(.epic, id: "ns:item:Kestrel", folder: folder), paths: paths) {
             try FileManager.default.removeItem(at: $0)
@@ -66,9 +73,20 @@ import Testing
         let manifests = try FileManager.default.contentsOfDirectory(
             atPath: data.appending(path: "EpicGamesLauncher/Data/Manifests").path)
         #expect(manifests == ["B.item"])
+        let installs = try FileManager.default.contentsOfDirectory(atPath: data.appending(path: helper).path)
+        #expect(installs.sorted() == ["B.egi", "Revision.json"])
         let installed = try String(contentsOf: data.appending(path: "UnrealEngineLauncher/LauncherInstalled.dat"),
                                    encoding: .utf8)
         #expect(!installed.contains("Kestrel") && installed.contains("Other"))
+    }
+
+    /// Only the same game's copy: the same artifact in another sandbox is another game.
+    @Test func epicInstallHelperItemsMatchTheWholeID() {
+        let egi = Data(#"{"v4": {"sandboxId": "ns", "itemId": "item", "artifactId": "Kestrel"}}"#.utf8)
+        #expect(EpicStore.installHelperItem(egi, is: "ns:item:Kestrel"))
+        #expect(!EpicStore.installHelperItem(egi, is: "other:item:Kestrel"))
+        #expect(!EpicStore.installHelperItem(egi, is: "ns:item:Other"))
+        #expect(!EpicStore.installHelperItem(Data("not json".utf8), is: "ns:item:Kestrel"))
     }
 
     @Test func steamAndEpicGamesAreRemovedWithoutTheirClient() {

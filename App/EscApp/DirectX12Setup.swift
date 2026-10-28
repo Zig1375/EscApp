@@ -175,7 +175,13 @@ struct DirectX12Card: View {
                     """)
             }
         }
-        .onAppear { model.reload() }
+        // The player downloads in the browser and comes back: the file in Downloads shows up without a click.
+        .task {
+            while !Task.isCancelled {
+                model.reload()
+                try? await Task.sleep(for: .seconds(2))
+            }
+        }
     }
 
     private var runtimeReady: Bool {
@@ -202,16 +208,21 @@ struct DirectX12Card: View {
     private var steps: some View {
         VStack(alignment: .leading, spacing: 14) {
             step(1, title: "Download it from Apple", text: """
-                Sign in with your Apple Account; a free one is enough, no paid membership. The first time, Apple asks \
-                you to accept its developer agreement, which is free too. Then download “Evaluation environment for \
-                Windows games 3.0” (a .dmg file). You don't need to open it.
+                1. Click **Open Apple's Download Page** below: it opens in your browser.
+                2. Sign in with your Apple Account (Apple ID). A free account is enough, no paid developer \
+                membership. The first time, Apple asks you to agree to its developer terms; that's free too.
+                3. In the list, find **Evaluation environment for Windows games 3.0** (blue icon) or a newer one. \
+                Not *Game Porting Toolkit* (red icon): that's a different download.
+                4. Click **View Details** under it, then **Evaluation_environment_for_Windows_games_3.0.dmg** \
+                (about 25 MB). Don't open the file.
                 """) {
                 Button("Open Apple's Download Page") { model.openApplePage() }
                     .buttonStyle(CompactButtonStyle(kind: .primary))
             }
-            step(2, title: "Show EscApp the file", text: """
-                Choose the downloaded file, or drop it here. EscApp opens it, finds D3DMetal and checks that it's \
-                signed by Apple. Nothing is added yet.
+            step(2, title: "Come back to EscApp", text: """
+                EscApp finds the file in your Downloads folder by itself and shows a button with its name: click it. \
+                Saved it somewhere else? Click **Choose File…** or drag the file onto these steps. EscApp checks that \
+                the file really comes from Apple; nothing is added yet.
                 """) {
                 HStack(spacing: 12) {
                     if let found = model.found {
@@ -223,12 +234,17 @@ struct DirectX12Card: View {
                     if model.stage == .checking {
                         ProgressView().controlSize(.small)
                         Text("Checking…").font(.system(size: 12)).foregroundStyle(Color.secondaryText)
+                    } else if model.found == nil {
+                        ProgressView().controlSize(.small)
+                        Text("Waiting for the file in Downloads…")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.secondaryText)
                     }
                 }
             }
             step(3, title: "Accept Apple's license", text: """
-                EscApp shows you the license from your download. When you agree, it adds D3DMetal and DirectX 12 \
-                games start like any other.
+                EscApp shows the license that came with the file. Click **Agree and Add**. That's all: DirectX 12 \
+                games now start like any other.
                 """) { EmptyView() }
         }
         .padding(12)

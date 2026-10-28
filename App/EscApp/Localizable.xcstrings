@@ -21931,58 +21931,6 @@
         }
       }
     },
-    "Choose the downloaded file, or drop it here. EscApp opens it, finds D3DMetal and checks that it's signed by Apple. Nothing is added yet.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wähle die geladene Datei aus oder zieh sie hierher. EscApp öffnet sie, findet D3DMetal und prüft, dass es von Apple signiert ist. Noch wird nichts hinzugefügt."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elige el archivo descargado o suéltalo aquí. EscApp lo abre, encuentra D3DMetal y comprueba que está firmado por Apple. Todavía no se añade nada."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Choisissez le fichier téléchargé ou déposez-le ici. EscApp l’ouvre, trouve D3DMetal et vérifie qu’il est signé par Apple. Rien n’est encore ajouté."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scegli il file scaricato o trascinalo qui. EscApp lo apre, trova D3DMetal e controlla che sia firmato da Apple. Per ora non viene aggiunto nulla."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ダウンロードしたファイルを選ぶか、ここにドロップしてください。EscApp がファイルを開いて D3DMetal を見つけ、Apple の署名を確認します。この段階ではまだ何も追加されません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "다운로드한 파일을 선택하거나 여기에 끌어다 놓으세요. EscApp이 파일을 열어 D3DMetal을 찾고 Apple 서명을 확인합니다. 아직 아무것도 추가되지 않습니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Выберите скачанный файл или перетащите его сюда. EscApp откроет его, найдёт D3DMetal и проверит подпись Apple. Пока ничего не добавляется."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "选择下载的文件，或将其拖到这里。EscApp 会打开它、找到 D3DMetal 并确认它由 Apple 签名。此时还不会添加任何内容。"
-          }
-        }
-      }
-    },
     "Couldn't add D3DMetal: %@": {
       "localizations": {
         "de": {
@@ -22291,58 +22239,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "打开 Apple 下载页面"
-          }
-        }
-      }
-    },
-    "Sign in with your Apple Account; a free one is enough, no paid membership. The first time, Apple asks you to accept its developer agreement, which is free too. Then download “Evaluation environment for Windows games 3.0” (a .dmg file). You don't need to open it.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Melde dich mit deinem Apple Account an; ein kostenloser genügt, keine bezahlte Mitgliedschaft. Beim ersten Mal bittet Apple dich, seiner Entwicklervereinbarung zuzustimmen, auch das ist kostenlos. Lade dann „Evaluation environment for Windows games 3.0“ (eine .dmg-Datei). Öffnen musst du sie nicht."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Inicia sesión con tu cuenta de Apple; basta con una gratuita, sin membresía de pago. La primera vez, Apple te pide aceptar su acuerdo para desarrolladores, que también es gratis. Después descarga «Evaluation environment for Windows games 3.0» (un archivo .dmg). No hace falta abrirlo."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Connectez-vous avec votre compte Apple ; un compte gratuit suffit, sans abonnement payant. La première fois, Apple vous demande d’accepter son contrat pour les développeurs, gratuit lui aussi. Téléchargez ensuite « Evaluation environment for Windows games 3.0 » (un fichier .dmg). Inutile de l’ouvrir."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Accedi con il tuo Account Apple; ne basta uno gratuito, senza abbonamenti a pagamento. La prima volta Apple ti chiede di accettare il suo accordo per sviluppatori, anch’esso gratuito. Poi scarica «Evaluation environment for Windows games 3.0» (un file .dmg). Non serve aprirlo."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple アカウントでサインインします。有料メンバーシップは不要で、無料アカウントで十分です。初回は Apple のデベロッパ契約への同意を求められますが、これも無料です。次に「Evaluation environment for Windows games 3.0」(.dmg ファイル) をダウンロードします。開く必要はありません。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Apple 계정으로 로그인하세요. 유료 멤버십 없이 무료 계정이면 충분합니다. 처음에는 Apple이 개발자 계약에 동의하라고 하는데, 이것도 무료입니다. 그다음 'Evaluation environment for Windows games 3.0'(.dmg 파일)을 다운로드하세요. 열 필요는 없습니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Войдите со своим Apple ID: хватит бесплатного, платная подписка не нужна. В первый раз Apple попросит принять соглашение для разработчиков — это тоже бесплатно. Затем скачайте «Evaluation environment for Windows games 3.0» (файл .dmg). Открывать его не нужно."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "用你的 Apple 账户登录；免费账户即可，无需付费会员。首次登录时，Apple 会请你接受其开发者协议，这同样免费。然后下载“Evaluation environment for Windows games 3.0”（一个 .dmg 文件）。无需打开它。"
           }
         }
       }
@@ -22971,58 +22867,6 @@
         }
       }
     },
-    "EscApp shows you the license from your download. When you agree, it adds D3DMetal and DirectX 12 games start like any other.": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp zeigt dir die Lizenz aus deinem Download. Wenn du zustimmst, fügt es D3DMetal hinzu, und DirectX-12-Spiele starten wie alle anderen."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp te muestra la licencia de tu descarga. Cuando la aceptas, añade D3DMetal y los juegos DirectX 12 arrancan como cualquier otro."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp vous montre la licence de votre téléchargement. Une fois acceptée, il ajoute D3DMetal et les jeux DirectX 12 démarrent comme les autres."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp ti mostra la licenza del tuo download. Quando accetti, aggiunge D3DMetal e i giochi DirectX 12 si avviano come tutti gli altri."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp がダウンロードに含まれるライセンスを表示します。同意すると D3DMetal が追加され、DirectX 12 のゲームもほかのゲームと同じように起動します。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp이 다운로드한 파일의 라이선스를 보여 줍니다. 동의하면 D3DMetal이 추가되고 DirectX 12 게임도 다른 게임처럼 시작됩니다."
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp покажет лицензию из вашей загрузки. Когда вы согласитесь, он добавит D3DMetal, и игры на DirectX 12 будут запускаться как любые другие."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp 会显示你下载文件中的许可协议。同意后，它会添加 D3DMetal，DirectX 12 游戏就能像其他游戏一样启动。"
-          }
-        }
-      }
-    },
     "It needs DirectX 12. Add it in Settings › DirectX 12.": {
       "localizations": {
         "de": {
@@ -23283,58 +23127,6 @@
         }
       }
     },
-    "Show EscApp the file": {
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zeig EscApp die Datei"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Muéstrale el archivo a EscApp"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Montrez le fichier à EscApp"
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mostra il file a EscApp"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "ファイルを EscApp に渡す"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EscApp에 파일 알려 주기"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Покажите файл EscApp"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "把文件交给 EscApp"
-          }
-        }
-      }
-    },
     "This game needs DirectX 12": {
       "localizations": {
         "de": {
@@ -23487,6 +23279,266 @@
           "stringUnit": {
             "state": "translated",
             "value": "分步指南"
+          }
+        }
+      }
+    },
+    "1. Click **Open Apple's Download Page** below: it opens in your browser.\n2. Sign in with your Apple Account (Apple ID). A free account is enough, no paid developer membership. The first time, Apple asks you to agree to its developer terms; that's free too.\n3. In the list, find **Evaluation environment for Windows games 3.0** (blue icon) or a newer one. Not *Game Porting Toolkit* (red icon): that's a different download.\n4. Click **View Details** under it, then **Evaluation_environment_for_Windows_games_3.0.dmg** (about 25 MB). Don't open the file.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Klicke unten auf **Download-Seite von Apple öffnen**: Sie öffnet sich im Browser.\n2. Melde dich mit deinem Apple Account (Apple ID) an. Ein kostenloser genügt, keine bezahlte Entwicklermitgliedschaft. Beim ersten Mal bittet Apple dich, seinen Entwicklerbedingungen zuzustimmen; auch das ist kostenlos.\n3. Suche in der Liste **Evaluation environment for Windows games 3.0** (blaues Symbol) oder eine neuere Version. Nicht *Game Porting Toolkit* (rotes Symbol): Das ist ein anderer Download.\n4. Klicke darunter auf **View Details**, dann auf **Evaluation_environment_for_Windows_games_3.0.dmg** (etwa 25 MB). Öffne die Datei nicht."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Haz clic abajo en **Abrir la página de descargas de Apple**: se abre en el navegador.\n2. Inicia sesión con tu cuenta de Apple (Apple ID). Basta con una gratuita, sin membresía de desarrollador de pago. La primera vez, Apple te pide aceptar sus condiciones para desarrolladores; también es gratis.\n3. En la lista, busca **Evaluation environment for Windows games 3.0** (icono azul) o una más reciente. No *Game Porting Toolkit* (icono rojo): es otra descarga.\n4. Haz clic en **View Details** debajo y luego en **Evaluation_environment_for_Windows_games_3.0.dmg** (unos 25 MB). No abras el archivo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Cliquez ci-dessous sur **Ouvrir la page de téléchargement d’Apple** : elle s’ouvre dans le navigateur.\n2. Connectez-vous avec votre compte Apple (identifiant Apple). Un compte gratuit suffit, sans abonnement développeur payant. La première fois, Apple vous demande d’accepter ses conditions pour les développeurs ; c’est gratuit aussi.\n3. Dans la liste, trouvez **Evaluation environment for Windows games 3.0** (icône bleue) ou une version plus récente. Pas *Game Porting Toolkit* (icône rouge) : c’est un autre téléchargement.\n4. Cliquez sur **View Details** en dessous, puis sur **Evaluation_environment_for_Windows_games_3.0.dmg** (environ 25 Mo). N’ouvrez pas le fichier."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Fai clic qui sotto su **Apri la pagina di download di Apple**: si apre nel browser.\n2. Accedi con il tuo Account Apple (ID Apple). Ne basta uno gratuito, senza abbonamento sviluppatore a pagamento. La prima volta Apple ti chiede di accettare i suoi termini per sviluppatori; anche questo è gratuito.\n3. Nell’elenco trova **Evaluation environment for Windows games 3.0** (icona blu) o una più recente. Non *Game Porting Toolkit* (icona rossa): è un altro download.\n4. Fai clic su **View Details** sotto, poi su **Evaluation_environment_for_Windows_games_3.0.dmg** (circa 25 MB). Non aprire il file."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. 下の **「Apple のダウンロードページを開く」** をクリックします。ブラウザで開きます。\n2. Apple アカウント(Apple ID)でサインインします。無料のアカウントで十分で、有料のデベロッパメンバーシップは不要です。初回は Apple のデベロッパ規約への同意を求められますが、これも無料です。\n3. 一覧から **Evaluation environment for Windows games 3.0**(青いアイコン)かそれより新しいものを探します。*Game Porting Toolkit*(赤いアイコン)は別のダウンロードなので選ばないでください。\n4. その下の **View Details** をクリックし、**Evaluation_environment_for_Windows_games_3.0.dmg**(約 25 MB)をクリックします。ファイルは開かないでください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. 아래의 **Apple 다운로드 페이지 열기**를 클릭하세요. 브라우저에서 열립니다.\n2. Apple 계정(Apple ID)으로 로그인하세요. 유료 개발자 멤버십 없이 무료 계정이면 충분합니다. 처음에는 Apple이 개발자 약관에 동의하라고 하는데, 이것도 무료입니다.\n3. 목록에서 **Evaluation environment for Windows games 3.0**(파란색 아이콘) 또는 더 새로운 버전을 찾으세요. *Game Porting Toolkit*(빨간색 아이콘)는 다른 다운로드입니다.\n4. 그 아래의 **View Details**를 클릭한 다음 **Evaluation_environment_for_Windows_games_3.0.dmg**(약 25MB)를 클릭하세요. 파일은 열지 마세요."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Нажмите ниже **«Открыть страницу загрузки Apple»** — она откроется в браузере.\n2. Войдите со своим аккаунтом Apple (Apple ID). Хватит бесплатного, платная подписка разработчика не нужна. В первый раз Apple попросит принять условия для разработчиков — это тоже бесплатно.\n3. Найдите в списке **Evaluation environment for Windows games 3.0** (синяя иконка) или более новую версию. Не *Game Porting Toolkit* (красная иконка) — это другая загрузка.\n4. Нажмите под ней **View Details**, затем **Evaluation_environment_for_Windows_games_3.0.dmg** (около 25 МБ). Открывать файл не нужно."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. 点按下方的 **“打开 Apple 下载页面”**，它会在浏览器中打开。\n2. 用你的 Apple 账户（Apple ID）登录。免费账户即可，无需付费开发者会员。首次登录时，Apple 会请你同意其开发者条款，这同样免费。\n3. 在列表中找到 **Evaluation environment for Windows games 3.0**（蓝色图标）或更新的版本。不要选 *Game Porting Toolkit*（红色图标），那是另一个下载。\n4. 点按它下方的 **View Details**，然后点按 **Evaluation_environment_for_Windows_games_3.0.dmg**（约 25 MB）。不要打开该文件。"
+          }
+        }
+      }
+    },
+    "Come back to EscApp": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zurück zu EscApp"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve a EscApp"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revenez dans EscApp"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Torna a EscApp"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp に戻る"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp로 돌아오기"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вернитесь в EscApp"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "回到 EscApp"
+          }
+        }
+      }
+    },
+    "EscApp finds the file in your Downloads folder by itself and shows a button with its name: click it. Saved it somewhere else? Click **Choose File…** or drag the file onto these steps. EscApp checks that the file really comes from Apple; nothing is added yet.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp findet die Datei in deinem Ordner „Downloads“ von selbst und zeigt eine Taste mit ihrem Namen: Klicke darauf. Woanders gesichert? Klicke auf **Datei auswählen …** oder zieh die Datei auf diese Schritte. EscApp prüft, dass die Datei wirklich von Apple stammt; noch wird nichts hinzugefügt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp encuentra el archivo en tu carpeta Descargas por sí solo y muestra un botón con su nombre: haz clic en él. ¿Lo guardaste en otro sitio? Haz clic en **Elegir archivo…** o arrastra el archivo sobre estos pasos. EscApp comprueba que el archivo viene de verdad de Apple; todavía no se añade nada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp trouve le fichier tout seul dans votre dossier Téléchargements et affiche un bouton à son nom : cliquez dessus. Enregistré ailleurs ? Cliquez sur **Choisir un fichier…** ou faites glisser le fichier sur ces étapes. EscApp vérifie que le fichier vient bien d’Apple ; rien n’est encore ajouté."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp trova da solo il file nella cartella Download e mostra un pulsante con il suo nome: fai clic. L’hai salvato altrove? Fai clic su **Scegli file…** o trascina il file su questi passaggi. EscApp controlla che il file provenga davvero da Apple; per ora non viene aggiunto nulla."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp が「ダウンロード」フォルダのファイルを自動で見つけ、その名前のボタンを表示します。クリックしてください。別の場所に保存した場合は **「ファイルを選択…」** をクリックするか、ファイルをこの手順の上にドラッグします。EscApp がファイルが本当に Apple のものか確認します。この段階ではまだ何も追加されません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp이 다운로드 폴더에서 파일을 직접 찾아 그 이름의 버튼을 보여 줍니다. 클릭하세요. 다른 곳에 저장했다면 **파일 선택…**을 클릭하거나 파일을 이 단계들 위로 끌어다 놓으세요. EscApp이 파일이 정말 Apple에서 온 것인지 확인합니다. 아직 아무것도 추가되지 않습니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp сам найдёт файл в папке «Загрузки» и покажет кнопку с его именем — нажмите её. Сохранили в другое место? Нажмите **«Выбрать файл…»** или перетащите файл на эти шаги. EscApp проверит, что файл действительно от Apple; пока ничего не добавляется."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 会自动在“下载”文件夹中找到该文件，并显示一个带有文件名的按钮：点按它。存到了其他位置？点按 **“选取文件…”** 或把文件拖到这些步骤上。EscApp 会确认文件确实来自 Apple；此时还不会添加任何内容。"
+          }
+        }
+      }
+    },
+    "Waiting for the file in Downloads…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warte auf die Datei in „Downloads“ …"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando el archivo en Descargas…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En attente du fichier dans Téléchargements…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In attesa del file in Download…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "「ダウンロード」にファイルが来るのを待っています…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다운로드 폴더에서 파일을 기다리는 중…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Жду файл в «Загрузках»…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在等待“下载”中的文件…"
+          }
+        }
+      }
+    },
+    "EscApp shows the license that came with the file. Click **Agree and Add**. That's all: DirectX 12 games now start like any other.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp zeigt dir die Lizenz, die mit der Datei kam. Klicke auf **Zustimmen und hinzufügen**. Das ist alles: DirectX-12-Spiele starten jetzt wie alle anderen."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp te muestra la licencia que venía con el archivo. Haz clic en **Aceptar y añadir**. Eso es todo: los juegos DirectX 12 ya arrancan como cualquier otro."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp affiche la licence fournie avec le fichier. Cliquez sur **Accepter et ajouter**. C’est tout : les jeux DirectX 12 démarrent désormais comme les autres."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp mostra la licenza arrivata con il file. Fai clic su **Accetta e aggiungi**. Ecco fatto: i giochi DirectX 12 ora si avviano come tutti gli altri."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp がファイルに含まれていたライセンスを表示します。**「同意して追加」** をクリックします。これで完了です。DirectX 12 のゲームもほかのゲームと同じように起動します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp이 파일과 함께 온 라이선스를 보여 줍니다. **동의하고 추가**를 클릭하세요. 이걸로 끝입니다. 이제 DirectX 12 게임도 다른 게임처럼 시작됩니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp покажет лицензию, пришедшую вместе с файлом. Нажмите **«Согласиться и добавить»**. Вот и всё: игры на DirectX 12 теперь запускаются как любые другие."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 会显示文件附带的许可协议。点按 **“同意并添加”**。就这样：DirectX 12 游戏现在可以像其他游戏一样启动了。"
           }
         }
       }

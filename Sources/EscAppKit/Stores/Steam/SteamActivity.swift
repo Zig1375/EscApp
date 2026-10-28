@@ -23,9 +23,16 @@ enum SteamHelperSweep {
         }
     }
 
+    /// How long a browser must have run before it counts. Wine starts a process by forking its parent and then
+    /// running the new program, and in between the new process still shows its parent's arguments: a browser
+    /// starting a renderer briefly looks like a newer browser. Counted as one, it had every live renderer and the
+    /// network service killed, and Steam restarted its window five times in three minutes.
+    static let browserSettledAfter: TimeInterval = 10
+
     /// The helper processes left over from earlier browsers. Without a browser, none: Steam is between helpers.
-    static func strays(_ helpers: [Helper]) -> [pid_t] {
-        guard let newest = helpers.filter(\.isBrowser).map(\.started).max() else { return [] }
+    static func strays(_ helpers: [Helper], now: Date = Date()) -> [pid_t] {
+        guard let newest = helpers.filter({ $0.isBrowser && now.timeIntervalSince($0.started) >= browserSettledAfter })
+            .map(\.started).max() else { return [] }
         return helpers.filter { !$0.isBrowser && $0.started < newest }.map(\.pid)
     }
 }

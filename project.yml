@@ -8,8 +8,13 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MARKETING_VERSION: "0.1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    # The app is ESCAPP_VERSION.ESCAPP_BUILD. Only the first two parts live here; the release job in
+    # .github/workflows/ci.yml numbers builds 1, 2, 3… across all versions (scripts/next-version.sh) and passes
+    # ESCAPP_BUILD. A local build is build 0. Keep EscAppCommand.version the same (a test checks it).
+    ESCAPP_VERSION: "1.0"
+    ESCAPP_BUILD: "0"
+    MARKETING_VERSION: "$(ESCAPP_VERSION).$(ESCAPP_BUILD)"
+    CURRENT_PROJECT_VERSION: "$(ESCAPP_BUILD)"
     ARCHS: arm64
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_EMIT_LOC_STRINGS: YES
@@ -26,6 +31,8 @@ targets:
     info:
       path: App/EscApp/Info.plist
       properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         # EscApp opens Windows programs and installers. "Default" rank: EscApp becomes their app unless the user
         # already picked another one; Settings offers to make EscApp the default.
         CFBundleDocumentTypes:

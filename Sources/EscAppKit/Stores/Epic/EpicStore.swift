@@ -54,15 +54,34 @@ struct EpicStore: StoreModule {
     /// (`invalid_grant`), so the player was signed out every time. `taskkill` without `/F` sends its window
     /// `WM_CLOSE`, as its close button does, and the launcher exited properly 3 s later (`LogExit: Exiting.`).
     /// `wineboot --end-session` and `SIGINT` ended it without that.
+    ///
+    /// Signed in, the launcher doesn't exit on `WM_CLOSE`: it goes to the tray, as on Windows, and EscApp waited
+    /// the whole 20 s for nothing before ending it, so a launcher the player closed lingered half a minute. Its
+    /// log says so at once ("Application is being minimized"), and then it is ended straight away. Its sign-in
+    /// survives that now: signed in again after it was ended so on Wine 11.20 build 9. Nothing outside quits
+    /// it from the tray: `WM_QUERYENDSESSION` and `WM_ENDSESSION` to its windows were ignored.
     func askToQuit(_ stores: StoreClient, client: URL, bottle: URL, wine: Wine,
                    environment: [String: String]) async {
         guard WineProcesses.running(in: bottle).contains(where: Self.isLauncher) else { return }
+        let logs = StoreClient.epicLogs(in: bottle)
+        let sizes = logs.map { (try? $0.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0 }
         _ = try? await ProcessRunner.run(wine.wine.path, ["taskkill", "/IM", "EpicGamesLauncher.exe"],
                                          environment: environment, timeout: 10)
         let deadline = Date().addingTimeInterval(20)
         while WineProcesses.running(in: bottle).contains(where: Self.isLauncher), Date() < deadline {
+            if zip(logs, sizes).contains(where: { StoreClient.epicWentToTray(Self.appended(to: $0, after: $1)) }) {
+                return
+            }
             try? await Task.sleep(for: .milliseconds(500))
         }
+    }
+
+    /// What `file` gained past its first `size` bytes.
+    static func appended(to file: URL, after size: Int) -> Data {
+        guard let handle = try? FileHandle(forReadingFrom: file) else { return Data() }
+        defer { try? handle.close() }
+        try? handle.seek(toOffset: UInt64(size))
+        return (try? handle.readToEnd()) ?? Data()
     }
 
     static func isLauncher(_ process: WineProcesses.Process) -> Bool {

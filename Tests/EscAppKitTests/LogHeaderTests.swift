@@ -26,6 +26,14 @@ import Testing
         }
     }
 
+    @Test func namesTheD3DMetalThePlayerAdded() {
+        let installed = D3DMetal.Installed(version: "3.0",
+                                           source: "Evaluation_environment_for_Windows_games_3.0.dmg")
+        #expect(LogHeader.d3dmetalLine(installed)
+            == "[EscApp] D3DMetal 3.0 from Evaluation_environment_for_Windows_games_3.0.dmg")
+        #expect(LogHeader.d3dmetalLine(nil) == "[EscApp] D3DMetal not added")
+    }
+
     @Test func aMacWithoutAMarketingNameShowsItsModel() {
         var mac = Self.mac
         mac.modelName = ""

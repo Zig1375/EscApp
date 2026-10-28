@@ -33,6 +33,8 @@ public struct GameLauncher: Sendable {
         public var rtps: [String] = []
         /// Microsoft's runtimes the game needs and its bottle has (`RedistNeeds`), by manifest id.
         public var redists: [String] = []
+        /// The D3DMetal the player added (`D3DMetal`), named in the log whatever the backend.
+        public var d3dmetal: D3DMetal.Installed?
         /// Lines for the game's log about what couldn't be installed, with the installer's own last words.
         public var notes: [String] = []
     }
@@ -60,21 +62,6 @@ public struct GameLauncher: Sendable {
         self.host = host
     }
 
-    /// The backend this launch uses; throws when the game can't run at all.
-    private func backend(for game: GameRecord, info: ExecutableInfo, runtime: RuntimeManifest.Runtime,
-                         override: GraphicsBackend?) throws -> GraphicsBackend {
-        let d3dmetal = D3DMetal.isReady(paths: paths, runtime: runtime)
-        switch BackendPlan.forTraits(info.traits, d3dmetal: d3dmetal) {
-        case let .attempts(attempts):
-            let backend = override ?? game.backend ?? attempts[0]
-            // D3DMetal chosen for this game (by hand, or recommended by its folder from another Mac) but not here,
-            // or removed since: the game's own first choice instead.
-            return backend == .d3dmetal && !d3dmetal ? attempts[0] : backend
-        case let .unsupported(reason):
-            throw LaunchError.unsupported(reason)
-        }
-    }
-
     /// A store game's client, made ready for it, and the command that starts the game through the client.
     /// Returns whether the bottle was idle; always for a game without a store.
     private func prepareStore(for game: GameRecord, wine: Wine, retina: Bool) async throws
@@ -99,7 +86,7 @@ public struct GameLauncher: Sendable {
         let info = try ExecutableInfo.read(exe)
         if info.format == .dos { throw LaunchError.dosProgram }
         let backend = try backend(for: game, info: info, runtime: runtime, override: override)
-        let d3dmetal = D3DMetal.installed(paths: paths)?.folder
+        let d3dmetal = D3DMetal.installed(paths: paths)
         guard let runtimeFolder = RuntimeInstaller(paths: paths).installed(runtime) else {
             throw BottleError.runtimeMissing(runtime.id)
         }
@@ -111,7 +98,7 @@ public struct GameLauncher: Sendable {
         let files = try await gameFiles(for: game, info: info, in: .init(bottle, runtime, runtimeFolder),
                                         fetch: fetchGameFiles, progress: progress)
         progress(.graphics(backend, directX: info.directX.max()))
-        let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder, d3dmetal: d3dmetal)
+        let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder, d3dmetal: d3dmetal?.folder)
         // Retina only for games that say they handle high DPI; others would draw a tiny interface.
         let retina = GameSettings.retina(game.retina, dpiAware: info.dpiAware)
         let (idle, client) = try await prepareStore(for: game, wine: wine, retina: retina)
@@ -143,7 +130,8 @@ public struct GameLauncher: Sendable {
                         environment: environment, log: newLogFile(for: game.id), scale: scale, retina: retina,
                         client: client, gameFolder: folder, chromium: chromium, storeClient: storeClient,
                         locale: files.locale, rtps: files.rtps.map { "\($0.rtp.engine)/\($0.rtp.name)" },
-                        redists: files.redists, notes: files.notes + moduleNotes(game, info, runtime))
+                        redists: files.redists, d3dmetal: d3dmetal?.info,
+                        notes: files.notes + moduleNotes(game, info, runtime))
     }
 
     /// Ends what still runs in a game's bottle with osync the other way: the running wineserver decides, so the
@@ -271,6 +259,7 @@ public struct GameLauncher: Sendable {
             "[EscApp] Game \(prepared.game.name) (\(prepared.game.id))",
             "[EscApp] Executable \(prepared.game.executable)",
             "[EscApp] Backend \(prepared.backend.rawValue)",
+            LogHeader.d3dmetalLine(prepared.d3dmetal),
             "[EscApp] Windows \(prepared.game.windowsVersion.wineValue)",
             "[EscApp] Retina \(retina ? "on" : "off")",
             "[EscApp] Scale \(prepared.scale.formatted(.number.precision(.fractionLength(0...2))))x",

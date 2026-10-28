@@ -114,6 +114,13 @@ public enum LogHeader {
         return lines
     }
 
+    /// Which D3DMetal the player added and from which of Apple's images, so a Direct3D 12 game's log says what
+    /// it ran on, and a game that failed on other backends shows whether D3DMetal was there to try.
+    static func d3dmetalLine(_ installed: D3DMetal.Installed?) -> String {
+        guard let installed else { return "[EscApp] D3DMetal not added" }
+        return "[EscApp] D3DMetal \(installed.version) from \(installed.source)"
+    }
+
     /// The header as text ready to write, ending in a newline.
     public static func text(system: SystemInfo = .current, wine: Wine) -> String {
         lines(system: system, wine: wine).joined(separator: "\n") + "\n"

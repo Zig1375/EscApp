@@ -7,6 +7,11 @@ public actor StoreKeeper {
     /// While nothing is on screen but Wine says a window is shown (minimised, or on another Space), how long
     /// before asking Wine again: each look starts a Windows program.
     static let recheckShown: TimeInterval = 20
+    /// The same while only minimised windows were seen, for a while after the window left the screen: Epic
+    /// minimises its window when the player closes it and hides it a moment later. Asked in that moment, a 20 s
+    /// wait kept the closed launcher running half a minute.
+    static let recheckMinimised: TimeInterval = 3
+    static let closingFor: TimeInterval = 30
     /// A client found running for this long counts as used: it isn't one starting up for a game. Steam left
     /// hidden before EscApp started is quit too.
     static let settledAfter: TimeInterval = 120
@@ -15,7 +20,10 @@ public actor StoreKeeper {
     private var quits: [Store: StoreQuit] = [:]
     /// When the oldest process in each store's bottle started: a later one is the client started again.
     private var sessions: [Store: Date] = [:]
-    private var shownOffScreen: [Store: Date] = [:]
+    /// When Wine last said a window is shown though none is on screen, and whether all of them were minimised.
+    private var shownOffScreen: [Store: (asked: Date, minimised: Bool)] = [:]
+    /// When the client's windows left the screen.
+    private var offScreenSince: [Store: Date] = [:]
 
     public init(paths: AppPaths) { client = StoreClient(paths: paths) }
 
@@ -30,6 +38,7 @@ public actor StoreKeeper {
             guard !processes.isEmpty, let wine = client.runningWine(store) else {
                 quits[store] = nil
                 shownOffScreen[store] = nil
+                offScreenSince[store] = nil
                 sessions[store] = nil
                 continue
             }
@@ -40,6 +49,7 @@ public actor StoreKeeper {
             if Self.restarted(seen: sessions[store], oldest: started) {
                 quits[store] = nil
                 shownOffScreen[store] = nil
+                offScreenSince[store] = nil
             }
             sessions[store] = started ?? sessions[store]
             let oldest = started ?? Date()
@@ -50,6 +60,7 @@ public actor StoreKeeper {
             if quit.update(windows: windows, game: game, now: Date()) {
                 quits[store] = nil
                 shownOffScreen[store] = nil
+                offScreenSince[store] = nil
                 // Checked again just before Wine is ended: a game may start while the client is asked to quit.
                 await client.shutDown(store) { Self.playing(store, in: bottle) }
                 running.remove(store)
@@ -79,14 +90,29 @@ public actor StoreKeeper {
     /// as Wine does.
     private func shown(_ store: Store, processes: [WineProcesses.Process], wine: Wine, askWine: Bool) async -> Bool {
         let pids = Set(processes.map(\.pid))
+        let now = Date()
         if GameWindows.owners(under: wine.root).contains(where: pids.contains) {
             shownOffScreen[store] = nil
+            offScreenSince[store] = nil
             return true
         }
+        let offScreen = offScreenSince[store] ?? now
+        offScreenSince[store] = offScreen
         guard askWine else { return false }
-        if let asked = shownOffScreen[store], Date().timeIntervalSince(asked) < Self.recheckShown { return true }
-        let shown = await StoreWindows.anyShown(in: client.bottle(for: store), wine: wine, host: client.host) ?? true
-        shownOffScreen[store] = shown ? Date() : nil
-        return shown
+        if let last = shownOffScreen[store],
+           !Self.askAgain(asked: last.asked, minimised: last.minimised, offScreenSince: offScreen, now: now) {
+            return true
+        }
+        let shown = await StoreWindows.shown(in: client.bottle(for: store), wine: wine, host: client.host) ?? .windows
+        shownOffScreen[store] = shown == .nothing ? nil : (now, shown == .minimised)
+        return shown != .nothing
+    }
+
+    /// Whether to ask Wine again about windows it said are shown while none is on screen: each look starts a
+    /// Windows program, so a minimised client is asked rarely, but a client that only just left the screen with
+    /// nothing but minimised windows may be closing.
+    static func askAgain(asked: Date, minimised: Bool, offScreenSince: Date, now: Date) -> Bool {
+        let closing = minimised && now.timeIntervalSince(offScreenSince) < closingFor
+        return now.timeIntervalSince(asked) >= (closing ? recheckMinimised : recheckShown)
     }
 }

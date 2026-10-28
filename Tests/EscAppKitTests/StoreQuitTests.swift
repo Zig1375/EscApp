@@ -65,6 +65,23 @@ import Testing
         #expect(StoreWindows.parse("").isEmpty)
     }
 
+    @Test func shownWindows() {
+        #expect(StoreWindows.Shown([]) == .nothing)
+        #expect(StoreWindows.Shown([.init(pid: 1, minimised: true, title: "Epic Games Launcher")]) == .minimised)
+        #expect(StoreWindows.Shown([.init(pid: 1, minimised: true, title: ""),
+                                    .init(pid: 1, minimised: false, title: "")]) == .windows)
+    }
+
+    /// Epic closed by the player: minimised first, hidden a moment later. Asked in between, the next look comes
+    /// 3 s later, not 20; a client minimised for a while is asked rarely again.
+    @Test func closingClientIsAskedSooner() {
+        let left = Date(timeIntervalSince1970: 1000)
+        #expect(StoreKeeper.askAgain(asked: left, minimised: true, offScreenSince: left, now: left + 3))
+        #expect(!StoreKeeper.askAgain(asked: left, minimised: false, offScreenSince: left, now: left + 3))
+        #expect(!StoreKeeper.askAgain(asked: left + 40, minimised: true, offScreenSince: left, now: left + 43))
+        #expect(StoreKeeper.askAgain(asked: left + 40, minimised: true, offScreenSince: left, now: left + 60))
+    }
+
     @Test func helperIsBundled() {
         #expect(StoreWindows.program != nil)
     }
@@ -98,7 +115,23 @@ import Testing
             .init(pid: 31944, started: browser.addingTimeInterval(2), isBrowser: false),
             .init(pid: 32051, started: browser.addingTimeInterval(20), isBrowser: false),
         ]
-        #expect(SteamHelperSweep.strays(helpers) == [877, 31840])
+        #expect(SteamHelperSweep.strays(helpers, now: browser.addingTimeInterval(30)) == [877, 31840])
+    }
+
+    /// A browser starting a renderer: for a moment Wine shows the new process with the browser's arguments,
+    /// as a newer browser. Its own renderers aren't strays, and neither are anyone's until it has settled.
+    @Test func browsersForkedCopyIsNoNewBrowser() {
+        let browser = Date(timeIntervalSince1970: 5000)
+        let now = browser.addingTimeInterval(60)
+        let helpers: [SteamHelperSweep.Helper] = [
+            .init(pid: 412, started: browser, isBrowser: true),
+            .init(pid: 420, started: browser.addingTimeInterval(1), isBrowser: false),
+            .init(pid: 480, started: browser.addingTimeInterval(30), isBrowser: false),
+            .init(pid: 512, started: now.addingTimeInterval(-0.01), isBrowser: true),
+        ]
+        #expect(SteamHelperSweep.strays(helpers, now: now).isEmpty)
+        // A real new browser still sweeps the old renderers once it has run a while.
+        #expect(SteamHelperSweep.strays(helpers, now: now.addingTimeInterval(15)) == [420, 480])
     }
 
     @Test func noBrowserMeansNoStrays() {

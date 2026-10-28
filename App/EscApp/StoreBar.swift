@@ -73,6 +73,7 @@ private struct StoreButton: View {
         .buttonStyle(.plain)
         .overlay { ring }
         .overlay(alignment: .bottom) { dot.offset(y: 12) }
+        .overlay(alignment: .topTrailing) { quitBadge.offset(x: 8, y: -8) }
         .onHover { isHovered = $0 }
         .animation(.easeOut(duration: 0.15), value: isHovered)
         .help(Text(tooltip))
@@ -121,6 +122,26 @@ private struct StoreButton: View {
                 .allowsHitTesting(false)
         default:
             EmptyView()
+        }
+    }
+
+    /// Quit on hover: the client's close button only hides its window, as it would go to the tray on Windows, and
+    /// EscApp quits it a while later; a player who closed Epic's window saw it linger with no way to quit but the
+    /// context menu. Not while one of its games runs, which quitting would end.
+    @ViewBuilder private var quitBadge: some View {
+        if case .running = phase, isHovered, !library.isPlaying(from: store) {
+            Button { library.quitStore(store) } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 20, height: 20)
+                    .background(Circle().fill(.black.opacity(0.7)))
+                    .overlay(Circle().strokeBorder(.white.opacity(0.8), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .help(Text("Quit \(store.name)"))
+            .accessibilityLabel(Text("Quit \(store.name)"))
+            .transition(.opacity)
         }
     }
 

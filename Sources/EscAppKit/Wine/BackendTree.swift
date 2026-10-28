@@ -163,6 +163,28 @@ extension BackendTree {
         return Wine(root: tree)
     }
 
+    /// Removes every runtime's `wine-d3dmetal-<version>` tree but `keeping`'s (nil: all of them). A replaced or
+    /// removed D3DMetal left its tree behind, linking to a copy that was gone. A tree a game still runs from stays
+    /// until the next replacement or the next tree built.
+    public static func removeStaleD3DMetalTrees(paths: AppPaths, keeping version: String?) {
+        let fileManager = FileManager.default
+        let busy = RuntimeInstaller(paths: paths).runningTrees()
+        for runtime in (try? fileManager.contentsOfDirectory(atPath: paths.runtimes.path)) ?? [] {
+            let folder = paths.runtime(runtime)
+            let entries = (try? fileManager.contentsOfDirectory(atPath: folder.path)) ?? []
+            let inUse = Set(busy.filter { $0.hasPrefix(runtime + "/") }.map { String($0.dropFirst(runtime.count + 1)) })
+            for tree in staleD3DMetalTrees(entries, keeping: version, busy: inUse) {
+                try? fileManager.removeItem(at: folder.appending(path: tree, directoryHint: .isDirectory))
+            }
+        }
+    }
+
+    /// The trees in one runtime folder that belong to another D3DMetal than `version`, minus the ones in use.
+    static func staleD3DMetalTrees(_ entries: [String], keeping version: String?, busy: Set<String>) -> [String] {
+        let current = version.map { "wine-d3dmetal-\($0)" }
+        return entries.filter { $0.hasPrefix("wine-d3dmetal-") && $0 != current && !busy.contains($0) }.sorted()
+    }
+
     /// D3DMetal's DLLs that go into Wine. Its MetalFX stand-in for DLSS (`nvngx-on-metalfx`) stays out: Apple's
     /// notes call it experimental, and it only works renamed and copied into the bottle.
     static func d3dmetalCopies(_ name: String) -> Bool {

@@ -77,6 +77,17 @@ public struct RuntimeInstaller: Sendable {
         })
     }
 
+    /// Backend trees some process on this Mac runs from, as `<runtime id>/<tree>` (`wine-dxvk`, `wine-d3dmetal-3.0`).
+    func runningTrees() -> Set<String> {
+        let root = paths.runtimes.resolvingSymlinksInPath().path(percentEncoded: false)
+        let prefix = root.hasSuffix("/") ? root : root + "/"
+        return Set(WineProcesses.allPIDs().compactMap { pid -> String? in
+            guard let path = GameWindows.executablePath(of: pid), path.hasPrefix(prefix) else { return nil }
+            let parts = path.dropFirst(prefix.count).split(separator: "/")
+            return parts.count > 2 ? "\(parts[0])/\(parts[1])" : nil
+        })
+    }
+
     @discardableResult
     public func install(
         _ runtime: RuntimeManifest.Runtime,

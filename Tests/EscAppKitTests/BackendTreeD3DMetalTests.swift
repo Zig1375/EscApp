@@ -37,6 +37,15 @@ import Testing
         #expect(try String(contentsOf: plain, encoding: .utf8) == "vkd3d")
     }
 
+    /// Replacing D3DMetal 3.0 with 4.0b3 left `wine-d3dmetal-3.0` behind, linking to a copy that was gone.
+    @Test func treesOfAnotherD3DMetalGoUnlessInUse() {
+        let entries = ["wine", "wine-dxvk", "wine-d3dmetal-3.0", "wine-d3dmetal-4.0b3", "RUNTIME.json"]
+        #expect(BackendTree.staleD3DMetalTrees(entries, keeping: "4.0b3", busy: []) == ["wine-d3dmetal-3.0"])
+        #expect(BackendTree.staleD3DMetalTrees(entries, keeping: "4.0b3", busy: ["wine-d3dmetal-3.0"]).isEmpty)
+        #expect(BackendTree.staleD3DMetalTrees(entries, keeping: nil, busy: [])
+            == ["wine-d3dmetal-3.0", "wine-d3dmetal-4.0b3"])
+    }
+
     @Test func noD3DMetalNoTree() {
         let runtime = FileManager.default.temporaryDirectory.appending(path: "missing-\(UUID().uuidString)")
         #expect(throws: BottleError.self) { try BackendTree.wine(for: .d3dmetal, runtimeFolder: runtime) }

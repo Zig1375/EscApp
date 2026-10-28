@@ -151,6 +151,7 @@ extension D3DMetal {
         }
         try fileManager.moveItem(at: candidate.staging,
                                  to: paths.d3dmetal.appending(path: candidate.version, directoryHint: .isDirectory))
+        BackendTree.removeStaleD3DMetalTrees(paths: paths, keeping: candidate.version)
     }
 
     public static func discard(_ candidate: D3DMetalCandidate) {
@@ -159,6 +160,7 @@ extension D3DMetal {
 
     /// Removes every installed D3DMetal and what an import left behind.
     public static func remove(paths: AppPaths) throws {
+        BackendTree.removeStaleD3DMetalTrees(paths: paths, keeping: nil)
         guard FileManager.default.fileExists(atPath: paths.d3dmetal.path) else { return }
         try FileManager.default.removeItem(at: paths.d3dmetal)
     }

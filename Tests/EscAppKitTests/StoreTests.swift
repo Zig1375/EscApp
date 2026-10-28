@@ -352,6 +352,14 @@ extension EpicUpdateTests {
         let shown = stuck + "\n[2026.10.24-12.06.15:873][367]LogWebView:   WARN  [Statsig] The user does not have"
         #expect(!StoreClient.showsPages(Data(stuck.utf8)))
         #expect(StoreClient.showsPages(Data(shown.utf8)))
+        // A restarted page process that got stuck again writes these two, and nothing else.
+        let stuckAgain = stuck + """
+
+            [2026.10.28-13.16.52:227][360]LogWebView: Setting ue.history prototype for history object.
+            [2026.10.28-13.16.52:227][360]LogWebView: Uncaught TypeError: Object prototype may only be an Object or null
+            """
+        #expect(!StoreClient.showsPages(Data(stuckAgain.utf8)))
+        #expect(StoreClient.showsPages(Data((stuckAgain + "\n[1]LogWebView: Epic tracking not available").utf8)))
     }
 
     /// A signed-in launcher asked to quit goes to the tray instead, and then isn't waited for.

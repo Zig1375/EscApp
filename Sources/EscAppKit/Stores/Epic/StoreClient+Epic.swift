@@ -106,8 +106,15 @@ extension StoreClient {
         }
     }
 
+    /// A `LogWebView` line from a page. Not the two a stuck page process also writes after it was restarted:
+    /// `Setting ue.history prototype` and `Uncaught TypeError: Object prototype may only be an Object or null`.
+    /// Counted as pages, they left the window dark with a second page process spinning, and nothing ended it.
     static func showsPages(_ log: Data) -> Bool {
-        log.range(of: Data("LogWebView".utf8)) != nil
+        let text = String(bytes: log, encoding: .utf8) ?? String(bytes: log, encoding: .isoLatin1) ?? ""
+        return text.split(whereSeparator: \.isNewline).contains { line in
+            line.contains("LogWebView:") && !line.contains("Setting ue.history prototype")
+                && !line.contains("Uncaught TypeError")
+        }
     }
 
     /// Runs the launcher's own install step for the downloaded update, as the player.

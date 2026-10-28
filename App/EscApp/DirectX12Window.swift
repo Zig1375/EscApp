@@ -17,7 +17,10 @@ struct DirectX12Window: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
         .padding(28)
-        .frame(width: 640, height: 600)
+        // Fixed width, height from the step: a long file name in a button once made the content wider than the
+        // window, which cut off both sides. Nothing in a step may be wider than the window; names are truncated.
+        .frame(width: 600)
+        .frame(minHeight: 420)
         .background(Color.windowBackground)
         .background(dropTargeted ? Color.brand.opacity(0.06) : .clear)
         .dropDestination(for: URL.self) { urls, _ in
@@ -60,10 +63,20 @@ struct DirectX12Window: View {
                 .font(.system(size: 13))
                 .foregroundStyle(Color.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
-            Spacer()
+            Spacer(minLength: 8)
+            if let found = model.found {
+                HStack(spacing: 6) {
+                    Image(systemName: "doc.fill").foregroundStyle(Color.secondaryText)
+                    Text("Found in Downloads:").foregroundStyle(Color.secondaryText)
+                    Text(verbatim: found.lastPathComponent)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+                .font(.system(size: 12))
+            }
             HStack(spacing: 12) {
                 if let found = model.found {
-                    Button("Use \(found.lastPathComponent)") { Task { await model.check(found) } }
+                    Button("Use This File") { Task { await model.check(found) } }
                         .buttonStyle(BrandButtonStyle(height: 36, radius: 9))
                 } else {
                     Button("I Already Have the File…") { model.chooseFile() }
@@ -94,20 +107,22 @@ struct DirectX12Window: View {
                     """)
                 point(3, "Don't open the file. EscApp sees it in Downloads and goes on by itself.")
             }
-            Spacer()
+            Spacer(minLength: 8)
             HStack(spacing: 10) {
                 ProgressView().controlSize(.small)
                 Text("Waiting for the file in Downloads…")
                     .font(.system(size: 13))
                     .foregroundStyle(Color.secondaryText)
-                Spacer()
+                Spacer(minLength: 8)
+                Button("Open Apple's Page Again") { model.openApplePage() }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.brand)
             }
             HStack(spacing: 12) {
                 Button("Back") { model.back() }
                     .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
                 Spacer()
-                Button("Open Apple's Page Again") { model.openApplePage() }
-                    .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
                 Button("The File Is Somewhere Else…") { model.chooseFile() }
                     .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
             }
@@ -176,9 +191,11 @@ struct DirectX12Window: View {
                 if let id = library.directX12Game, let game = library.game(id) {
                     Button("Done") { close() }
                         .buttonStyle(BrandButtonStyle(height: 36, radius: 9))
-                    Button("Start \(game.name)") {
+                    Button {
                         close()
                         library.play(game)
+                    } label: {
+                        Text("Start \(game.name)").lineLimit(1).truncationMode(.tail)
                     }
                     .buttonStyle(BrandButtonStyle(kind: .primary, height: 36, radius: 9))
                     .keyboardShortcut(.defaultAction)

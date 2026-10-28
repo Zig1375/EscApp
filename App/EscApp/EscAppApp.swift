@@ -62,6 +62,9 @@ struct EscAppApp: App {
             DirectX12Window(model: directX12, library: delegate.library)
         }
         .windowResizability(.contentSize)
+        // Opened only from Settings or a DirectX 12 game's message: macOS reopened it at launch on its own.
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
     }
 }
 

@@ -23,6 +23,8 @@ struct DirectX12Window: View {
         .frame(minHeight: 420)
         .background(Color.windowBackground)
         .background(dropTargeted ? Color.brand.opacity(0.06) : .clear)
+        // The design has no keyboard focus rings; macOS drew a blue one around the first button.
+        .focusEffectDisabled()
         .dropDestination(for: URL.self) { urls, _ in
             guard let image = urls.first(where: { $0.pathExtension.lowercased() == "dmg" }) else { return false }
             Task { await model.check(image) }

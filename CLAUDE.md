@@ -62,6 +62,10 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 - Wine is EscApp's own build (Wine 11.20, built and released by the sibling repo `../EscApp-Runtime`), with
   WhiskyWine 3.1.1 (Wine 11.0) still in the manifest as the older runtime. DXMT needs `macdrv_functions` exported
   from `winemac.so`, which stock and Gcenx builds lack; EscApp's build patches it in.
+- DirectX 12: `D3DMetal` takes Apple's D3DMetal from the player's own download of Apple's "Evaluation environment for
+  Windows games" (checked by Apple's signature, copied unchanged to `EscApp/D3DMetal`); EscApp never ships or
+  downloads it, and nothing of Apple's goes into the repository. The `d3dmetal` backend needs a Wine with the
+  `d3dmetal` feature and runs with `WINEMACSHAREDTSD=1`. `escapp d3dmetal status|import|remove`; Settings › DirectX 12.
 - Stores: `Store` is only a store's name in `Games.json`; everything about one store is its `StoreModule`, a folder
   per store (`Sources/EscAppKit/Stores/Steam`, `.../Epic`). A new store is a type conforming to `StoreModule` (with
   a fixed `id` and `bottleNumber`, never reusing 3–5, which GOG Galaxy, the EA app and Ubisoft Connect had), its

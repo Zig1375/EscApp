@@ -58,7 +58,7 @@ extension AutoLaunchTests {
     }
 
     @Test func unknownValuesInTheFolderAreIgnored() async throws {
-        try recommend(RecommendedSettings(backend: "d3dmetal", windows: "win95"))
+        try recommend(RecommendedSettings(backend: "glide", windows: "win95"))
         #expect(GameIdentifier.recommended(for: game) == nil)
         let starter = try FakeStarter([.dxvk: .works], logs: logs())
         _ = try await play(starter)

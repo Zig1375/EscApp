@@ -133,7 +133,7 @@ struct LaunchSheet: View {
         case .graphics?:
             Text("Its graphics can't start on this Mac.")
         case .directX12?:
-            Text("It needs DirectX 12, which EscApp doesn't support yet.")
+            Text("It needs DirectX 12. Add it in Settings › DirectX 12.")
         case let .antiCheat(name)?:
             Text("It uses \(name) anti-cheat, which doesn't run on a Mac.")
         case .crash?:

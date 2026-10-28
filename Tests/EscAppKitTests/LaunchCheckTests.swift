@@ -146,7 +146,7 @@ import Testing
     @Test func unknownValuesAreIgnoredNotFatal() throws {
         let json = """
             {"format": 1, "runtimes": [], "games": [
-              {"exe": "a.exe", "backend": "d3dmetal", "windows": "win95"},
+              {"exe": "a.exe", "backend": "glide", "windows": "win95"},
               {"exe": "b.exe", "backend": "wined3d", "windows": "winxp"}]}
             """
         let games = try #require(try JSONDecoder().decode(RuntimeManifest.self, from: Data(json.utf8)).games)

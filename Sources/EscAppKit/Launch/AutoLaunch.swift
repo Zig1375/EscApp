@@ -118,7 +118,7 @@ public struct AutoLaunch: Sendable {
         let standard = (windows: game.windowsVersion, chromium: game.chromium)
         if let fromFile { Self.apply(fromFile, to: &game) }
         var order = Self.order(for: game, override: override, info: info, recommended: fromFile, known: known,
-                               module: module)
+                               module: module, d3dmetal: D3DMetal.isReady(paths: paths, runtime: runtime))
         // Graphics picked in Advanced works like `--backend`: that one only, no retries. So does a module's
         // `require`.
         if override ?? game.chosenBackend ?? module.requireBackend != nil { control.stopRetrying() }

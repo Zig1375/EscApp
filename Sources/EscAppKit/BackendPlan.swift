@@ -44,14 +44,16 @@ public enum BackendPlan: Sendable, Equatable {
 
     public enum Reason: Sendable, Equatable {
         case sixteenBit
-        /// Direct3D 12 needs D3DMetal, which comes in v2.
+        /// Direct3D 12 needs D3DMetal, which the player hasn't added yet (or the runtime's Wine can't load it).
         case directX12
     }
 
     /// For a program on Chromium (`ExecutableTraits.isChromium`).
     static let chromiumAttempts: [GraphicsBackend] = [.wined3d, .dxmt, .dxvk]
 
-    public static func forTraits(_ traits: ExecutableTraits) -> BackendPlan {
+    /// - Parameter d3dmetal: whether D3DMetal is installed and the runtime can load it; only Direct3D 12 games
+    ///   use it.
+    public static func forTraits(_ traits: ExecutableTraits, d3dmetal: Bool = false) -> BackendPlan {
         if traits.architecture == .win16 { return .unsupported(.sixteenBit) }
         if traits.isChromiumLauncher { return .attempts([.dxvk, .wined3d]) }
         // Chromium draws through ANGLE on Direct3D 11, which DXVK gets wrong two ways: RPG Maker MV (NW.js 0.29)
@@ -63,7 +65,7 @@ public enum BackendPlan: Sendable, Equatable {
         // and keeps 9 for a fallback path or its settings tool.
         switch traits.directX.max() {
         case .d3d12:
-            return .unsupported(.directX12)
+            return d3dmetal ? .attempts([.d3dmetal]) : .unsupported(.directX12)
         case .d3d11:
             // DXVK first for 32-bit games too. They once started with DXMT because DXVK-macOS created no 32-bit
             // D3D11 device on Gcenx 11.18; EscApp's Wine 11.20 creates it, and DXMT left a 32-bit GameMaker game
@@ -74,8 +76,9 @@ public enum BackendPlan: Sendable, Equatable {
             return .attempts([.wined3d])
         case nil:
             // Nothing imported statically: the exe probably loads Direct3D itself. Modern games that do
-            // this are mostly 10/11; WineD3D catches the rest.
-            return .attempts([.dxvk, .wined3d])
+            // this are mostly 10/11; WineD3D catches the rest. Unreal Engine games load Direct3D 12 this way too,
+            // so with D3DMetal added it is tried when DXVK fails.
+            return .attempts(d3dmetal ? [.dxvk, .d3dmetal, .wined3d] : [.dxvk, .wined3d])
         }
     }
 }

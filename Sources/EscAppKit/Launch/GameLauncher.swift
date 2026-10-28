@@ -60,6 +60,21 @@ public struct GameLauncher: Sendable {
         self.host = host
     }
 
+    /// The backend this launch uses; throws when the game can't run at all.
+    private func backend(for game: GameRecord, info: ExecutableInfo, runtime: RuntimeManifest.Runtime,
+                         override: GraphicsBackend?) throws -> GraphicsBackend {
+        let d3dmetal = D3DMetal.isReady(paths: paths, runtime: runtime)
+        switch BackendPlan.forTraits(info.traits, d3dmetal: d3dmetal) {
+        case let .attempts(attempts):
+            let backend = override ?? game.backend ?? attempts[0]
+            // D3DMetal chosen for this game (by hand, or recommended by its folder from another Mac) but not here,
+            // or removed since: the game's own first choice instead.
+            return backend == .d3dmetal && !d3dmetal ? attempts[0] : backend
+        case let .unsupported(reason):
+            throw LaunchError.unsupported(reason)
+        }
+    }
+
     /// A store game's client, made ready for it, and the command that starts the game through the client.
     /// Returns whether the bottle was idle; always for a game without a store.
     private func prepareStore(for game: GameRecord, wine: Wine, retina: Bool) async throws
@@ -83,13 +98,8 @@ public struct GameLauncher: Sendable {
         guard FileManager.default.fileExists(atPath: exe.path) else { throw LaunchError.missingExecutable(exe.path) }
         let info = try ExecutableInfo.read(exe)
         if info.format == .dos { throw LaunchError.dosProgram }
-        let attempts: [GraphicsBackend]
-        switch BackendPlan.forTraits(info.traits) {
-        case let .attempts(list): attempts = list
-        case let .unsupported(reason): throw LaunchError.unsupported(reason)
-        }
-        let backend = override ?? game.backend ?? attempts[0]
-
+        let backend = try backend(for: game, info: info, runtime: runtime, override: override)
+        let d3dmetal = D3DMetal.installed(paths: paths)?.folder
         guard let runtimeFolder = RuntimeInstaller(paths: paths).installed(runtime) else {
             throw BottleError.runtimeMissing(runtime.id)
         }
@@ -101,7 +111,7 @@ public struct GameLauncher: Sendable {
         let files = try await gameFiles(for: game, info: info, in: .init(bottle, runtime, runtimeFolder),
                                         fetch: fetchGameFiles, progress: progress)
         progress(.graphics(backend, directX: info.directX.max()))
-        let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder)
+        let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder, d3dmetal: d3dmetal)
         // Retina only for games that say they handle high DPI; others would draw a tiny interface.
         let retina = GameSettings.retina(game.retina, dpiAware: info.dpiAware)
         let (idle, client) = try await prepareStore(for: game, wine: wine, retina: retina)
@@ -118,7 +128,7 @@ public struct GameLauncher: Sendable {
                                                extra: (game.store?.environment ?? [:])
                                                    .merging(GameSettings.environment(of: game)) { _, user in user },
                                                verboseLog: verboseLog || game.verboseLog == true,
-                                               fastSync: fastSync, locale: files.locale)
+                                               fastSync: fastSync, locale: files.locale, backend: backend)
         progress(.starting)
         let folder = game.store.map { _ in
             WindowsPath.windowsPath(of: URL(filePath: game.folder, directoryHint: .isDirectory), inBottle: bottle)
@@ -378,7 +388,7 @@ public enum LaunchError: Error, Equatable, CustomStringConvertible {
             "The game's file isn't there any more: \(path). "
                 + "It may have been moved or deleted, or its disk isn't connected."
         case .unsupported(.directX12):
-            "This game needs DirectX 12, which EscApp doesn't support yet."
+            "This game needs DirectX 12, which runs on Apple's D3DMetal. Add it in DirectX 12 setup first."
         case .unsupported(.sixteenBit):
             "This is a 16-bit Windows program. Macs can't run those."
         case .dosProgram:

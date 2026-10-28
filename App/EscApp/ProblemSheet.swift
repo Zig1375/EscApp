@@ -5,6 +5,7 @@ import SwiftUI
 struct ProblemSheet: View {
     let problem: LibraryModel.Problem
     let library: LibraryModel
+    @Environment(\.openSettings) private var openSettings
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -55,6 +56,16 @@ struct ProblemSheet: View {
             }
             .buttonStyle(BrandButtonStyle(kind: .primary, height: 32, radius: 8))
             .keyboardShortcut(.defaultAction)
+        } else if case .needsDirectX12 = problem.kind {
+            Button("Not Now") { library.problem = nil }
+                .keyboardShortcut(.cancelAction)
+            Button("Set Up DirectX 12…") {
+                library.problem = nil
+                UserDefaults.standard.set(SettingsView.Section.directX12.rawValue, forKey: SettingsView.sectionKey)
+                openSettings()
+            }
+            .buttonStyle(BrandButtonStyle(kind: .primary, height: 32, radius: 8))
+            .keyboardShortcut(.defaultAction)
         } else if case let .needsDisc(id, _) = problem.kind {
             Button("Cancel") { library.problem = nil }
                 .keyboardShortcut(.cancelAction)
@@ -75,6 +86,7 @@ struct ProblemSheet: View {
         case .notWindows: "doc.text"
         case .needsDisc: "opticaldisc"
         case .needsSteam: "bag"
+        case .needsDirectX12: "cpu"
         }
     }
 
@@ -101,6 +113,7 @@ struct ProblemSheet: View {
         case .notWindows: "This isn't a Windows program"
         case .needsDisc: "The game asks for its disc"
         case .needsSteam: "This game needs Steam"
+        case .needsDirectX12: "This game needs DirectX 12"
         }
     }
 
@@ -131,6 +144,12 @@ struct ProblemSheet: View {
             \(library.game(id)?.name ?? "The game") checks that Steam is running and closes without it. EscApp can \
             install Steam: it lives on its own and won't get in the way of other games.
             """
+        case .needsDirectX12:
+            """
+            DirectX 12 games run on D3DMetal, Apple's translation of DirectX 12 to Metal. Apple doesn't allow EscApp \
+            to include it, but you can download it from Apple yourself, for free, in a couple of minutes. EscApp \
+            shows you how.
+            """
         }
     }
 
@@ -142,6 +161,7 @@ struct ProblemSheet: View {
         case let .needsDisc(_, message?): "The game said: “\(message)”"
         case .needsDisc(_, nil): nil
         case .needsSteam: "Found in the game's log: SteamAPI_Init() failed"
+        case .needsDirectX12: "The game's file uses d3d12.dll"
         }
     }
 }

@@ -15,13 +15,16 @@ public enum WineEnvironment {
     ///     processes all take the setting from the same place, `fastSync(for:wine:)`.
     ///   - locale: the language Windows has for the game instead of the Mac's (`GameLanguage`). `LC_ALL`, since it
     ///     outranks whatever `LANG` the Mac has, and Wine takes its code page from it.
+    ///   - backend: what the game draws with. D3DMetal's DLLs call its macOS library directly, which EscApp's Wine
+    ///     allows only with `WINEMACSHAREDTSD` (EscApp-Runtime's patch 0011); other games keep Wine's default.
     public static func make(
         host: [String: String],
         bottle: String,
         extra: [String: String] = [:],
         verboseLog: Bool = false,
         fastSync: Bool = false,
-        locale: String? = nil
+        locale: String? = nil,
+        backend: GraphicsBackend? = nil
     ) -> [String: String] {
         var env = host.filter { hostAllowlist.contains($0.key) }
         env["WINEPREFIX"] = bottle
@@ -33,6 +36,7 @@ public enum WineEnvironment {
         env["WINEDEBUG"] = verboseLog ? "+seh,+loaddll,+msgbox" : "fixme-all,trace+msgbox"
         env["WINEDLLOVERRIDES"] = dllOverrides
         if fastSync { env["WINEOSYNC"] = "1" }
+        if backend == .d3dmetal { env["WINEMACSHAREDTSD"] = "1" }
         env.merge(extra) { _, user in user }
         return env
     }

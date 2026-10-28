@@ -78,6 +78,13 @@ import Testing
         #expect(env["DXVK_HUD"] == "fps")
     }
 
+    /// D3DMetal's DLLs call its macOS library directly; only its games get the Wine mode that allows it.
+    @Test func onlyD3DMetalSharesTheThreadRegister() {
+        #expect(WineEnvironment.make(host: [:], bottle: "/b", backend: .d3dmetal)["WINEMACSHAREDTSD"] == "1")
+        #expect(WineEnvironment.make(host: [:], bottle: "/b", backend: .dxvk)["WINEMACSHAREDTSD"] == nil)
+        #expect(WineEnvironment.make(host: [:], bottle: "/b")["WINEMACSHAREDTSD"] == nil)
+    }
+
     @Test func verboseLogKeepsWineOutput() {
         #expect(WineEnvironment.make(host: [:], bottle: "/b")["WINEDEBUG"] == "fixme-all,trace+msgbox")
         #expect(WineEnvironment.make(host: [:], bottle: "/b", verboseLog: true)["WINEDEBUG"]

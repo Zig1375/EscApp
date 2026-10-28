@@ -50,7 +50,8 @@ public struct RuntimeManifest: Codable, Sendable, Equatable {
         /// Where that folder goes, relative to the runtime folder. It must not exist yet, so later components
         /// can't overwrite earlier ones (Wine Mono goes inside Wine's tree after Wine is in place).
         public var into: String
-        /// What this build can do beyond plain Wine, for the app to switch on: `osync` (`WineEnvironment`).
+        /// What this build can do beyond plain Wine, for the app to switch on: `osync` (`WineEnvironment`),
+        /// `d3dmetal` (`BackendTree.supportsD3DMetal`).
         /// Optional, so older manifests and older apps both still read the list.
         public var features: [String]?
     }

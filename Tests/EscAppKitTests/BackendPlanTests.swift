@@ -31,6 +31,21 @@ import Testing
         #expect(plan(.win16, []) == .unsupported(.sixteenBit))
     }
 
+    /// Direct3D 12 runs only on D3DMetal, once the player has added it; Direct3D 11 games keep their backends.
+    @Test func d3d12UsesD3DMetalOnceAdded() {
+        let d3d12 = ExecutableTraits(architecture: .x64, directX: [.d3d11, .d3d12])
+        #expect(BackendPlan.forTraits(d3d12, d3dmetal: true) == .attempts([.d3dmetal]))
+        let d3d11 = ExecutableTraits(architecture: .x64, directX: [.d3d11])
+        #expect(BackendPlan.forTraits(d3d11, d3dmetal: true) == .attempts([.dxvk, .dxmt, .wined3d]))
+    }
+
+    /// An exe that loads Direct3D itself (Unreal Engine) may need 12: D3DMetal comes after DXVK.
+    @Test func gamesThatLoadDirect3DThemselvesCanFallBackToD3DMetal() {
+        let traits = ExecutableTraits(architecture: .x64)
+        #expect(BackendPlan.forTraits(traits) == .attempts([.dxvk, .wined3d]))
+        #expect(BackendPlan.forTraits(traits, d3dmetal: true) == .attempts([.dxvk, .d3dmetal, .wined3d]))
+    }
+
     @Test func launchersUseDXVK() {
         #expect(plan(.x64, [.d3d11], launcher: true) == .attempts([.dxvk, .wined3d]))
     }

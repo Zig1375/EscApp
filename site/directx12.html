@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{dx_title}}</title>
+  <meta name="description" content="{{dx_description}}">
+  <link rel="icon" href="{{root}}favicon.png">
+{{alternates}}
+  <link rel="stylesheet" href="{{root}}style.css">
+</head>
+<body>
+  <div class="hero hero-small">
+    <div class="wrap">
+      <header class="top">
+        <a class="logo" href="./"><img src="{{root}}favicon.png" alt="">EscApp</a>
+        <nav>
+          <a class="hide-sm" href="https://github.com/Zig1375/EscApp">GitHub</a>
+          <details class="lang">
+            <summary aria-label="{{nav_language}}">{{language_name}}</summary>
+            <ul>
+{{languages}}
+            </ul>
+          </details>
+        </nav>
+      </header>
+      <div class="hero-body">
+        <div>
+          <h1>{{dx_heading}}</h1>
+          <p class="lead">{{dx_lead}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap guide">
+    <section>
+      <h2>{{dx_needs_title}}</h2>
+      <ul>
+        <li>{{dx_needs_account}}</li>
+        <li>{{dx_needs_space}}</li>
+        <li>{{dx_needs_mac}}</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>{{dx_steps_title}}</h2>
+      <ol class="howto">
+        <li><h3>{{dx_step1_title}}</h3><p>{{dx_step1_text}}</p></li>
+        <li><h3>{{dx_step2_title}}</h3><p>{{dx_step2_text}}</p></li>
+        <li><h3>{{dx_step3_title}}</h3><p>{{dx_step3_text}}</p></li>
+        <li><h3>{{dx_step4_title}}</h3><p>{{dx_step4_text}}</p></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>{{dx_license_title}}</h2>
+      <p class="sub">{{dx_license_text}}</p>
+    </section>
+
+    <section>
+      <h2>{{dx_trouble_title}}</h2>
+      <dl class="faq">
+        <dt>{{dx_trouble_wrong_q}}</dt><dd>{{dx_trouble_wrong_a}}</dd>
+        <dt>{{dx_trouble_signed_q}}</dt><dd>{{dx_trouble_signed_a}}</dd>
+        <dt>{{dx_trouble_game_q}}</dt><dd>{{dx_trouble_game_a}}</dd>
+        <dt>{{dx_trouble_remove_q}}</dt><dd>{{dx_trouble_remove_a}}</dd>
+      </dl>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>{{dx_trademarks}}</span>
+      <a href="https://github.com/Zig1375/EscApp">github.com/Zig1375/EscApp</a>
+    </div>
+  </footer>
+</body>
+</html>

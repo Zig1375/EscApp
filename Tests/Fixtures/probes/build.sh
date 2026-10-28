@@ -13,6 +13,9 @@ for arch in i686:x86 x86_64:x64; do
 done
 for arch in x86_64:x64; do
     triple="${arch%%:*}-w64-mingw32"; name="${arch##*:}"
+    "$triple-windres" probe.rc -O coff -o "probe-$name.res"
+    "$triple-gcc" -O2 -s -static -o "d3d12-$name.exe" d3d12probe.c "probe-$name.res" -ld3d12 -ldxgi -ldxguid
+    rm "probe-$name.res"
     "$triple-gcc" -O2 -s -static -o "crash-$name.exe" crashprobe.c -ld3d11
     "$triple-dlltool" -d missing.def -l libmissing.a
     "$triple-gcc" -O2 -s -static -o "missing-$name.exe" missingprobe.c libmissing.a

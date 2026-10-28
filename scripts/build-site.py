@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Builds the GitHub Pages site: one page per language from site/template.html and site/i18n/<lang>.json.
+"""Builds the GitHub Pages site: each page in PAGES for every language, from its template in site/ and the strings
+in site/i18n/<lang>.json.
 
 English goes to the root, every other language to /<lang>/. Every language must translate every string the
 template uses, so a missing translation fails the build instead of leaving a {{placeholder}} on the page.
@@ -18,6 +19,9 @@ SITE = ROOT / "site"
 # Order of the language menu. English first, the rest as the app lists them.
 LANGUAGES = ["en", "ru", "de", "es", "fr", "it", "ja", "ko", "zh-Hans"]
 DEFAULT = "en"
+# Template in site/ and the file it becomes in each language's folder. The language menu of a page links to the
+# same page in the other languages.
+PAGES = [("template.html", "index.html"), ("directx12.html", "directx12.html")]
 
 # Sends a first-time visitor of the English root page to their own language; a language picked from the menu wins.
 REDIRECT = """  <script>
@@ -43,12 +47,15 @@ def path_of(lang):
     return "" if lang == DEFAULT else lang + "/"
 
 
-def render(template, lang, strings, names):
+def render(template, lang, strings, names, page="index.html"):
     root = "" if lang == DEFAULT else "../"
     links = []
     alternates = []
     for other in LANGUAGES:
-        href = root + path_of(other) if path_of(other) else root or "./"
+        if page != "index.html":
+            href = root + path_of(other) + page
+        else:
+            href = root + path_of(other) if path_of(other) else root or "./"
         current = ' aria-current="true"' if other == lang else ""
         links.append(
             f'              <li><a href="{href}" lang="{other}" hreflang="{other}"{current}'
@@ -61,7 +68,8 @@ def render(template, lang, strings, names):
         root=root,
         languages="\n".join(links),
         alternates="\n".join(alternates),
-        redirect=REDIRECT % json.dumps([l for l in LANGUAGES if l != DEFAULT]) if lang == DEFAULT else "",
+        redirect=REDIRECT % json.dumps([l for l in LANGUAGES if l != DEFAULT])
+        if lang == DEFAULT and page == "index.html" else "",
     )
 
     def fill(match):
@@ -75,7 +83,7 @@ def render(template, lang, strings, names):
 
 def main():
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / ".build" / "site"
-    template = (SITE / "template.html").read_text()
+    templates = {name: (SITE / name).read_text() for name, _ in PAGES}
     strings = {lang: json.loads((SITE / "i18n" / f"{lang}.json").read_text()) for lang in LANGUAGES}
     names = {lang: strings[lang]["language_name"] for lang in LANGUAGES}
     expected = set(strings[DEFAULT])
@@ -90,11 +98,12 @@ def main():
 
     if out.exists():
         shutil.rmtree(out)
-    shutil.copytree(SITE, out, ignore=shutil.ignore_patterns("template.html", "i18n", ".DS_Store"))
+    shutil.copytree(SITE, out, ignore=shutil.ignore_patterns(*(name for name, _ in PAGES), "i18n", ".DS_Store"))
     for lang in LANGUAGES:
-        page = out / path_of(lang) / "index.html"
-        page.parent.mkdir(parents=True, exist_ok=True)
-        page.write_text(render(template, lang, strings[lang], names))
+        for name, target in PAGES:
+            page = out / path_of(lang) / target
+            page.parent.mkdir(parents=True, exist_ok=True)
+            page.write_text(render(templates[name], lang, strings[lang], names, target))
     print(f"Built {len(LANGUAGES)} languages into {out}")
 
 

@@ -10,15 +10,17 @@ extension AutoLaunch {
     /// "the game worked, then stopped"; its `prefer` comes after, so a new revision doesn't undo what works here.
     static func order(for game: GameRecord, override: GraphicsBackend?, info: ExecutableInfo?,
                       recommended: RecommendedSettings?, known: KnownGame?,
-                      module: GameModules.Launch = GameModules.Launch()) -> [GraphicsBackend] {
+                      module: GameModules.Launch = GameModules.Launch(), d3dmetal: Bool = false) -> [GraphicsBackend] {
         if let only = override ?? game.chosenBackend ?? module.requireBackend ?? game.backend { return [only] }
-        guard case let .attempts(plan)? = info.map({ BackendPlan.forTraits($0.traits) }) else {
+        guard case let .attempts(plan)? = info.map({ BackendPlan.forTraits($0.traits, d3dmetal: d3dmetal) }) else {
             // Unsupported or unreadable: `prepare` throws the reason.
             return [.dxvk]
         }
+        // D3DMetal named by the folder, the module or the database, but not added here: left out.
         let planned = BackendPlan.order(plan, remembered: nil, preferred: module.preferBackends,
                                         recommended: recommended?.graphicsBackend,
                                         known: known?.preferredBackend)
+            .filter { d3dmetal || $0 != .d3dmetal }
         // A store game gets one try: another backend means restarting the store's client, and its first start
         // may sit behind the store's sign-in or an update for as long as those take.
         return game.store == nil ? planned : Array(planned.prefix(1))

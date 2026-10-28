@@ -45,8 +45,8 @@ public struct EscAppCommand: Sendable {
             return plan(rest)
         case "env":
             return env(rest)
-        case "runtime":
-            return await runtime(rest)
+        case "runtime", "d3dmetal":
+            return command == "runtime" ? await runtime(rest) : await d3dmetal(rest)
         case "game", "module":
             return command == "game" ? await game(rest) : await module(rest)
         case "inspect", "store":
@@ -71,6 +71,10 @@ public struct EscAppCommand: Sendable {
           runtime status                   Show Rosetta and whether the current runtime is installed
           runtime install [--accept-rosetta-license]
                                            Download, check and install Wine, DXVK and DXMT
+          d3dmetal status|remove           Show or remove D3DMetal, which runs DirectX 12 games
+          d3dmetal import <dmg> [--accept-apple-license]
+                                           Add D3DMetal from Apple's "Evaluation environment for Windows
+                                           games" disk image, after checking Apple's signature
           game identify <exe>              Show which game an .exe belongs to (creates its .escapp)
           game prepare <exe> [--windows winxp|win7|win10|win11]
                                            Identify the game and make its bottle (needs the runtime)
@@ -83,7 +87,7 @@ public struct EscAppCommand: Sendable {
                                            Install a store's client in its own bottle, open it, close it,
                                            or remove it with its games
           store sync                       Add the stores' installed games to the library and list them
-          run <exe> [--backend dxvk|dxmt|wined3d] [--no-retry] [--verbose] [--scale auto|on|off]
+          run <exe> [--backend dxvk|dxmt|wined3d|d3dmetal] [--no-retry] [--verbose] [--scale auto|on|off]
               [--disc <image>]
                                            Launch a game like the app does, trying the next backend when it
                                            fails at start, and wait until it closes
@@ -126,7 +130,7 @@ public struct EscAppCommand: Sendable {
         case .unsupported(.sixteenBit):
             return failure("16-bit programs can't run on this Mac.")
         case .unsupported(.directX12):
-            return failure("DirectX 12 games aren't supported yet.")
+            return failure("DirectX 12 games need D3DMetal: escapp d3dmetal import <dmg>")
         }
     }
 

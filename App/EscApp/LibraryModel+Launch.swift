@@ -101,11 +101,20 @@ extension LibraryModel {
             } catch is CancellationError {
                 // The player pressed Cancel.
             } catch {
-                launch = nil
-                notice = Notice(title: String(localized: "\(game.name) can't start"),
-                                message: String(describing: error))
+                launchFailed(game, error)
             }
         }
+    }
+
+    /// A launch that couldn't start the game at all.
+    private func launchFailed(_ game: GameRecord, _ error: any Error) {
+        launch = nil
+        if case LaunchError.unsupported(.directX12)? = error as? LaunchError {
+            problem = Problem(kind: .needsDirectX12)
+            NSApp.activate()
+            return
+        }
+        notice = Notice(title: String(localized: "\(game.name) can't start"), message: String(describing: error))
     }
 
     /// Components are updating, so the game can't start yet. The buttons are off meanwhile; this tells the

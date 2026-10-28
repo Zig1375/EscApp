@@ -7,13 +7,14 @@ import SwiftUI
 /// Sections EscApp has nothing for yet (about, auto-retry, the folder for new games) are left out.
 struct SettingsView: View {
     enum Section: String, CaseIterable, Identifiable {
-        case general, components, disk, saves
+        case general, components, directX12, disk, saves
         var id: Self { self }
 
         var title: LocalizedStringKey {
             switch self {
             case .general: "General"
             case .components: "Components"
+            case .directX12: "DirectX 12"
             case .disk: "Disk Space"
             case .saves: "Saves"
             }
@@ -25,6 +26,7 @@ struct SettingsView: View {
     let library: LibraryModel
     /// Remembered, and set by "Check for Component Updates…" to land on Components.
     @AppStorage(SettingsView.sectionKey) private var section: Section = .general
+    @State private var directX12 = DirectX12Model()
 
     var body: some View {
         HStack(spacing: 0) {
@@ -65,6 +67,7 @@ struct SettingsView: View {
         switch section {
         case .general: GeneralCard(components: components, library: library)
         case .components: ComponentsCard(components: components)
+        case .directX12: DirectX12Card(model: directX12, components: components)
         case .disk: DiskCard(components: components)
         case .saves: SavesCard(profile: components.paths.profile)
         }
@@ -102,7 +105,7 @@ struct SettingsView: View {
 }
 
 /// A white card, 18/20 padding and 12-pt gaps; the page above it has the section's name.
-private struct SettingsCard<Content: View>: View {
+struct SettingsCard<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
@@ -118,7 +121,7 @@ private struct SettingsCard<Content: View>: View {
     }
 }
 
-private struct Note: View {
+struct Note: View {
     let text: LocalizedStringKey
 
     var body: some View {

@@ -43,6 +43,8 @@ public struct AppPaths: Sendable, Equatable {
     public var rtps: URL { folder("RTP") }
     /// Partial downloads, named by SHA-256 so an interrupted download resumes even if the URL changed.
     public var downloads: URL { folder("Downloads") }
+    /// Apple's D3DMetal, copied from the player's own download (`D3DMetal`).
+    public var d3dmetal: URL { folder("D3DMetal") }
     public var screenshots: URL { folder("Screenshots") }
     /// Pictures of games fetched from their stores (`SteamScreenshots`); safe to delete, they come back.
     public var artwork: URL { folder("Artwork") }

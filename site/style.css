@@ -250,3 +250,31 @@ footer a { color: var(--muted); }
 }
 .hero .top .lang ul a:hover { background: var(--brand-soft); }
 .hero .top .lang ul a[aria-current] { color: var(--brand); font-weight: 600; }
+
+/* DirectX 12 guide */
+.hero-small .hero-body { padding-bottom: 48px; }
+.guide section { padding-top: 56px; }
+.guide ul { color: var(--muted); padding-left: 22px; }
+.guide li { margin: 6px 0; }
+.howto { list-style: none; padding: 0; margin: 0; counter-reset: howto; display: grid; gap: 16px; }
+.howto li {
+  counter-increment: howto;
+  position: relative;
+  padding: 20px 22px 20px 64px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin: 0;
+}
+.howto li::before {
+  content: counter(howto);
+  position: absolute; left: 20px; top: 20px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--brand); color: #fff;
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 15px;
+}
+.howto h3 { margin: 2px 0 6px; font-size: 18px; color: var(--text); }
+.howto p { margin: 0; color: var(--muted); font-size: 15.5px; }
+.faq dt { font-weight: 600; margin-top: 18px; }
+.faq dd { margin: 4px 0 0; color: var(--muted); }

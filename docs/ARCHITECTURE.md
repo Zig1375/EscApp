@@ -607,6 +607,16 @@ for Windows games» (бывший Game Porting Toolkit). Его лицензия
   `Artwork/steam-<номер>` игр, которых больше нет в списке (удалены в EscApp или в Steam, удалён сам Steam). Картинки берутся только с серверов Steam
   по https. Просмотр закрывает всё окно, стрелки листают, кнопка «Во весь экран» (или F) разворачивает окно,
   Esc закрывает и возвращает окну прежний размер.
+- **Обложки и снимки экрана игры из Epic.** Лаунчер не хранит картинок, но его кэш каталога
+  (`ProgramData/Epic/EpicGamesLauncher/Data/Catalog/catcache.bin`: base64 от JSON-списка всех известных ему
+  товаров) называет обложки каждой игры. Высокая (`DieselGameBoxTall`, 3:4) качается один раз в
+  `Artwork/epic-<namespace>/cover.jpg` (`EpicCovers`). Снимки экрана — картинки карусели со страницы игры в
+  магазине: `store-content-ipv4.ak.epicgames.com/api/en-US/content/products/<slug>` (`EpicScreenshots`). Slug
+  лаунчер нигде не хранит, а GraphQL магазина закрыт проверкой Cloudflare, поэтому slug берётся из публичного
+  списка namespace → slug (`/api/content/productmapping`), а если игры там нет — из её названия. Страница
+  принимается, только если называет namespace самой игры. Запросы называют только игру; хранение, обновление раз
+  в неделю и уборка — общие со Steam (`StoreScreenshots`, папки `Artwork/epic-<namespace>`), картинки только с
+  серверов Epic (`epicgames.com`, `unrealengine.com`) по https.
 - **CLI:** `escapp store list | install | open | close | remove <магазин> | sync`.
 - **Проверено на Wine 11.20:**
   - Steam ставится одной командой примерно за 50 с, вход в окно рисуется;

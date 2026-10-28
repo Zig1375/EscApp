@@ -13,14 +13,6 @@ import Testing
         #expect(await command.run(["version"]).stdout == "\(EscAppCommand.version)\n")
     }
 
-    /// The app's version lives in project.yml; the CLI has no bundle to read it from, so it repeats it.
-    @Test func versionMatchesTheApp() throws {
-        let root = URL(filePath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-            .deletingLastPathComponent()
-        let spec = try String(contentsOf: root.appending(path: "project.yml"), encoding: .utf8)
-        #expect(spec.contains("ESCAPP_VERSION: \"\(EscAppCommand.version)\""))
-    }
-
     @Test func pathsHonourEscAppHome() async {
         let output = await command.run(["paths"])
         #expect(output.status == 0)

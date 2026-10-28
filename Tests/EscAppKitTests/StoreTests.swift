@@ -353,25 +353,4 @@ extension EpicUpdateTests {
         #expect(!StoreClient.showsPages(Data(stuck.utf8)))
         #expect(StoreClient.showsPages(Data(shown.utf8)))
     }
-
-    /// A signed-in launcher asked to quit goes to the tray instead, and then isn't waited for.
-    @Test func aLauncherGoingToTheTrayIsToldFromOneQuitting() throws {
-        let tray = """
-            [2026.10.28-00.05.54:812][392]LogSlate: Request Window '' being destroyed
-            [393]LogSlate: Warning: FontCache flush requested. Reason: Application is being minimized
-            """
-        let quitting = "[2026.10.27-23.43.02:272][662]LogExit: Preparing to exit."
-        #expect(StoreClient.epicWentToTray(Data(tray.utf8)))
-        #expect(!StoreClient.epicWentToTray(Data(quitting.utf8)))
-
-        let temp = try TempFolder()
-        let log = temp.url.appending(path: "EpicGamesLauncher.log")
-        try Data("before\n".utf8).write(to: log)
-        let size = try #require(try log.resourceValues(forKeys: [.fileSizeKey]).fileSize)
-        let handle = try FileHandle(forWritingTo: log)
-        try handle.seekToEnd()
-        try handle.write(contentsOf: Data("after".utf8))
-        try handle.close()
-        #expect(EpicStore.appended(to: log, after: size) == Data("after".utf8))
-    }
 }

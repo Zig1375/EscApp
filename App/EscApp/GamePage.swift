@@ -2,7 +2,7 @@ import EscAppKit
 import SwiftUI
 
 /// A game's own page, as in the design (Game.dc.html): the game and its actions, recent runs, and the details
-/// column. Parts EscApp can't fill yet (saves, Launchpad shortcut, screenshots of games not from Steam) are left
+/// column. Parts EscApp can't fill yet (saves, Launchpad shortcut, screenshots of games not from a store) are left
 /// out rather than shown empty.
 struct GamePage: View {
     let id: GameID
@@ -11,7 +11,7 @@ struct GamePage: View {
     let advanced: () -> Void
     @State private var size: Int64?
     @State private var isDeleting = false
-    @State private var shots: [SteamScreenshots.Shot] = []
+    @State private var shots: [StoreScreenshots.Shot] = []
 
     var body: some View {
         Group {
@@ -42,9 +42,9 @@ struct GamePage: View {
             HStack(alignment: .top, spacing: 24) {
                 VStack(alignment: .leading, spacing: 20) {
                     hero(game)
-                    if !shots.isEmpty {
-                        ScreenshotsSection(game: game, shots: shots, library: library) {
-                            library.viewing = .init(shots: shots, appID: game.storeID ?? "", index: $0)
+                    if !shots.isEmpty, let source = StoreScreenshots.Source(game) {
+                        ScreenshotsSection(source: source, shots: shots, library: library) {
+                            library.viewing = .init(shots: shots, source: source, index: $0)
                         }
                     }
                     RunsSection(runs: library.runs(for: game), library: library)

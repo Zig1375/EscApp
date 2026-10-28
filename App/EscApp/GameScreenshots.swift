@@ -2,11 +2,11 @@ import AppKit
 import EscAppKit
 import SwiftUI
 
-/// Game.dc.html's "Screenshots": three pictures and "N more", or up to four, with "All Screenshots". For now only
-/// a Steam game has any, from its store page (`SteamScreenshots`); for other games the section isn't shown.
+/// Game.dc.html's "Screenshots": three pictures and "N more", or up to four, with "All Screenshots". Only a game
+/// from Steam or Epic has any, from its store page (`StoreScreenshots`); for other games the section isn't shown.
 struct ScreenshotsSection: View {
-    let game: GameRecord
-    let shots: [SteamScreenshots.Shot]
+    let source: StoreScreenshots.Source
+    let shots: [StoreScreenshots.Shot]
     let library: LibraryModel
     /// Opens the viewer at a picture; it covers the whole window (`ScreenshotViewer`).
     let open: (Int) -> Void
@@ -15,7 +15,7 @@ struct ScreenshotsSection: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 SectionTitle(text: "Screenshots")
-                Text("\(shots.count) · from the Steam store")
+                origin
                     .font(.system(size: 12))
                     .foregroundStyle(Color.secondaryText)
                 Spacer()
@@ -26,42 +26,49 @@ struct ScreenshotsSection: View {
         }
     }
 
+    @ViewBuilder private var origin: some View {
+        switch source {
+        case .steam: Text("\(shots.count) · from the Steam store")
+        case .epic: Text("\(shots.count) · from the Epic Games Store")
+        }
+    }
+
     private var grid: some View {
         let more = shots.count > 4
         let shown = Array(shots.prefix(more ? 3 : 4).enumerated())
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 12) {
             ForEach(shown, id: \.element.id) { index, shot in
                 Button { open(index) } label: {
-                    ShotTile(shot: shot, appID: game.storeID ?? "", paths: library.paths)
+                    ShotTile(shot: shot, source: source, paths: library.paths)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Screenshot \(index + 1)")
             }
             if more {
                 Button { open(3) } label: {
-                    ShotTile(shot: shots[3], appID: game.storeID ?? "", paths: library.paths, more: shots.count - 3)
+                    ShotTile(shot: shots[3], source: source, paths: library.paths, more: shots.count - 3)
                 }
                 .buttonStyle(.plain)
             }
         }
     }
 
-    /// The game's screenshots: those kept from last time at once, then fresh ones. None for a game not from Steam.
-    static func load(for game: GameRecord, paths: AppPaths, into shots: Binding<[SteamScreenshots.Shot]>) async {
-        guard game.store == .steam, let appID = game.storeID else {
+    /// The game's screenshots: those kept from last time at once, then fresh ones. None for a game not from a store.
+    static func load(for game: GameRecord, paths: AppPaths, into shots: Binding<[StoreScreenshots.Shot]>) async {
+        guard let source = StoreScreenshots.Source(game) else {
             shots.wrappedValue = []
             return
         }
-        shots.wrappedValue = SteamScreenshots.cached(appID: appID, paths: paths) ?? []
-        shots.wrappedValue = await SteamScreenshots.load(appID: appID, paths: paths)
+        shots.wrappedValue = StoreScreenshots.cached(source, paths: paths) ?? []
+        shots.wrappedValue = await StoreScreenshots.load(source, paths: paths)
     }
 
 }
 
 /// One picture of the grid, cut to the design's 4:3 tile.
 private struct ShotTile: View {
-    let shot: SteamScreenshots.Shot
-    let appID: String
+    let shot: StoreScreenshots.Shot
+    let source: StoreScreenshots.Source
     let paths: AppPaths
     /// "N more" over the picture, darkened under the words, for the last tile of the row.
     var more: Int?
@@ -87,7 +94,7 @@ private struct ShotTile: View {
             .overlay { RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Color.buttonBorder) }
             .contentShape(.rect)
             .task(id: shot.id) {
-                if let file = await SteamScreenshots.thumbnail(shot, appID: appID, paths: paths) {
+                if let file = await StoreScreenshots.thumbnail(shot, of: source, paths: paths) {
                     image = NSImage(contentsOf: file)
                 }
             }
@@ -136,8 +143,8 @@ struct ScreenshotViewer: View {
             // The small picture is on disk already: shown at once, then the full one over it.
             let shot = viewing.shots[viewing.index]
             let paths = library.paths
-            image = await SteamScreenshots.thumbnail(shot, appID: viewing.appID, paths: paths).flatMap(NSImage.init)
-            if let file = await SteamScreenshots.full(shot, appID: viewing.appID, paths: paths) {
+            image = await StoreScreenshots.thumbnail(shot, of: viewing.source, paths: paths).flatMap(NSImage.init)
+            if let file = await StoreScreenshots.full(shot, of: viewing.source, paths: paths) {
                 image = NSImage(contentsOf: file)
             }
         }

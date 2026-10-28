@@ -27,7 +27,7 @@ final class LibraryModel {
     private(set) var tints: [GameID: Color] = [:]
     /// Icons drawn edge to edge (opaque corners), shown filling their tile rather than inset in it.
     private(set) var fullBleedIcons: Set<GameID> = []
-    /// Portrait covers: one the player chose (`CustomCovers`), else Steam's from its own cache (`SteamCovers`).
+    /// Portrait covers: one the player chose (`CustomCovers`), else the store's (`StoreCovers`).
     /// A game installed from a disc usually has neither, only its icon, which the card shows instead.
     private(set) var covers: [GameID: NSImage] = [:]
     /// Games whose cover the player chose, which "Remove Cover" can take away.
@@ -78,8 +78,8 @@ final class LibraryModel {
     var viewing: Viewing?
 
     struct Viewing: Equatable {
-        var shots: [SteamScreenshots.Shot]
-        var appID: String
+        var shots: [StoreScreenshots.Shot]
+        var source: StoreScreenshots.Source
         var index: Int
     }
     /// Set to show a screen in the main window: Stores from a "needs Steam" message, a game's Advanced
@@ -285,12 +285,11 @@ final class LibraryModel {
 
     private func loadCover(for game: GameRecord) {
         let paths = paths
-        let appID = game.store == .steam ? game.storeID : nil
-        let steam = SteamCovers.steamFolder(bottle: StoreClient(paths: paths).bottle(for: .steam))
         Task.detached(priority: .utility) {
             let custom = CustomCovers.cover(for: game.id, paths: paths)
-            guard let file = custom ?? appID.flatMap({ SteamCovers.cover(appID: $0, steamFolder: steam) }),
-                  let image = NSImage(contentsOf: file) else { return }
+            var file = custom
+            if file == nil { file = await StoreCovers.cover(for: game, paths: paths) }
+            guard let file, let image = NSImage(contentsOf: file) else { return }
             await MainActor.run {
                 self.covers[game.id] = image
                 if custom != nil { self.customCovers.insert(game.id) }
@@ -316,7 +315,7 @@ final class LibraryModel {
         }
     }
 
-    /// "Remove Cover": back to Steam's cover, or the icon.
+    /// "Remove Cover": back to the store's cover, or the icon.
     func removeCover(for game: GameRecord) {
         CustomCovers.remove(for: game.id, paths: paths)
         covers[game.id] = nil

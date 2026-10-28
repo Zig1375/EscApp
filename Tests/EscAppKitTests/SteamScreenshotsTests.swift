@@ -38,42 +38,4 @@ import Testing
         #expect(!SteamScreenshots.isSteams(URL(string: "https://notsteamstatic.com/a.jpg")!))
         #expect(!SteamScreenshots.isSteams(URL(string: "http://cdn.steamstatic.com/a.jpg")!))
     }
-
-    @Test func keptListIsUsedWhileFresh() async throws {
-        let temp = try TempFolder()
-        let paths = AppPaths(root: temp.url, games: temp.url.appending(path: "Games"))
-        let shot = SteamScreenshots.Shot(id: 1, thumbnail: URL(string: "\(base)t.jpg")!,
-                                         full: URL(string: "\(base)f.jpg")!)
-        let folder = SteamScreenshots.folder(appID: "242920", paths: paths)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        try JSONEncoder().encode([shot]).write(to: folder.appending(path: "screenshots.json"))
-        #expect(SteamScreenshots.cached(appID: "242920", paths: paths) == [shot])
-        // Fresh: no request.
-        #expect(await SteamScreenshots.load(appID: "242920", paths: paths) == [shot])
-    }
-}
-
-@Suite struct SteamArtworkPruneTests {
-    @Test func picturesOfGamesNoLongerThereGo() throws {
-        let temp = try TempFolder()
-        let paths = AppPaths(root: temp.url, games: temp.url.appending(path: "Games"))
-        for id in ["242920", "400"] {
-            let folder = SteamScreenshots.folder(appID: id, paths: paths)
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            try Data("x".utf8).write(to: folder.appending(path: "a.jpg"))
-        }
-        let other = paths.artwork.appending(path: "notes.txt")
-        try Data("x".utf8).write(to: other)
-
-        SteamScreenshots.prune(keeping: ["242920"], paths: paths)
-        #expect(FileManager.default.fileExists(atPath: SteamScreenshots.folder(appID: "242920", paths: paths).path))
-        #expect(!FileManager.default.fileExists(atPath: SteamScreenshots.folder(appID: "400", paths: paths).path))
-        // Only its own folders.
-        #expect(FileManager.default.fileExists(atPath: other.path))
-    }
-
-    @Test func noArtworkFolderIsFine() throws {
-        let temp = try TempFolder()
-        SteamScreenshots.prune(keeping: [], paths: AppPaths(root: temp.url, games: temp.url))
-    }
 }

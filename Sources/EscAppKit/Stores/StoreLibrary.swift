@@ -31,13 +31,13 @@ extension StoreLibrary {
             let bottle = paths.bottle(forGame: store.bottleID)
             found[store] = store.client(in: bottle) == nil ? [] : games(of: store, bottle: bottle)
         }
-        var steamApps: Set<String> = []
+        var stores: Set<StoreScreenshots.Source> = []
         let changed = try GameLibrary.modify(paths.library) { library in
             let changed = merge(found, into: &library, now: now, retina: SharedSettings.newGameRetina(paths: paths))
-            steamApps = Set(library.games.filter { $0.store == .steam }.compactMap(\.storeID))
+            stores = Set(library.games.compactMap(StoreScreenshots.Source.init))
             return changed
         }
-        SteamScreenshots.prune(keeping: steamApps, paths: paths)
+        StoreScreenshots.prune(keeping: stores, paths: paths)
         return changed
     }
 

@@ -83,22 +83,12 @@ extension StoreClient {
         .max { $0.1 < $1.1 }?.0
     }
 
-    /// The launcher's current log, for each Windows user in the bottle.
-    static func epicLogs(in bottle: URL) -> [URL] {
-        let logs = bottle.appending(path: "drive_c/users", directoryHint: .isDirectory)
-        let users = (try? FileManager.default.contentsOfDirectory(at: logs, includingPropertiesForKeys: nil)) ?? []
-        return users.map { $0.appending(path: "AppData/Local/EpicGamesLauncher/Saved/Logs/EpicGamesLauncher.log") }
-            .filter { FileManager.default.fileExists(atPath: $0.path) }
-    }
-
-    /// Whether the launcher's log, from the moment it was asked to quit, says it went to the tray instead.
-    static func epicWentToTray(_ log: Data) -> Bool {
-        log.range(of: Data("Application is being minimized".utf8)) != nil
-    }
-
     /// Whether the launcher started at `since` has shown its web pages: its log names them as they load.
     static func epicPagesLoaded(in bottle: URL, since: Date) -> Bool {
-        epicLogs(in: bottle).contains { log in
+        let logs = bottle.appending(path: "drive_c/users", directoryHint: .isDirectory)
+        let users = (try? FileManager.default.contentsOfDirectory(at: logs, includingPropertiesForKeys: nil)) ?? []
+        return users.contains { user in
+            let log = user.appending(path: "AppData/Local/EpicGamesLauncher/Saved/Logs/EpicGamesLauncher.log")
             guard let modified = (try? log.resourceValues(forKeys: [.contentModificationDateKey]))?
                 .contentModificationDate, modified >= since,
                 let data = try? Data(contentsOf: log) else { return false }

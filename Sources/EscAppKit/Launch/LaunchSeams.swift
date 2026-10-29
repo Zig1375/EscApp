@@ -64,6 +64,11 @@ extension AutoLaunch {
         /// (Steam's updater) can draw, and the window that follows stay blank.
         public var lateWatch: TimeInterval = 180
         public var lateEvery: TimeInterval = 2
+        /// How long a blank window with an idle game makes it frozen (`FrozenWindow`).
+        public var frozenFor: TimeInterval = 10
+        /// How long a store game being searched for may take to show a window: Steam restarted in another Wine
+        /// tree took two minutes to start Among Us, and on one it couldn't run it never did.
+        public var storeWindowTimeout: TimeInterval = 240
 
         public static let standard = Timing()
     }

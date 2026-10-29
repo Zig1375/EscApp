@@ -20,6 +20,8 @@ public struct AttemptJudge: Sendable, Equatable {
         case noWindow
         /// The window stayed one flat colour the whole time it was checked (`WindowPicture`).
         case blankPicture
+        /// The window went one flat colour and the game stopped doing anything (`FrozenWindow`).
+        case frozen
         /// Chromium refused the game WebGL (`LogDiagnosis.refusesWebGL`): an RPG Maker MZ game then shows "Failed to
         /// initialize graphics" in a window that looks fine to every other check.
         case noWebGL
@@ -37,6 +39,9 @@ public struct AttemptJudge: Sendable, Equatable {
     /// Whether to fail a window that only ever showed a flat colour: for Chromium programs, whose blank window
     /// says the picture is lost. Other games may sit on a black loading screen for longer than the check.
     var checksPicture = false
+    /// Whether to fail a game frozen on a blank window (`FrozenWindow`): while nothing works for it yet. Among Us
+    /// on DXVK froze after its intro, well inside the window check.
+    var checksFrozen = false
     private(set) var blankSamples = 0
     private(set) var sawPicture = false
     /// Looks needed before a window counts as blank.
@@ -75,7 +80,9 @@ public struct AttemptJudge: Sendable, Equatable {
         }
         if let exitCode, exitCode != 0 { return .failed(.closed(exitCode: exitCode)) }
         if noWebGL { return .failed(.noWebGL) }
-        if let windowSince, elapsed - windowSince >= windowHolds {
+        // Only with the window up now: a store game's end is known late (`StoreGameWatch` waits 45 s after an
+        // error), and Among Us, whose window had gone with its crash, counted as working on DXVK meanwhile.
+        if window, let windowSince, elapsed - windowSince >= windowHolds {
             // A Chromium window that hasn't drawn yet gets longer; one that has works.
             guard checksPicture, !sawPicture else { return .working }
             if elapsed - windowSince >= blankAfter {
@@ -116,5 +123,45 @@ struct LateBlank: Sendable, Equatable {
         }
         looks += 1
         return looks >= AttemptJudge.blankSamplesNeeded && elapsed - (since ?? elapsed) >= patience
+    }
+}
+
+/// A game that hung on a blank window: the window has been one flat colour for `holds` while its processes used
+/// next to no CPU. Among Us on DXVK played its intro, then sat on a black full-screen window for minutes with every
+/// thread asleep. Each check alone isn't enough: a black loading screen keeps the CPU busy, and a game's own
+/// settings window can sit idle, but it shows a picture.
+struct FrozenWindow: Sendable, Equatable {
+    let holds: TimeInterval
+    /// The share of one CPU core below which the game counts as doing nothing. A game drawing even a black screen
+    /// uses far more under Wine.
+    static let idleShare = 0.05
+    /// When the window was first seen frozen, and the CPU seconds then.
+    private var since: TimeInterval?
+    private var cpuThen: TimeInterval = 0
+
+    init(holds: TimeInterval) {
+        self.holds = holds
+    }
+
+    /// Whether the game has looked frozen for a couple of seconds, not yet for `holds`.
+    func suspected(at elapsed: TimeInterval) -> Bool {
+        since.map { elapsed - $0 >= 2 } ?? false
+    }
+
+    /// - Parameters:
+    ///   - blank: what a look at the window showed.
+    ///   - cpu: CPU seconds the window's processes have used so far; nil when it can't be told.
+    /// - Returns: whether the game has now been frozen for `holds`.
+    mutating func observe(blank: Bool, cpu: TimeInterval?, at elapsed: TimeInterval) -> Bool {
+        guard blank, let cpu else {
+            since = nil
+            return false
+        }
+        guard let start = since, cpu - cpuThen <= Self.idleShare * (elapsed - start) else {
+            since = elapsed
+            cpuThen = cpu
+            return false
+        }
+        return elapsed - start >= holds
     }
 }

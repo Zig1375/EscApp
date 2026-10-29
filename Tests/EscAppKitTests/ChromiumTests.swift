@@ -93,7 +93,8 @@ extension AutoLaunchTests {
         var fast = timing
         fast.pictureEvery = 0.005
         let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
-                                          measure: { _ in nil }, picture: picture, timing: fast)
+                                          measure: { _ in nil }, picture: picture, cpu: { _ in nil },
+                                          fullScreen: { _ in false }, timing: fast)
             .play(chromiumGame, runtime: runtime)
         #expect(starter.started.map(\.0) == [.dxvk, .dxvk])
         #expect(result.attempts.first?.failure == .blankPicture)
@@ -172,7 +173,8 @@ extension AutoLaunchTests {
         fast.lateEvery = 0.005
         fast.lateWatch = 0.8
         let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
-                                          measure: { _ in nil }, picture: picture, timing: fast)
+                                          measure: { _ in nil }, picture: picture, cpu: { _ in nil },
+                                          fullScreen: { _ in false }, timing: fast)
             .play(chromiumGame, runtime: runtime)
         #expect(starter.started.map(\.0) == [.dxvk, .dxvk])
         #expect(result.attempts.first?.failure == .blankPicture)
@@ -203,7 +205,8 @@ extension AutoLaunchTests {
         fast.pictureEvery = 0.005
         let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
                                           measure: { _ in nil }, picture: { _ in WindowLook(window: 1, blank: false) },
-                                          gpuProcess: { _ in true }, timing: fast)
+                                          gpuProcess: { _ in true }, cpu: { _ in nil }, fullScreen: { _ in false },
+                                          timing: fast)
             .play(game, runtime: runtime)
         #expect(starter.started.map(\.0) == [.dxvk, .wined3d])
         #expect(result.attempts.first?.failure == .blankPicture)

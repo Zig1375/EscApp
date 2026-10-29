@@ -24375,6 +24375,110 @@
         }
       }
     },
+    "Its picture freezes on a blank window.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sein Bild friert auf einem leeren Fenster ein."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Su imagen se congela en una ventana vacía."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son image se fige sur une fenêtre vide."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La sua immagine si blocca su una finestra vuota."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面が空白のまま止まります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "빈 창에서 화면이 멈춥니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Картинка зависает на пустом окне."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它的画面卡在空白窗口上。"
+          }
+        }
+      }
+    },
+    "Its picture froze": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sein Bild ist eingefroren"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Su imagen se congeló"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Son image s’est figée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La sua immagine si è bloccata"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面が止まりました"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면이 멈춤"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Картинка зависла"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "它的画面卡住了"
+          }
+        }
+      }
+    },
     "Needs DirectX 12": {
       "localizations": {
         "de": {
@@ -24427,6 +24531,58 @@
         }
       }
     },
+    "the picture froze": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "das Bild ist eingefroren"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "la imagen se congeló"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "l’image s’est figée"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "l’immagine si è bloccata"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面が止まりました"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면이 멈춤"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "картинка зависла"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面卡住了"
+          }
+        }
+      }
+    },
     "This game needs DirectX 12. Add it once, from Apple: it's free and takes a couple of minutes. EscApp shows you how.": {
       "localizations": {
         "de": {
@@ -24475,6 +24631,838 @@
           "stringUnit": {
             "state": "translated",
             "value": "此游戏需要 DirectX 12。只需从 Apple 添加一次：免费，几分钟即可完成。EscApp 会一步步告诉你怎么做。"
+          }
+        }
+      }
+    },
+    "Let EscApp see game windows": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешите EscApp видеть окна игр"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp Spielfenster sehen lassen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deja que EscApp vea las ventanas de los juegos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autoriser EscApp à voir les fenêtres des jeux"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti a EscApp di vedere le finestre dei giochi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp にゲームのウインドウを見ることを許可"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp이 게임 창을 볼 수 있도록 허용"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许 EscApp 查看游戏窗口"
+          }
+        }
+      }
+    },
+    "EscApp can see game windows": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp видит окна игр"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp kann Spielfenster sehen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp puede ver las ventanas de los juegos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp peut voir les fenêtres des jeux"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp può vedere le finestre dei giochi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp はゲームのウインドウを見られます"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp이 게임 창을 볼 수 있습니다"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 可以查看游戏窗口"
+          }
+        }
+      }
+    },
+    "Thank you. First launches will now find the right settings more surely.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Спасибо. Теперь при первом запуске EscApp точнее подберёт подходящие настройки."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danke. Beim ersten Start findet EscApp die passenden Einstellungen jetzt zuverlässiger."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gracias. Ahora, en el primer inicio, EscApp encontrará los ajustes adecuados con más seguridad."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merci. Au premier lancement, EscApp trouvera désormais les bons réglages plus sûrement."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grazie. Ora, al primo avvio, EscApp troverà le impostazioni giuste con più sicurezza."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ありがとうございます。初回起動時に、より確実に合う設定を見つけられるようになりました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "감사합니다. 이제 첫 실행 때 맞는 설정을 더 확실하게 찾습니다."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "谢谢。现在首次启动时，EscApp 能更可靠地找到合适的设置。"
+          }
+        }
+      }
+    },
+    "Allow…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить…"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erlauben …"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autoriser…"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "許可…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허용…"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许…"
+          }
+        }
+      }
+    },
+    "Allowed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешено"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erlaubt"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitido"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autorisé"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consentito"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "許可済み"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허용됨"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已允许"
+          }
+        }
+      }
+    },
+    "See game windows": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Видеть окна игр"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spielfenster sehen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver las ventanas de los juegos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voir les fenêtres des jeux"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vedere le finestre dei giochi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゲームのウインドウを見る"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "게임 창 보기"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "查看游戏窗口"
+          }
+        }
+      }
+    },
+    "Seeing Game Windows": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Окна игр"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spielfenster"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ventanas de los juegos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fenêtres des jeux"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finestre dei giochi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゲームのウインドウ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "게임 창"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "游戏窗口"
+          }
+        }
+      }
+    },
+    "So EscApp can tell when a game shows only a black screen, and fix it by itself.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы EscApp замечал, когда игра показывает только чёрный экран, и сам это исправлял."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Damit EscApp merkt, wenn ein Spiel nur einen schwarzen Bildschirm zeigt, und das selbst behebt."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para que EscApp note cuando un juego solo muestra una pantalla negra y lo arregle por sí mismo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour qu’EscApp remarque quand un jeu n’affiche qu’un écran noir, et règle cela tout seul."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Così EscApp si accorge quando un gioco mostra solo uno schermo nero e lo sistema da solo."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ゲームが真っ黒な画面しか表示しないときに EscApp が気づき、自動で直せるようにするためです。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "게임이 검은 화면만 보여 줄 때 EscApp이 알아차리고 스스로 고칠 수 있도록 합니다."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这样 EscApp 能发现游戏只显示黑屏，并自行修复。"
+          }
+        }
+      }
+    },
+    "EscApp only looks at games it starts. Nothing is recorded or sent. Without it, EscApp still works, just less accurately.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp смотрит только на игры, которые запускает сам. Ничего не записывается и не отправляется. Без разрешения EscApp тоже работает, просто менее точно."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp sieht nur Spiele an, die es selbst startet. Nichts wird aufgenommen oder gesendet. Ohne die Erlaubnis funktioniert EscApp auch, nur weniger genau."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp solo mira los juegos que inicia. No se graba ni se envía nada. Sin el permiso, EscApp también funciona, aunque con menos precisión."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp ne regarde que les jeux qu’il lance. Rien n’est enregistré ni envoyé. Sans cette autorisation, EscApp fonctionne aussi, mais moins précisément."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp guarda solo i giochi che avvia. Niente viene registrato o inviato. Senza il permesso EscApp funziona lo stesso, solo in modo meno preciso."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp が見るのは自分で起動したゲームだけです。録画や送信は一切しません。許可しなくても動きますが、精度は下がります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp은 자신이 실행한 게임만 봅니다. 아무것도 녹화하거나 보내지 않습니다. 허용하지 않아도 작동하지만 덜 정확합니다."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 只查看它自己启动的游戏，不会录制或发送任何内容。不允许也能使用，只是不那么准确。"
+          }
+        }
+      }
+    },
+    "Allow": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешить"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erlauben"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Autoriser"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consenti"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "許可"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "허용"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许"
+          }
+        }
+      }
+    },
+    "Turn on EscApp in System Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Включите EscApp в Системных настройках"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp in den Systemeinstellungen einschalten"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activa EscApp en Ajustes del Sistema"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activez EscApp dans Réglages Système"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attiva EscApp in Impostazioni di Sistema"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "システム設定で EscApp をオンにしてください"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시스템 설정에서 EscApp을 켜 주세요"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在“系统设置”中打开 EscApp"
+          }
+        }
+      }
+    },
+    "Later": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Позже"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Später"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más tarde"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plus tard"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Più tardi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あとで"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나중에"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍后"
+          }
+        }
+      }
+    },
+    "Open System Settings": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть Системные настройки"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Systemeinstellungen öffnen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Ajustes del Sistema"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrir Réglages Système"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apri Impostazioni di Sistema"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "システム設定を開く"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시스템 설정 열기"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "打开“系统设置”"
+          }
+        }
+      }
+    },
+    "Helps EscApp spot a game stuck on a black screen. Nothing is recorded or sent.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Помогает EscApp замечать игры, зависшие на чёрном экране. Ничего не записывается и не отправляется."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hilft EscApp, Spiele zu erkennen, die auf einem schwarzen Bildschirm hängen. Nichts wird aufgenommen oder gesendet."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ayuda a EscApp a detectar juegos atascados en una pantalla negra. No se graba ni se envía nada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aide EscApp à repérer les jeux bloqués sur un écran noir. Rien n’est enregistré ni envoyé."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aiuta EscApp a notare i giochi bloccati su uno schermo nero. Niente viene registrato o inviato."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "黒い画面のまま止まったゲームを EscApp が見つけるのに役立ちます。録画や送信は一切しません。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "검은 화면에 멈춘 게임을 EscApp이 알아차리도록 돕습니다. 아무것도 녹화하거나 보내지 않습니다."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "帮助 EscApp 发现卡在黑屏的游戏。不会录制或发送任何内容。"
+          }
+        }
+      }
+    },
+    "Find EscApp in the list and switch it on. If macOS offers to reopen EscApp, agree.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найдите EscApp в списке и включите переключатель. Если macOS предложит перезапустить EscApp, согласитесь."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suche EscApp in der Liste und schalte es ein. Wenn macOS anbietet, EscApp neu zu öffnen, stimme zu."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Busca EscApp en la lista y actívalo. Si macOS ofrece volver a abrir EscApp, acepta."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trouvez EscApp dans la liste et activez-le. Si macOS propose de rouvrir EscApp, acceptez."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trova EscApp nell’elenco e attivalo. Se macOS propone di riaprire EscApp, accetta."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一覧から EscApp を探してオンにします。EscApp の再起動を求められたら、同意してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "목록에서 EscApp을 찾아 켜 주세요. macOS가 EscApp을 다시 열겠냐고 물으면 동의하세요."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "在列表中找到 EscApp 并打开开关。如果 macOS 提示重新打开 EscApp，请同意。"
+          }
+        }
+      }
+    },
+    "%@ is asking something in its window. Answer it there, and the game will start.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ fragt etwas in seinem Fenster. Antworte dort, dann startet das Spiel."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ está preguntando algo en su ventana. Responde allí y el juego se iniciará."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ pose une question dans sa fenêtre. Répondez-y, et le jeu démarrera."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ sta chiedendo qualcosa nella sua finestra. Rispondi lì e il gioco partirà."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ のウインドウで確認を求められています。そちらで答えるとゲームが起動します。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 창에서 확인을 요청하고 있습니다. 그곳에서 답하면 게임이 시작됩니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ задаёт вопрос в своём окне. Ответьте там, и игра запустится."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 正在其窗口中询问。请在那里回答，游戏随后就会启动。"
           }
         }
       }

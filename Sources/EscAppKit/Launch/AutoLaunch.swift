@@ -54,6 +54,10 @@ public struct AutoLaunch: Sendable {
     let picture: @Sendable ([Int32]) async -> WindowLook?
     /// Whether a Chromium GPU process runs in the attempt's bottle (`ChromiumApp.runsGPUProcess`).
     let gpuProcess: @Sendable (GameSession) -> Bool
+    /// CPU seconds these processes have used (`WineProcesses.cpuSeconds`), to tell a frozen game (`FrozenWindow`).
+    let cpu: @Sendable ([Int32]) -> TimeInterval?
+    /// Whether these processes' window fills its screen (`GameWindows.fillsScreen`).
+    let fullScreen: @Sendable ([Int32]) -> Bool
     let timing: Timing
 
     public init(paths: AppPaths, host: [String: String] = ProcessInfo.processInfo.environment,
@@ -62,6 +66,8 @@ public struct AutoLaunch: Sendable {
                 measure: @escaping @Sendable (GameSession) -> GameScaling.LearnedWindow? = GameWindows.learnWindow(of:),
                 picture: @escaping @Sendable ([Int32]) async -> WindowLook? = WindowPicture.look(windowOf:),
                 gpuProcess: (@Sendable (GameSession) -> Bool)? = nil,
+                cpu: @escaping @Sendable ([Int32]) -> TimeInterval? = WineProcesses.cpuSeconds(of:),
+                fullScreen: @escaping @Sendable ([Int32]) -> Bool = GameWindows.fillsScreen(_:),
                 timing: Timing = .standard) {
         self.paths = paths
         self.starter = starter ?? GameLauncher(paths: paths, host: host)
@@ -69,6 +75,8 @@ public struct AutoLaunch: Sendable {
         self.measure = measure
         self.picture = picture
         self.gpuProcess = gpuProcess ?? PictureLooks.chromiumRuns(for:)
+        self.cpu = cpu
+        self.fullScreen = fullScreen
         self.timing = timing
     }
 
@@ -165,13 +173,6 @@ public struct AutoLaunch: Sendable {
         return Result(game: game, attempts: attempts, working: nil, log: attempts.last?.log)
     }
 
-    /// A launch that looks for the game's settings: on Auto graphics, with nothing known to work yet and more than
-    /// one backend to try. The app hides the game's window meanwhile, since a failing attempt can flash it open
-    /// and shut; a store game gets one try, so it never tunes.
-    static func isTuning(_ game: GameRecord, order: [GraphicsBackend], retrying: Bool) -> Bool {
-        retrying && order.count > 1 && game.backend == nil && game.chosenBackend == nil && game.store == nil
-    }
-
     /// What one launch keeps the same across its attempts.
     struct Context: Sendable {
         let runtime: RuntimeManifest.Runtime
@@ -209,10 +210,12 @@ public struct AutoLaunch: Sendable {
         context.events(.started(running.session, backend: backend, attempt: number, total: total))
 
         // A backend that worked before only fails by closing; one never seen working also by showing nothing.
-        let timeout = backend == game.backend || game.store != nil ? nil : timing.firstWindowTimeout
+        let timeout = backend == game.backend ? nil
+            : game.store != nil ? timing.storeWindowTimeout : timing.firstWindowTimeout
         var seen: GameScaling.LearnedWindow?
         var judge = AttemptJudge(windowTimeout: timeout, windowHolds: timing.windowHolds)
         judge.checksPicture = game.chromium != nil || context.chromiumProgram
+        judge.checksFrozen = game.backend == nil
         var verdict = try await watch(running, game: game.id, judge: &judge, context: context, seen: &seen)
         // The bottle only goes idle once the warm-up's helper is gone.
         await context.warmer?.release(game.id)
@@ -225,11 +228,12 @@ public struct AutoLaunch: Sendable {
         }
         if verdict == .working {
             context.events(.working(backend, learned: number > 1))
-            // A first launch: a blank Chromium window may come after a launcher that drew.
+            // A first launch: a blank Chromium window may come after a launcher that drew, and a game may hang
+            // once past its intro.
             if game.backend == nil, context.control.retrying,
-               await lateBlank(running, patience: judge.blankAfter, chromium: judge.checksPicture,
-                               switched: switched) {
-                verdict = .failed(.blankPicture)
+               let late = await lateFailure(running, patience: judge.blankAfter, chromium: judge.checksPicture,
+                                            switched: switched) {
+                verdict = .failed(late)
             }
         }
         if case .failed = verdict { await running.stop() }
@@ -260,21 +264,13 @@ public struct AutoLaunch: Sendable {
     /// - Parameter judge: set up for this attempt; it checks the picture of a program known to be Chromium.
     private func watch(_ running: any GameAttempt, game: GameID, judge: inout AttemptJudge, context: Context,
                        seen: inout GameScaling.LearnedWindow?) async throws -> AttemptJudge.Verdict? {
-        var looks = PictureLooks(picture: picture, every: timing.pictureEvery)
+        var looks = WatchLooks(looks: PictureLooks(picture: picture, every: timing.pictureEvery),
+                               frozen: FrozenWindow(holds: timing.frozenFor), fullScreen: fullScreen)
         var announced = false
         var held: Int?
-        // An old game asking for its CD shows a message box and waits: its window counts as the game's, so the
-        // request is caught from the log as it is written, not after the game ends.
-        let tail = LogTail(running.log)
-        var askedForDisc = false
-        var noWebGL = false
+        var log = LogWatch(tail: LogTail(running.log))
         while true {
-            let lines = tail.newLines()
-            if !askedForDisc, let line = lines.first(where: LogDiagnosis.asksForDisc) {
-                askedForDisc = true
-                context.events(.asksForDisc(LogDiagnosis.messageText(line)))
-            }
-            noWebGL = noWebGL || lines.contains(where: LogDiagnosis.refusesWebGL)
+            log.read(events: context.events)
             let owners = windows(running.session)
             if !owners.isEmpty, let window = measure(running.session) { seen = window }
             if let owner = owners.first, !announced {
@@ -290,31 +286,31 @@ public struct AutoLaunch: Sendable {
             }
             if running.exitCode != nil { running.watchForIdle() }
             if !context.control.retrying {
-                // Not judging any more: the game just runs; `finish` waits for its end.
-                return nil
+                // Not judging any more: the game just runs; `finish` waits for its end. Its window still has to be
+                // announced, which closes the launch window: Among Us, its graphics picked in Advanced, came only
+                // after Steam's question about another session, and EscApp said "Starting" for as long as it ran.
+                if announced || running.exitCode != nil { return nil }
+                try await sleep(running)
+                continue
             }
-            let blank = judge.checksPicture ? await looks.look(at: owners, elapsed: elapsed)?.blank : nil
+            let (blank, frozen) = await looks.look(at: owners, elapsed: elapsed, judge: judge, cpu: cpu)
+            if frozen { return .failed(.frozen) }
             if let verdict = judge.observe(elapsed: elapsed, window: !owners.isEmpty, exitCode: running.exitCode,
-                                           idle: running.isIdle, blank: blank, noWebGL: noWebGL) {
+                                           idle: running.isIdle, blank: blank, noWebGL: log.noWebGL),
+               looks.accepts(verdict) {
                 return verdict
             }
             if let seconds = judge.held(at: elapsed).map({ Int($0) }), seconds != held {
                 held = seconds
                 context.events(.checking(held: seconds, needed: Int(timing.windowHolds.rounded(.up))))
             }
-            do {
-                try await Task.sleep(for: timing.poll)
-            } catch {
-                await running.stop()
-                _ = await running.finish()
-                throw error
-            }
+            try await sleep(running)
         }
     }
 
     /// An exe whose size or date changed since the last launch was updated: settings found for the old one may
     /// not suit it (a remembered backend waits for a window without a limit), so they are looked for again. A store
-    /// game isn't: its client updates it, and it gets one try anyway.
+    /// game isn't: its client updates it often, and each search restarts the client.
     private func noticeUpdate(of game: inout GameRecord, exe: URL) throws {
         guard game.store == nil, let stamp = GameRecord.ExeStamp(of: exe), stamp != game.exeStamp else { return }
         let updated = game.exeStamp != nil
@@ -364,25 +360,15 @@ public final class LaunchControl: Sendable {
     }
 }
 
-/// The lines a log gained since the last look.
-final class LogTail {
-    private let url: URL
-    private var offset: UInt64 = 0
-    private var partial = ""
-
-    init(_ url: URL) { self.url = url }
-
-    func newLines() -> [String] {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return [] }
-        defer { try? handle.close() }
-        guard (try? handle.seek(toOffset: offset)) != nil, let data = try? handle.readToEnd(), !data.isEmpty else {
-            return []
+extension AutoLaunch {
+    /// One poll of the watch; Cancel stops the game and waits for its end.
+    fileprivate func sleep(_ running: any GameAttempt) async throws {
+        do {
+            try await Task.sleep(for: timing.poll)
+        } catch {
+            await running.stop()
+            _ = await running.finish()
+            throw error
         }
-        offset += UInt64(data.count)
-        let text = partial + String(logBytes: data)
-        var lines = text.components(separatedBy: "\n")
-        // The last piece may be a line still being written.
-        partial = lines.removeLast()
-        return lines
     }
 }

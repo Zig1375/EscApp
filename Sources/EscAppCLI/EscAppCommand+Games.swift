@@ -153,14 +153,15 @@ extension EscAppCommand {
         return control
     }
 
-    /// - Parameter judged: whether the run checked the game's window. A store game's single attempt and one with
-    ///   `--backend` aren't checked; "worked" for those read as if the game had been seen working.
+    /// - Parameter judged: whether the run checked the game's window. A run with `--backend` isn't checked;
+    ///   "worked" for those read as if the game had been seen working.
     static func describe(_ attempt: LaunchAttempt, judged: Bool = true) -> String {
         let result: String = switch attempt.failure {
         case nil: judged ? "worked" : "ran, not checked"
         case let .closed(code)?: "closed after \(attempt.seconds) s (exit \(code))"
         case .noWindow?: "showed no window in \(attempt.seconds) s"
         case .blankPicture?: "its window stayed blank"
+        case .frozen?: "its picture froze on a blank window"
         case .noWebGL?: "its graphics didn't start (WebGL refused)"
         }
         let problem = attempt.diagnosis.problem.map { " — \($0)" } ?? ""

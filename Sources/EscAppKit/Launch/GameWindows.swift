@@ -69,6 +69,26 @@ public enum GameWindows {
         }
     }
 
+    /// Whether a window of `pids` covers nearly all of a display: a full-screen game, told without seeing its
+    /// picture.
+    public static func fillsScreen(_ pids: [pid_t]) -> Bool {
+        guard !pids.isEmpty, let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements],
+                                                                   kCGNullWindowID) as? [[String: Any]] else {
+            return false
+        }
+        var count: UInt32 = 0
+        var displays = [CGDirectDisplayID](repeating: 0, count: 16)
+        CGGetActiveDisplayList(16, &displays, &count)
+        let screens = displays.prefix(Int(count)).map(CGDisplayBounds)
+        return windows.contains { window in
+            guard let pid = window[kCGWindowOwnerPID as String] as? pid_t, pids.contains(pid),
+                  let bounds = window[kCGWindowBounds as String] as? NSDictionary,
+                  let rect = CGRect(dictionaryRepresentation: bounds) else { return false }
+            return screens.contains { $0.intersection(rect).width * $0.intersection(rect).height
+                >= 0.95 * $0.width * $0.height }
+        }
+    }
+
     /// The game's own size, from the largest window of its session on screen (`GameScaling.learn`).
     public static func learnWindow(of session: GameSession) -> GameScaling.LearnedWindow? {
         let owners = Set(owners(of: session))

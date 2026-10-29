@@ -19,6 +19,7 @@ struct EscAppApp: App {
             }
             // The default size is also the smallest: the library's header and card grid are laid out for it.
             .frame(minWidth: 1200, minHeight: 780)
+            .modifier(ScreenAccessOffer(ready: setup.phase == .ready))
             .onChange(of: setup.phase, initial: true) {
                 components.reload()
                 if setup.phase == .ready {
@@ -71,6 +72,14 @@ struct EscAppApp: App {
         // Opened only from Settings or a DirectX 12 game's message: macOS reopened it at launch on its own.
         .defaultLaunchBehavior(.suppressed)
         .restorationBehavior(.disabled)
+
+        Window("Seeing Game Windows", id: ScreenAccess.windowID) {
+            ScreenAccessWindow()
+        }
+        .windowResizability(.contentSize)
+        // Opened once after setup (`ScreenAccessOffer`); macOS mustn't reopen it at launch.
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
     }
 }
 
@@ -82,6 +91,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillFinishLaunching(_ notification: Notification) {
         #if DEBUG
         DirectX12Snapshots.runIfAsked()
+        ScreenAccessSnapshots.runIfAsked()
+        ScreenAccessReport.runIfAsked()
         #endif
         AppAppearance.saved.apply()
     }

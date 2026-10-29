@@ -1,6 +1,14 @@
 import Foundation
 
 extension AutoLaunch {
+    /// A launch that looks for the game's settings: on Auto graphics, with nothing known to work yet and more than
+    /// one backend to try. The app hides the game's window meanwhile, since a failing attempt can flash it open
+    /// and shut. A store game too: the player wants the first-launch screen whichever way the game was started,
+    /// and its client is usually signed in already, having just been asked to play.
+    static func isTuning(_ game: GameRecord, order: [GraphicsBackend], retrying: Bool) -> Bool {
+        retrying && order.count > 1 && game.backend == nil && game.chosenBackend == nil
+    }
+
     /// The backends this launch tries, in order.
     ///
     /// A game that has worked here keeps its backend: a game played for a while failed to start once, the launch
@@ -21,9 +29,19 @@ extension AutoLaunch {
                                         recommended: recommended?.graphicsBackend,
                                         known: known?.preferredBackend)
             .filter { d3dmetal || $0 != .d3dmetal }
-        // A store game gets one try: another backend means restarting the store's client, and its first start
-        // may sit behind the store's sign-in or an update for as long as those take.
-        return game.store == nil ? planned : Array(planned.prefix(1))
+        // A store game is searched for like any other: Among Us hung on DXVK, and the player had to find DXMT
+        // in Advanced. Another backend restarts the store's client in its Wine tree (`prepareForGame`).
+        return game.store == nil ? planned : storeOrder(planned, directX: info?.directX.max(), d3dmetal: d3dmetal)
+    }
+
+    /// A store game's order: everything in the bottle runs in one Wine tree, the client too. Steam's window
+    /// doesn't start on plain Wine ("Failed creating offscreen shared JS context"), so it never started Among
+    /// Us on WineD3D and the search waited for good; D3DMetal, which runs Direct3D 11 as well, takes its place.
+    static func storeOrder(_ planned: [GraphicsBackend], directX: ExecutableTraits.DirectX?,
+                           d3dmetal: Bool) -> [GraphicsBackend] {
+        var order = planned.filter { $0 != .wined3d }
+        if d3dmetal, directX == .d3d11 || directX == nil, !order.contains(.d3dmetal) { order.append(.d3dmetal) }
+        return order.isEmpty ? planned : order
     }
 
     /// What the game database and the game's module know about the game. The Windows version they name is the

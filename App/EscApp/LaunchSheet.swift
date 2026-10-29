@@ -72,6 +72,7 @@ struct LaunchSheet: View {
     @ViewBuilder private func retrying(_ retry: LibraryModel.Launch.Retry) -> some View {
         caption("The game failed — EscApp is trying again")
         gameRow(retry.reason == .blankPicture ? "Its window stayed blank"
+                    : retry.reason == .frozen ? "Its picture froze"
                     : retry.reason == .noWebGL ? "Its graphics didn't start"
                     : retry.reason == .noWindow ? "No window after \(retry.seconds) s"
                     : "Closed \(retry.seconds) s after starting")
@@ -151,6 +152,7 @@ struct LaunchSheet: View {
     private static func reason(_ seen: AttemptJudge.Failure?) -> Text {
         switch seen {
         case .blankPicture?: Text("Its window stays blank.")
+        case .frozen?: Text("Its picture freezes on a blank window.")
         case .noWebGL?: Text("Its graphics can't start on this Mac.")
         case let .closed(code)?: Text("It closes right after starting (code \(String(code))).")
         case .noWindow?, nil: Text("Its window never appeared.")

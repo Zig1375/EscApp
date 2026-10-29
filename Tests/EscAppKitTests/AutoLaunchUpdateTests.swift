@@ -18,7 +18,8 @@ extension AutoLaunchTests {
         async throws -> AutoLaunch.Result {
         let stored = try #require(try GameLibrary.load(from: paths.library)[game.id])
         return try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
-                                    measure: { _ in Self.window }, timing: timing)
+                                    measure: { _ in Self.window }, picture: { _ in nil }, cpu: { _ in nil },
+                                    fullScreen: { _ in false }, timing: timing)
             .play(stored, runtime: runtime, events: events)
     }
 

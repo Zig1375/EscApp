@@ -14,10 +14,14 @@ public struct WindowLook: Sendable, Equatable {
     /// The window's number: a launcher's window and the game's main window are told apart by it.
     public var window: UInt32
     public var blank: Bool
+    /// One flat colour but for a small corner: a frozen game keeps whatever its last frame showed. Among Us froze
+    /// on black with Steam's overlay notice still in its corner, and counted as drawing.
+    public var nearlyBlank: Bool
 
-    public init(window: UInt32, blank: Bool) {
+    public init(window: UInt32, blank: Bool, nearlyBlank: Bool? = nil) {
         self.window = window
         self.blank = blank
+        self.nearlyBlank = nearlyBlank ?? blank
     }
 }
 
@@ -43,7 +47,8 @@ public enum WindowPicture {
 
     private static func look(at owners: [Int32]) async -> WindowLook? {
         guard let window = largestWindow(of: owners), let image = await capture(window) else { return nil }
-        return WindowLook(window: window, blank: isBlank(image))
+        let share = flatShare(image)
+        return WindowLook(window: window, blank: share >= 1, nearlyBlank: share >= nearlyBlankShare)
     }
 
     /// A small picture of the largest window of `owners`.
@@ -86,29 +91,37 @@ public enum WindowPicture {
         return candidates.max { $0.1 < $1.1 }?.0
     }
 
-    /// One flat colour, leaving out a title bar and the frame: every pixel within a few steps of the first.
-    static func isBlank(_ image: CGImage) -> Bool {
+    /// The share of the picture that must be flat for `WindowLook.nearlyBlank`. Steam's overlay notice took 0.5%.
+    static let nearlyBlankShare = 0.97
+
+    /// How much of the picture is the colour of its top-left corner, from 0 to 1.
+    static func flatShare(_ image: CGImage) -> Double {
         let width = 48, height = 36
         var pixels = [UInt8](repeating: 0, count: width * height * 4)
         guard let context = CGContext(data: &pixels, width: width, height: height, bitsPerComponent: 8,
                                       bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
-                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return false }
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return 0 }
         context.interpolationQuality = .low
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        return isBlank(pixels: pixels, width: width, height: height)
+        return flatShare(pixels: pixels, width: width, height: height)
+    }
+
+    /// One flat colour, leaving out a title bar and the frame: every pixel within a few steps of the first.
+    static func isBlank(pixels: [UInt8], width: Int, height: Int) -> Bool {
+        flatShare(pixels: pixels, width: width, height: height) >= 1
     }
 
     /// RGBA rows, top first. The top fifth (a title bar) and a two-pixel frame are left out.
-    static func isBlank(pixels: [UInt8], width: Int, height: Int) -> Bool {
+    static func flatShare(pixels: [UInt8], width: Int, height: Int) -> Double {
         let first = ((height / 5) * width + 2) * 4
+        var same = 0, total = 0
         for y in (height / 5)..<(height - 2) {
             for x in 2..<(width - 2) {
                 let index = (y * width + x) * 4
-                for channel in 0..<3 where abs(Int(pixels[index + channel]) - Int(pixels[first + channel])) > 10 {
-                    return false
-                }
+                total += 1
+                if (0..<3).allSatisfy({ abs(Int(pixels[index + $0]) - Int(pixels[first + $0])) <= 10 }) { same += 1 }
             }
         }
-        return true
+        return total == 0 ? 0 : Double(same) / Double(total)
     }
 }

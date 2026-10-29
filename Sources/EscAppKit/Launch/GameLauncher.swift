@@ -260,6 +260,8 @@ public struct GameLauncher: Sendable {
             "[EscApp] Executable \(prepared.game.executable)",
             "[EscApp] Backend \(prepared.backend.rawValue)",
             LogHeader.d3dmetalLine(prepared.d3dmetal),
+            // Without it a first launch can't see the game's picture (`WindowPicture`), only guess a freeze.
+            "[EscApp] Screen recording \(WindowPicture.allowed ? "allowed" : "not allowed")",
             "[EscApp] Windows \(prepared.game.windowsVersion.wineValue)",
             "[EscApp] Retina \(retina ? "on" : "off")",
             "[EscApp] Scale \(prepared.scale.formatted(.number.precision(.fractionLength(0...2))))x",

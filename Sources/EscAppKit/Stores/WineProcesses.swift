@@ -51,6 +51,16 @@ public enum WineProcesses {
         return result == 0 ? info.ri_user_time + info.ri_system_time : nil
     }
 
+    /// CPU seconds the processes have used, together; nil when none can be read.
+    public static func cpuSeconds(of pids: [pid_t]) -> TimeInterval? {
+        let times = pids.compactMap(cpuTime)
+        guard !times.isEmpty else { return nil }
+        var timebase = mach_timebase_info_data_t()
+        mach_timebase_info(&timebase)
+        let ticks = Double(times.reduce(0, +))
+        return ticks * Double(timebase.numer) / Double(timebase.denom) / 1_000_000_000
+    }
+
     /// Processes in `bottle` started from a program in the Windows folder `folder`.
     public static func game(in bottle: URL, folder: String) -> [pid_t] {
         running(in: bottle).filter { runs($0.program, from: folder) }.map(\.pid)

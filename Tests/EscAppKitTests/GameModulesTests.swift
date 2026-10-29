@@ -179,16 +179,25 @@ import Testing
     let unity = ExecutableInfo(format: .pe64, imports: ["kernel32.dll", "unityplayer.dll"], productName: nil,
                                icon: nil, dpiAware: false)
 
-    /// Before We Leave from Epic: one try, and with its module that try is DXMT, not DXVK's black window.
-    @Test func preferChangesTheStoreGamesOneTry() {
+    /// Before We Leave from Epic: with its module DXMT comes first, not DXVK's black window. A store game is
+    /// searched for like any other.
+    @Test func preferLeadsTheStoreGamesSearch() {
         var launch = GameModules.Launch()
         #expect(AutoLaunch.order(for: record(), override: nil, info: unity, recommended: nil, known: nil,
-                                 module: launch) == [.dxvk])
+                                 module: launch) == [.dxvk, .dxmt])
         launch.preferBackends = [.dxmt]
         #expect(AutoLaunch.order(for: record(), override: nil, info: unity, recommended: nil, known: nil,
-                                 module: launch) == [.dxmt])
+                                 module: launch) == [.dxmt, .dxvk])
         #expect(AutoLaunch.order(for: record(store: nil), override: nil, info: unity, recommended: nil, known: nil,
                                  module: launch) == [.dxmt, .dxvk, .wined3d])
+    }
+
+    /// Steam's window doesn't start on plain Wine, so a store game skips WineD3D; D3DMetal, once added, comes last.
+    @Test func storeGamesSkipWineD3DAndTryD3DMetal() {
+        #expect(AutoLaunch.order(for: record(store: .steam), override: nil, info: unity, recommended: nil, known: nil,
+                                 d3dmetal: true) == [.dxvk, .dxmt, .d3dmetal])
+        #expect(AutoLaunch.order(for: record(store: nil), override: nil, info: unity, recommended: nil, known: nil,
+                                 d3dmetal: true) == [.dxvk, .dxmt, .wined3d])
     }
 
     /// The player's choice beats `require`, `require` beats what worked here, and that beats `prefer`.

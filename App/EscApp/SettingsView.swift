@@ -377,6 +377,7 @@ private struct GeneralCard: View {
                 DesignSelect(selection: Binding(get: { library.newGameRetina }, set: { library.setNewGameRetina($0) }),
                              options: GameScaling.Setting.allCases, title: AdvancedPage.settingTitle)
             }
+            ScreenAccessRow()
             HStack(spacing: 12) {
                 Text("Update components automatically").frame(maxWidth: .infinity, alignment: .leading)
                 Toggle("", isOn: $components.autoCheck)

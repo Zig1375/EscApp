@@ -142,7 +142,7 @@ import Testing
               control: LaunchControl = LaunchControl(), warmer: FakeWarmer? = nil,
               events: @escaping @Sendable (AutoLaunch.Event) -> Void = { _ in }) async throws -> AutoLaunch.Result {
         try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, measure: { _ in Self.window },
-                             timing: timing)
+                             picture: { _ in nil }, cpu: { _ in nil }, fullScreen: { _ in false }, timing: timing)
             .play(game, runtime: runtime, backend: backend, knownGames: knownGames, control: control,
                   warmer: warmer, events: events)
     }
@@ -163,7 +163,8 @@ import Testing
         }
         #expect(result.working == .dxvk)
         #expect(result.attempts.count == 1)
-        #expect(learned.withLock { $0 } == false)
+        // The event can be missing: a game that quit cleanly after showing its window counts as working from its log.
+        #expect(learned.withLock { $0 } != true)
         #expect(try remembered() == .dxvk)
         #expect(try GameLibrary.load(from: paths.library)[game.id]?.launches == 1)
         // Its window size is kept: it sets how much the game is enlarged next time.
@@ -190,7 +191,8 @@ import Testing
         picked.chosenBackend = .wined3d
         let starter = try FakeStarter([.wined3d: .crashes(), .dxvk: .works], logs: logs())
         let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
-                                          measure: { _ in nil }, timing: timing)
+                                          measure: { _ in nil }, picture: { _ in nil }, cpu: { _ in nil },
+                                          fullScreen: { _ in false }, timing: timing)
             .play(picked, runtime: runtime)
         #expect(starter.started.map(\.0) == [.wined3d])
         #expect(result.attempts.count == 1)
@@ -247,7 +249,8 @@ import Testing
 
     @Test func cancellingStopsTheGame() async throws {
         let starter = try FakeStarter([:], logs: logs())
-        let launch = AutoLaunch(paths: paths, starter: starter, windows: starter.windows, timing: timing)
+        let launch = AutoLaunch(paths: paths, starter: starter, windows: starter.windows, picture: { _ in nil },
+                                cpu: { _ in nil }, fullScreen: { _ in false }, timing: timing)
         let (game, runtime) = (game, runtime)
         let task = Task { try await launch.play(game, runtime: runtime) }
         while starter.started.isEmpty { try await Task.sleep(for: .milliseconds(5)) }
@@ -289,7 +292,8 @@ import Testing
         played.backend = .dxvk
         let starter = try FakeStarter([.dxvk: Script(exitAt: 0.4)], logs: logs())
         let warmer = FakeWarmer()
-        _ = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, timing: timing)
+        _ = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, picture: { _ in nil },
+                                 cpu: { _ in nil }, fullScreen: { _ in false }, timing: timing)
             .play(played, runtime: runtime, warmer: warmer)
         let start = try #require(starter.started.first?.1.startedAt)
         let after = try #require(await warmer.releasedAt).timeIntervalSince(start)
@@ -319,14 +323,15 @@ extension AutoLaunchTests {
 }
 
 extension AutoLaunchTests {
-    @Test func aStoreGameGetsOneTryAndWaitsForItsWindow() async throws {
+    @Test func aStoreGameWaitsForItsWindowLongerThanAFirstWindowTakes() async throws {
         var steamGame = game
         steamGame.store = .steam
         steamGame.storeID = "400"
-        // Steam may sit at its sign-in for longer than a first window may take: no timeout, no other backend.
+        // A store game waits for its client's sign-in longer than a first window may take (0.2 s here).
         let starter = try FakeStarter([.dxvk: Script(windowAt: 0.4, exitAt: 0.7), .dxmt: .works], logs: logs())
         let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
-                                          measure: { _ in nil }, timing: timing)
+                                          measure: { _ in nil }, picture: { _ in nil }, cpu: { _ in nil },
+                                          fullScreen: { _ in false }, timing: timing)
             .play(steamGame, runtime: runtime)
         #expect(starter.started.map(\.0) == [.dxvk])
         #expect(result.working == .dxvk)
@@ -371,10 +376,25 @@ extension AutoLaunchTests {
                                 fixes: [.init(launch: .init(require: .init(backend: ["d3dmetal"])))])
         let starter = try FakeStarter([.dxvk: .works], logs: logs())
         await #expect(throws: LaunchError.self) {
-            try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
-                                 measure: { _ in nil }, timing: timing)
+            try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, measure: { _ in nil },
+                                 picture: { _ in nil }, cpu: { _ in nil }, fullScreen: { _ in false }, timing: timing)
                 .play(game, runtime: runtime, modules: [module])
         }
         #expect(starter.started.isEmpty)
+    }
+}
+
+extension AutoLaunchTests {
+    /// Among Us, its graphics picked in Advanced, showed its window only after Steam's question about another
+    /// session was answered: the launch window has to hear of it, not stop looking at the first poll.
+    @Test func aChosenBackendStillAnnouncesALateWindow() async throws {
+        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.15, exitAt: 0.4)], logs: logs())
+        let shown = Mutex(false)
+        let result = try await play(starter, backend: .dxvk) { event in
+            if case .windowShown = event { shown.withLock { $0 = true } }
+        }
+        #expect(shown.withLock { $0 })
+        #expect(starter.started.first?.1.stopped == false)
+        #expect(result.attempts.first?.failure == nil)
     }
 }

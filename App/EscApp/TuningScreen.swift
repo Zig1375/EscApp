@@ -17,6 +17,8 @@ final class TuningCover {
     private var watcher: NSObjectProtocol?
     /// The app the player was in last, other than the game: the one they get back.
     private var playersApp: NSRunningApplication?
+    /// Puts the cover back over the game twice a second (`guardGame`).
+    private var guardTask: Task<Void, Never>?
 
     func update(showing: Bool, library: LibraryModel) {
         if !showing {
@@ -24,11 +26,14 @@ final class TuningCover {
             windows = []
             if let watcher { NSWorkspace.shared.notificationCenter.removeObserver(watcher) }
             watcher = nil
+            guardTask?.cancel()
+            guardTask = nil
             playersApp = nil
             return
         }
         guard windows.isEmpty else { return }
         watch(library)
+        guardGame(library)
         let main = NSScreen.main ?? NSScreen.screens.first
         for screen in NSScreen.screens {
             let window = CoverWindow(contentRect: screen.frame, styleMask: [.borderless], backing: .buffered,
@@ -75,6 +80,29 @@ final class TuningCover {
     private func cover(_ pid: pid_t) {
         guard let top = GameWindows.windowNumbers(of: pid).first else { return }
         windows.forEach { $0.order(.above, relativeTo: top) }
+    }
+
+    private static func layer(of window: Int) -> Int? {
+        let info = CGWindowListCopyWindowInfo([.optionIncludingWindow], CGWindowID(window)) as? [[String: Any]]
+        return info?.first?[kCGWindowLayer as String] as? Int
+    }
+
+    /// The activation notice alone missed the game coming up (Among Us from Steam): the cover is put back over
+    /// every window of the checked game twice a second. A game window above the normal level (full screen,
+    /// active) is sent back with `keepOver`, never chased: a cover raised to the game's level stayed over every
+    /// app, and the player couldn't use the Mac for the five minutes a search hung.
+    private func guardGame(_ library: LibraryModel) {
+        guardTask = Task { [weak self, weak library] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(500))
+                guard let self, let library, let launch = library.launch, launch.tuning != nil else { continue }
+                let owners = library.sessions[launch.id].map(GameWindows.owners(of:)) ?? []
+                for pid in Set(owners + [launch.tuning?.windowOwner].compactMap(\.self)) {
+                    let raised = GameWindows.windowNumbers(of: pid).contains { (Self.layer(of: $0) ?? 0) > 0 }
+                    if raised { self.keepOver(pid) } else { self.cover(pid) }
+                }
+            }
+        }
     }
 
     private func watch(_ library: LibraryModel) {
@@ -260,6 +288,7 @@ private struct TuningCard: View {
     private func failedText(_ failed: LibraryModel.Launch.Tuning.Try) -> Text {
         let name = Text(failed.backend.displayName).fontWeight(.semibold)
         let what: Text = failed.reason == .blankPicture ? Text("the window stayed blank")
+            : failed.reason == .frozen ? Text("the picture froze")
             : failed.reason == .noWebGL ? Text("its graphics didn't start")
             : failed.reason == .noWindow ? Text("no window after \(failed.seconds) s")
             : Text("closed after \(failed.seconds) s")

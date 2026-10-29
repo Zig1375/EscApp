@@ -19,7 +19,8 @@ extension AutoLaunchTests {
                                      handOverAfter: 0.15)
         let starter = try FakeStarter([.dxvk: .quitEarly], logs: logs())
         let result = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows,
-                                          measure: { _ in Self.window }, timing: slow)
+                                          measure: { _ in Self.window }, picture: { _ in nil }, cpu: { _ in nil },
+                                          fullScreen: { _ in false }, timing: slow)
             .play(game, runtime: runtime)
         #expect(result.attempts.count == 1)
         #expect(result.attempts.first?.failure == nil)

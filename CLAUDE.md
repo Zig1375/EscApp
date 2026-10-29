@@ -61,7 +61,11 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
   They are PE fixtures for unit tests and print `PROBE … OK` when they render on real Wine.
 - Wine is EscApp's own build (Wine 11.20, built and released by the sibling repo `../EscApp-Runtime`), with
   WhiskyWine 3.1.1 (Wine 11.0) still in the manifest as the older runtime. DXMT needs `macdrv_functions` exported
-  from `winemac.so`, which stock and Gcenx builds lack; EscApp's build patches it in.
+  from `winemac.so`, which stock and Gcenx builds lack; EscApp's build patches it in. Releasing it: run the Wine
+  workflow by hand in `../EscApp-Runtime`, then replace the `wine-11.20-escapp-<n>` runtime here with the release's
+  `escapp-wine-*.component.json` (version, url, sha256, size) and carry the `features` list (`osync`, `d3dmetal`)
+  over by hand — the workflow's json has none. Check the published archive against the manifest by downloading it
+  and its sha256. Every push to `main` that passes CI becomes a release (`ci.yml`), a documentation-only one too.
 - DirectX 12: `D3DMetal` takes Apple's D3DMetal from the player's own download of Apple's "Evaluation environment for
   Windows games" (checked by Apple's signature, copied unchanged to `EscApp/D3DMetal`); EscApp never ships or
   downloads it, and nothing of Apple's goes into the repository. The `d3dmetal` backend needs a Wine with the
@@ -69,7 +73,12 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
 - Stores: `Store` is only a store's name in `Games.json`; everything about one store is its `StoreModule`, a folder
   per store (`Sources/EscAppKit/Stores/Steam`, `.../Epic`). A new store is a type conforming to `StoreModule` (with
   a fixed `id` and `bottleNumber`, never reusing 3–5, which GOG Galaxy, the EA app and Ubisoft Connect had), its
-  line in `Store.allCases`, and its logo, colour and purpose in the app's `StoreBar.swift`.
+  line in `Store.allCases`, and its logo, colour and purpose in the app's `StoreBar.swift`. A client whose own
+  windows have a fixed pixel size sets `drawsAtScreenResolution = false` — Steam does, because Wine's Retina mode
+  drew its update window and dialogs at half the size of the rest of its interface — and then macOS stretches the
+  picture of its whole interface. Games are unaffected: `GameLauncher.drawing` is the one place that computes the
+  scale and DPI written into the bottle, and `StoreClient.needsRestart` says when a game's own settings mean the
+  client must be restarted first.
 - Game modules (`docs/GAME-MODULES.md`): what particular games need, as data in the sibling repo `../EscApp-Games`,
   whose CI builds `games.json`. `GameModulesUpdater` fetches it daily into `GameModules.json` (the app's copy is
   `Resources/game-modules.json`, rebuilt with `tools/build_index.py --output` there); `GameModules` finds a game's

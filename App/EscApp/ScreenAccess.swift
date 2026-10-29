@@ -308,7 +308,9 @@ enum ScreenAccessReport {
         let arguments = ProcessInfo.processInfo.arguments
         guard let index = arguments.firstIndex(of: "-screenAccessReport"), index + 1 < arguments.count else { return }
         let file = URL(filePath: arguments[index + 1])
-        Task {
+        // Detached, not a plain Task: ScreenCaptureKit's answer isn't Sendable, so awaiting it on this @MainActor
+        // enum is an error under the SDK the release runners have, and nothing below needs the main actor.
+        Task.detached {
             var lines = ["preflight \(CGPreflightScreenCaptureAccess())"]
             do {
                 let content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)

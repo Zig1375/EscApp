@@ -19,7 +19,7 @@ extension EscAppCommand {
         guard FileManager.default.fileExists(atPath: path) else { return failure("No such file: \(path)") }
 
         do {
-            let result = try GameIdentifier(paths: paths).identify(executable: URL(filePath: path))
+            let result = try identify(path)
             let summary = [
                 "Game: \(result.record.name) (\(result.record.id))",
                 "Found by: \(result.method.rawValue)",
@@ -138,13 +138,22 @@ extension EscAppCommand {
 
     /// The game the exe belongs to, with `--scale` and `--disc` kept for it like the app's settings.
     private func identified(_ path: String, scaling: GameScaling.Setting?, disc: String?) throws -> GameRecord {
-        var game = try GameIdentifier(paths: paths).identify(executable: URL(filePath: path)).record
+        var game = try identify(path).record
         guard scaling != nil || disc != nil else { return game }
         if let scaling { game.scaling = scaling == .auto ? nil : scaling }
         if let disc { game.disc = URL(filePath: disc).standardizedFileURL.path(percentEncoded: false) }
         let record = game
         try GameLibrary.modify(paths.library) { $0[record.id] = record }
         return record
+    }
+
+    /// The game the exe belongs to. A store's game is the record the app keeps for it, launched through its
+    /// client; the store's games are read first, as the app does, so one installed a moment ago is known too.
+    private func identify(_ path: String) throws -> GameIdentifier.Result {
+        let identifier = GameIdentifier(paths: paths)
+        let exe = URL(filePath: path)
+        if identifier.storeBottle(containing: exe) != nil { try StoreLibrary.sync(paths: paths) }
+        return try identifier.identify(executable: exe)
     }
 
     private func control(noRetry: Bool) -> LaunchControl {
@@ -179,13 +188,18 @@ extension EscAppCommand {
               RuntimeInstaller(paths: paths).installed(runtime) != nil
         else { return failure("The runtime isn't installed. Run: escapp runtime install") }
         var record = game
+        // A store game runs in its store's bottle, whose Windows version is the store's.
+        if windows != nil, let store = game.store {
+            return failure("\(game.name) runs in \(store.name)'s Windows, which keeps its own version.")
+        }
         if let windows {
             record.windowsVersion = windows
             try GameLibrary.modify(paths.library) { $0[record.id] = record }
         }
         let bottles = BottleManager(paths: paths, host: host)
         if !bottles.hasTemplate(for: runtime) { progress("Setting up Windows for \(runtime.id) (once)…") }
-        let bottle = try await bottles.ensureBottle(for: record.id, runtime: runtime, windows: record.windowsVersion)
+        let bottle = try await bottles.ensureBottle(for: record.bottleID, runtime: runtime,
+                                                    windows: record.store == nil ? record.windowsVersion : .default)
         let lines = summary + [
             "Windows: \(BottleManager.windowsVersion(of: bottle).displayName)",
             "Bottle: \(bottle.path(percentEncoded: false))",

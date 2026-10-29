@@ -383,3 +383,14 @@ extension EpicUpdateTests {
         #expect(EpicStore.appended(to: log, after: size) == Data("after".utf8))
     }
 }
+
+@Suite struct SteamOverlayTests {
+    /// Among Us broke on every backend with Steam's overlay in it; the client and its games run without it, and
+    /// still without `winemenubuilder`.
+    @Test func steamStartsWithoutItsOverlay() {
+        let environment = WineEnvironment.make(host: [:], bottle: "/b", extra: Store.steam.environment)
+        let overrides = environment["WINEDLLOVERRIDES"] ?? ""
+        #expect(overrides.contains("gameoverlayrenderer64=d"))
+        #expect(overrides.contains("winemenubuilder.exe=d"))
+    }
+}

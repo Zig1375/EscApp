@@ -23,6 +23,14 @@ struct SteamStore: StoreModule {
     /// Its web helper moves between client versions (`bin/cef/cef.win7x64`, `cef.win64`).
     let chromiumHelpers = ["Program Files (x86)/Steam/bin/cef/*/steamwebhelper.exe"]
 
+    /// Steam's overlay off: Steam loads `gameoverlayrenderer64.dll` into each game it starts to draw over its
+    /// picture, and under Wine on the Mac that hook broke Among Us on every graphics backend, a frozen black
+    /// window with the overlay's notice in its corner, or a crash creating its Direct3D device. A DLL Wine may
+    /// not load is one Steam can't put in. The client's own window doesn't use it.
+    var environment: [String: String] {
+        ["WINEDLLOVERRIDES": WineEnvironment.dllOverrides + ";gameoverlayrenderer=d;gameoverlayrenderer64=d"]
+    }
+
     /// Steam checks its files at every start and puts its own web helper back over `ChromiumHelper`'s, which
     /// leaves its window black. Before its first update there is nothing to check.
     func clientArguments(clientReady: Bool) -> [String] {
@@ -40,6 +48,8 @@ struct SteamStore: StoreModule {
     func isBusy(bottle: URL) -> Bool {
         SteamLaunches.inProgress(in: bottle) || SteamDownloads.inProgress(in: bottle)
     }
+
+    func question(bottle: URL, storeID: String) -> String? { SteamLaunches.question(in: bottle, appID: storeID) }
 
     func finishInstall(_ stores: StoreClient, client: URL, wine: Wine, environment: [String: String],
                        progress: @escaping @Sendable (StoreClient.Step) -> Void) async throws {

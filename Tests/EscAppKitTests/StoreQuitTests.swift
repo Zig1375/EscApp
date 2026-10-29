@@ -193,6 +193,40 @@ import Testing
         #expect(SteamLaunches.inProgress(log: log, now: now, timeZone: utc))
     }
 
+    func asks(_ secondsAgo: TimeInterval, _ step: String, app: String = "945360") -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = utc
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let time = formatter.string(from: now.addingTimeInterval(-secondsAgo))
+        return "[\(time)] GameAction [AppID \(app), ActionID 1] : LaunchApp waiting for user response to \(step) "
+            + "\"Spacewar\""
+    }
+
+    @Test func aQuestionSteamWaitsOnIsTheStep() {
+        // Among Us's launch, waiting for the player to end a session playing Spacewar elsewhere.
+        let log = [line(60, 1, "ShowInterstitials"), asks(58, "KickingOtherSession")].joined(separator: "\n")
+            .replacingOccurrences(of: "242920", with: "945360")
+        #expect(SteamLaunches.question(log: log, appID: "945360", now: now, timeZone: utc) == "KickingOtherSession")
+        #expect(SteamLaunches.question(log: log, appID: "242920", now: now, timeZone: utc) == nil)
+    }
+
+    @Test func aStepSteamAnswersItselfIsNoQuestion() {
+        // `CreatingProcess` waits for a moment and goes on by itself.
+        #expect(SteamLaunches.question(log: asks(1, "CreatingProcess"), appID: "945360", now: now,
+                                       timeZone: utc) == nil)
+        let answered = [asks(30, "KickingOtherSession"),
+                        line(20, 1, "CreatingProcess").replacingOccurrences(of: "242920", with: "945360")]
+            .joined(separator: "\n")
+        #expect(SteamLaunches.question(log: answered, appID: "945360", now: now, timeZone: utc) == nil)
+    }
+
+    @Test func aRestartedSteamAsksNothingYet() {
+        let log = [asks(60, "KickingOtherSession"), "[2026-10-26 04:53:00] Client version: 1792618285"]
+            .joined(separator: "\n")
+        #expect(SteamLaunches.question(log: log, appID: "945360", now: now, timeZone: utc) == nil)
+    }
+
     @Test func abandonedLaunchStopsCounting() {
         // The launch that waited for an answer about a session playing Spacewar elsewhere, never given.
         let log = line(6 * 60, 2, "KickingOtherSession")

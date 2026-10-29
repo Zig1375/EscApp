@@ -48,6 +48,8 @@ extension LibraryModel {
         var component: GameLauncher.Component?
         /// Set after a while without a game window, to say that this can take a minute.
         var slow = false
+        /// The store's client waits for the player to answer it in its own window (`StoreClient.question`).
+        var storeAsks = false
         /// A first launch looking for its settings (FirstRun.dc.html), shown over the game's windows.
         var tuning: Tuning?
 
@@ -154,7 +156,10 @@ extension LibraryModel {
             apply(step, to: id)
         case let .started(session, _, attempt, _):
             sessions[id] = session
-            if attempt == 1 { markSlow(id) }
+            if attempt == 1 {
+                markSlow(id)
+                watchStoreQuestions(id)
+            }
         case let .windowShown(pid):
             showGame(pid, for: id)
         case let .working(backend, learned):
@@ -240,6 +245,26 @@ extension LibraryModel {
         case nil: nil
         }
         return api.map { "\(backend.displayName) (\($0))" } ?? backend.displayName
+    }
+
+    /// A store game's client may ask something first (Steam: end a session playing elsewhere?) in its own window,
+    /// which it doesn't show while it runs without one: Among Us waited 14 minutes behind "Starting". The client
+    /// comes forward once, and the launch window says where the question is.
+    private func watchStoreQuestions(_ id: GameID) {
+        guard let game = game(id), let store = game.store, let storeID = game.storeID else { return }
+        let stores = StoreClient(paths: paths)
+        Task {
+            var shown = false
+            while launch?.id == id, launch?.phase == .preparing, states[id] == .starting {
+                let asks = stores.question(store, storeID: storeID) != nil
+                if launch?.storeAsks != asks { launch?.storeAsks = asks }
+                if asks, !shown {
+                    shown = true
+                    openStore(store)
+                }
+                try? await Task.sleep(for: .seconds(2))
+            }
+        }
     }
 
     /// Says so when the window takes long: Wine's first start under Rosetta can need most of a minute.

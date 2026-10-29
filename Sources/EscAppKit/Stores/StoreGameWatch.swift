@@ -72,13 +72,13 @@ struct StoreGameWatch: Sendable {
         }
     }
 
-    /// Ends a stopped game's processes, and keeps ending them for `stoppedFor` in the background: Steam may start
-    /// the game only now (a cold Steam asked for it before Cancel, and started it 30 s later). Ends early when a
-    /// new launch forgets the stop, or nothing runs in the bottle any more.
+    /// Ends a stopped game's processes, and keeps ending them for `stoppedFor` in the background when it was
+    /// stopped before it appeared: Steam may start the game only now (a cold Steam asked for it before Cancel, and
+    /// started it 30 s later). Ends early when a new launch forgets the stop, or nothing runs in the bottle any more.
     private func endStoppedGame() {
         let bottle = bottle, folder = folder
         Task.detached {
-            while let since = Self.stoppedSince(bottle: bottle, folder: folder),
+            while let since = Self.lingeringStop(bottle: bottle, folder: folder),
                   Date().timeIntervalSince(since) < Self.stoppedFor,
                   !WineProcesses.running(in: bottle).isEmpty {
                 for pid in WineProcesses.game(in: bottle, folder: folder) { kill(pid, SIGKILL) }
@@ -90,7 +90,10 @@ struct StoreGameWatch: Sendable {
     /// Games stopped or whose launch was cancelled, by bottle and folder, with when. Cancelling a Steam game
     /// before it appeared ended nothing: Steam had the launch already and started Banished a few seconds after its
     /// launch window had gone. Such a game is ended whenever it appears, for up to `stoppedFor`.
-    private static let stopped = Mutex<[String: Date]>([:])
+    /// `lingers`: the game hadn't appeared when it was stopped, so it is ended whenever it does. A game stopped
+    /// while it ran isn't: Among Us, stopped and started again from Steam's own window a minute later, was killed
+    /// two seconds into each start.
+    private static let stopped = Mutex<[String: (since: Date, lingers: Bool)]>([:])
     static let stoppedFor: TimeInterval = 120
 
     private static func key(_ bottle: URL, _ folder: String) -> String {
@@ -98,7 +101,11 @@ struct StoreGameWatch: Sendable {
     }
 
     static func stoppedSince(bottle: URL, folder: String) -> Date? {
-        stopped.withLock { $0[key(bottle, folder)] }
+        stopped.withLock { $0[key(bottle, folder)]?.since }
+    }
+
+    static func lingeringStop(bottle: URL, folder: String) -> Date? {
+        stopped.withLock { $0[key(bottle, folder)].flatMap { $0.lingers ? $0.since : nil } }
     }
 
     /// A new launch of the game: an earlier stop doesn't end it.
@@ -109,8 +116,9 @@ struct StoreGameWatch: Sendable {
     /// Ends the game's processes, asking first; the client keeps running. A watch of the game goes on ending it
     /// if the client starts it after all.
     func stop() async {
-        Self.stopped.withLock { $0[Self.key(bottle, folder)] = Date() }
-        for pid in WineProcesses.game(in: bottle, folder: folder) { kill(pid, SIGTERM) }
+        let running = WineProcesses.game(in: bottle, folder: folder)
+        Self.stopped.withLock { $0[Self.key(bottle, folder)] = (Date(), running.isEmpty) }
+        for pid in running { kill(pid, SIGTERM) }
         try? await Task.sleep(for: .seconds(3))
         for pid in WineProcesses.game(in: bottle, folder: folder) { kill(pid, SIGKILL) }
     }

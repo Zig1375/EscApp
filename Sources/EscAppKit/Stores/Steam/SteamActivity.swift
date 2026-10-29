@@ -69,14 +69,51 @@ enum SteamLaunches {
 
     /// The same for the bottle's Steam, from the end of its log.
     static func inProgress(in bottle: URL, now: Date = Date()) -> Bool {
-        guard let handle = try? FileHandle(forReadingFrom: file(in: bottle)) else { return false }
+        inProgress(log: tail(in: bottle), now: now)
+    }
+
+    /// How long Steam has to wait on a step before it counts as asking the player: the steps it answers itself
+    /// (`ShowInterstitials` with nothing to show, `CreatingProcess`) go on within two seconds.
+    static let askingAfter: TimeInterval = 5
+
+    /// The step a launch of `appID` waits on the player for, like `KickingOtherSession` (a session playing
+    /// Spacewar elsewhere had to be ended first): `LaunchApp waiting for user response to KickingOtherSession …`
+    /// with no later line for that launch, said at least `askingAfter` ago. Steam asks in its own window, which
+    /// isn't shown while it runs without one, and Among Us waited 14 minutes behind EscApp's "Starting".
+    static func question(log: String, appID: String, now: Date, timeZone: TimeZone = .current) -> String? {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let waiting = "LaunchApp waiting for user response to "
+        var asked: (step: Substring, time: Date)?
+        for line in log.split(whereSeparator: \.isNewline) {
+            if line.contains("] Client version: ") { asked = nil; continue }
+            guard line.contains("GameAction [AppID \(appID),"), line.contains("] : LaunchApp ") else { continue }
+            guard let range = line.range(of: waiting),
+                  let time = formatter.date(from: String(line.dropFirst().prefix(19))) else {
+                asked = nil
+                continue
+            }
+            asked = (line[range.upperBound...].prefix { $0 != " " }, time)
+        }
+        guard let asked, now.timeIntervalSince(asked.time) >= askingAfter else { return nil }
+        return String(asked.step)
+    }
+
+    static func question(in bottle: URL, appID: String, now: Date = Date()) -> String? {
+        question(log: tail(in: bottle), appID: appID, now: now)
+    }
+
+    /// The end of the bottle's Steam log.
+    private static func tail(in bottle: URL) -> String {
+        guard let handle = try? FileHandle(forReadingFrom: file(in: bottle)) else { return "" }
         defer { try? handle.close() }
         let end = (try? handle.seekToEnd()) ?? 0
         try? handle.seek(toOffset: end > 65_536 ? end - 65_536 : 0)
         let data = (try? handle.readToEnd()) ?? Data()
         // The read may start mid-character; a broken first line is skipped like any other.
-        let text = String(bytes: data, encoding: .utf8) ?? String(bytes: data, encoding: .isoLatin1) ?? ""
-        return inProgress(log: text, now: now)
+        return String(bytes: data, encoding: .utf8) ?? String(bytes: data, encoding: .isoLatin1) ?? ""
     }
 }
 

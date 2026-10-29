@@ -54,6 +54,9 @@ protocol StoreModule: Sendable {
     func isReady(bottle: URL) -> Bool
     /// The client is in the middle of something that quitting it would break, with no game process running.
     func isBusy(bottle: URL) -> Bool
+    /// What the client waits for the player to answer in its own window before it starts the game `storeID`, if
+    /// anything.
+    func question(bottle: URL, storeID: String) -> String?
     /// After its installer: what the client needs before its first "Open".
     func finishInstall(_ stores: StoreClient, client: URL, wine: Wine, environment: [String: String],
                        progress: @escaping @Sendable (StoreClient.Step) -> Void) async throws
@@ -96,6 +99,7 @@ extension StoreModule {
 
     func isReady(bottle: URL) -> Bool { true }
     func isBusy(bottle: URL) -> Bool { false }
+    func question(bottle: URL, storeID: String) -> String? { nil }
     func finishInstall(_ stores: StoreClient, client: URL, wine: Wine, environment: [String: String],
                        progress: @escaping @Sendable (StoreClient.Step) -> Void) async throws {}
     func prepareToStart(_ stores: StoreClient, bottle: URL, wine: Wine) async {}

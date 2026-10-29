@@ -159,6 +159,77 @@ import Testing
         #expect(result.record.id == id)
         #expect(try library()[id] != nil)
     }
+
+    // MARK: Store games
+
+    func storeRecord(_ store: Store, id: String, folder: String, exe: String) -> GameRecord {
+        var record = GameRecord(id: .make(), name: "Among Us", executable: exe, folder: folder, hasMarker: false,
+                                addedAt: Date(timeIntervalSince1970: 0))
+        record.store = store
+        record.storeID = id
+        return record
+    }
+
+    @Test func aStoreGameIsFoundByItsProgramOrFolder() {
+        let common = "/B/drive_c/Program Files (x86)/Steam/steamapps/common"
+        let amongUs = storeRecord(.steam, id: "945360", folder: "\(common)/Among Us",
+                                  exe: "\(common)/Among Us/Among Us.exe")
+        let own = GameRecord(id: .make(), name: "Heroes", executable: "/Games/Heroes/h3.exe", folder: "/Games/Heroes",
+                             hasMarker: true, addedAt: Date(timeIntervalSince1970: 0))
+        let games = [own, amongUs]
+        #expect(GameIdentifier.storeGame(at: "\(common)/Among Us/Among Us.exe", in: games) == amongUs)
+        #expect(GameIdentifier.storeGame(at: "\(common)/among us/AMONG US.EXE", in: games) == amongUs)
+        #expect(GameIdentifier.storeGame(at: "\(common)/Among Us/Tools/crash.exe", in: games) == amongUs)
+        // A folder whose name starts like the game's isn't inside it; the player's own games aren't store games.
+        #expect(GameIdentifier.storeGame(at: "\(common)/Among Us 2/game.exe", in: games) == nil)
+        #expect(GameIdentifier.storeGame(at: "/Games/Heroes/h3.exe", in: games) == nil)
+    }
+
+    @Test func theDeepestStoreFolderWins() {
+        let outer = storeRecord(.epic, id: "a", folder: "/B/Epic/Game", exe: "/B/Epic/Game/game.exe")
+        let inner = storeRecord(.epic, id: "b", folder: "/B/Epic/Game/DLC", exe: "/B/Epic/Game/DLC/dlc.exe")
+        #expect(GameIdentifier.storeGame(at: "/B/Epic/Game/DLC/bin/x.exe", in: [inner, outer]) == inner)
+        #expect(GameIdentifier.storeGame(at: "/B/Epic/Game/DLC/bin/x.exe", in: [outer, inner]) == inner)
+    }
+
+    @Test func anExeInAStoreBottleNamesItsStore() {
+        let bottle: (Store) -> String = { "/Bottles/\($0.bottleID.rawValue)" }
+        let steam = bottle(.steam)
+        #expect(GameIdentifier.storeBottle(containing: "\(steam)/drive_c/x/game.exe", bottle: bottle) == .steam)
+        #expect(GameIdentifier.storeBottle(containing: "\(bottle(.epic))/drive_c/g.exe", bottle: bottle) == .epic)
+        #expect(GameIdentifier.storeBottle(containing: "/Bottles/\(GameID.make().rawValue)/g.exe",
+                                           bottle: bottle) == nil)
+    }
+
+    /// Running Among Us's exe from Steam's folder made a second record and wrote `.escapp` into Steam's folder.
+    @Test func aStoreGameKeepsItsRecordAndGetsNoMarker() throws {
+        let folder = paths.bottle(forGame: Store.steam.bottleID).appending(
+            path: "drive_c/Program Files (x86)/Steam/steamapps/common/Among Us", directoryHint: .isDirectory)
+        let exe = folder.appending(path: "Among Us.exe")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try Data("MZ".utf8).write(to: exe)
+        // A stray marker left there by an earlier version is ignored.
+        try identifier.writeMarker(.make(), in: folder)
+        let record = storeRecord(.steam, id: "945360", folder: folder.path(percentEncoded: false),
+                                 exe: exe.path(percentEncoded: false))
+        try GameLibrary(games: [record]).save(to: paths.library)
+
+        let result = try identifier.identify(executable: exe)
+        #expect(result.method == .store)
+        #expect(result.record == record)
+        #expect(try library().games == [record])
+
+        let marker = folder.appending(path: GameIdentifier.markerName)
+        try FileManager.default.removeItem(at: marker)
+        let other = folder.deletingLastPathComponent().appending(path: "Unknown/game.exe")
+        try FileManager.default.createDirectory(at: other.deletingLastPathComponent(),
+                                                withIntermediateDirectories: true)
+        try Data("MZ".utf8).write(to: other)
+        #expect(throws: GameIdentifier.IdentifyError.self) { try identifier.identify(executable: other) }
+        #expect(try library().games == [record])
+        #expect(!FileManager.default.fileExists(atPath: other.deletingLastPathComponent()
+                .appending(path: GameIdentifier.markerName).path))
+    }
 }
 
 @Suite struct PlayRecordTests {

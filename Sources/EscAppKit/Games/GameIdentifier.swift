@@ -7,6 +7,9 @@ import Foundation
 /// folder (like `.git` in a repository). It survives moves, copies to other disks, archives and patches.
 /// It is the only sign: an exe without one is a new game. The last known path and a fingerprint of the exe used
 /// to find a game too, and could take one game for another.
+///
+/// A store's games are the exception: they have no `.escapp` and are found by their folder in `Games.json`
+/// (`StoreLibrary.sync`), since the store's own folder is never written to.
 public struct GameIdentifier: Sendable {
     public static let markerName = ".escapp"
     /// How many folders above the exe's own folder are searched for `.escapp`, so `Game/bin/x64/game.exe` and
@@ -14,7 +17,19 @@ public struct GameIdentifier: Sendable {
     static let levelsUp = 3
 
     public enum Method: String, Sendable, Equatable {
-        case marker, copiedFolder, new
+        case marker, copiedFolder, new, store
+    }
+
+    public enum IdentifyError: Error, Equatable, CustomStringConvertible {
+        /// An exe in a store's bottle that isn't one of the store's games EscApp knows.
+        case notAStoreGame(Store, path: String)
+
+        public var description: String {
+            switch self {
+            case let .notAStoreGame(store, path):
+                "\(path) is in \(store.name)'s folder but isn't one of its installed games."
+            }
+        }
     }
 
     public struct Result: Sendable, Equatable {
@@ -49,6 +64,15 @@ public struct GameIdentifier: Sendable {
         let exe = executable.resolvingSymlinksInPath().standardizedFileURL
         let exeFolder = exe.deletingLastPathComponent()
 
+        // Running Among Us's exe from Steam's folder made a second record for it, wrote `.escapp` into Steam's
+        // game folder and started the game without Steam, which it can't run without.
+        if let record = Self.storeGame(at: Self.key(exe), in: library.games) {
+            return Result(record: record, method: .store)
+        }
+        if let store = storeBottle(containing: exe) {
+            throw IdentifyError.notAStoreGame(store, path: exe.path(percentEncoded: false))
+        }
+
         if let (folder, id) = findMarker(from: exeFolder) {
             if var record = library[id] {
                 let recordedFolder = URL(filePath: record.folder, directoryHint: .isDirectory)
@@ -77,6 +101,30 @@ public struct GameIdentifier: Sendable {
         if !isStopFolder(root), (try? writeMarker(record.id, in: root)) != nil { record.hasMarker = true }
         library[record.id] = record
         return Result(record: record, method: .new)
+    }
+
+    /// The store game `exe` (a `key`) belongs to: the one it is the recorded program of, or inside the folder of.
+    /// The deepest folder wins, should one store game's folder hold another's. Paths compare ignoring case, as
+    /// the Mac's disks and Windows do.
+    static func storeGame(at exe: String, in games: [GameRecord]) -> GameRecord? {
+        let exe = exe.lowercased()
+        let stored = games.filter { $0.store != nil }
+        if let record = stored.first(where: { key(URL(filePath: $0.executable)).lowercased() == exe }) {
+            return record
+        }
+        return stored
+            .map { (record: $0, folder: key(URL(filePath: $0.folder, directoryHint: .isDirectory)).lowercased()) }
+            .filter { exe.hasPrefix($0.folder + "/") }
+            .max { $0.folder.count < $1.folder.count }?.record
+    }
+
+    /// The store whose bottle `exe` is in, where only the store writes.
+    public func storeBottle(containing exe: URL) -> Store? {
+        Self.storeBottle(containing: Self.key(exe)) { Self.key(paths.bottle(forGame: $0.bottleID)) }
+    }
+
+    static func storeBottle(containing exe: String, bottle: (Store) -> String) -> Store? {
+        Store.allCases.first { exe.lowercased().hasPrefix(bottle($0).lowercased() + "/") }
     }
 
     /// Folders that hold a game's executables rather than the game itself.

@@ -99,6 +99,8 @@ import Testing
         // Steam may still start the game: its watch ends it when it appears.
         #expect(StoreGameWatch.stoppedSince(bottle: bottle, folder: folder) != nil)
         #expect(StoreGameWatch.stoppedSince(bottle: bottle, folder: folder.uppercased()) != nil)
+        // Stopped before it appeared: ended whenever it does.
+        #expect(StoreGameWatch.lingeringStop(bottle: bottle, folder: folder) != nil)
         // Played again: that launch isn't ended by the old stop.
         StoreGameWatch.forgetStop(bottle: bottle, folder: folder)
         #expect(StoreGameWatch.stoppedSince(bottle: bottle, folder: folder) == nil)

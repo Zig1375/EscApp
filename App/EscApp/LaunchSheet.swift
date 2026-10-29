@@ -42,6 +42,16 @@ struct LaunchSheet: View {
                         .foregroundStyle(Color.secondaryText)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
+                } else if launch.storeAsks, let store = library.game(launch.id)?.store {
+                    // Steam asking to end a session playing elsewhere, in its window: the game waits for the answer.
+                    Text("\(store.name) is asking something in its window. Answer it there, and the game will start.")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button("Show \(store.name)") { library.openStore(store) }
+                        .buttonStyle(.link)
+                        .font(.system(size: 12))
                 } else if launch.slow {
                     Text(launch.firstTime ? "The first launch can take up to a minute."
                                           : "Taking longer than usual. This can happen after a Mac restart.")

@@ -27,6 +27,10 @@ public struct StoreClient: Sendable {
 
     /// Whether anything runs in the store's bottle: its client, or one of its games.
     public func isRunning(_ store: Store) -> Bool { !WineProcesses.running(in: bottle(for: store)).isEmpty }
+    /// What the client asks the player in its own window before it starts the game `storeID` (`StoreModule.question`).
+    public func question(_ store: Store, storeID: String) -> String? {
+        store.module.question(bottle: bottle(for: store), storeID: storeID)
+    }
 
     /// "Install": the bottle, the publisher's installer, then what the client needs before it opens (Steam's
     /// first update). Throws when the client isn't there afterwards (the player closed its setup window, say).

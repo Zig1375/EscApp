@@ -45,6 +45,7 @@ extension LibraryModel {
                 try? await Task.sleep(for: .seconds(3))
             }
         }
+        watchStoreStarts()
     }
 
     /// Stores installing, restarting, or with a game of theirs starting or running.

@@ -39,16 +39,16 @@
       ]
     },
     {
-      "id": "wine-11.20-escapp-10",
+      "id": "wine-11.20-escapp-12",
       "minApp": "0.1.0",
       "minMacOS": "15.0",
       "components": [
         {
           "kind": "wine",
-          "version": "11.20 (EscApp build 10)",
-          "url": "https://github.com/Zig1375/EscApp-Runtime/releases/download/wine-11.20-10/escapp-wine-11.20-10.tar.xz",
-          "sha256": "62dc2ad298bd9c4d60da53e37d27197f4be584bd6fcada88ec714da6669a8183",
-          "size": 260207740,
+          "version": "11.20 (EscApp build 12)",
+          "url": "https://github.com/Zig1375/EscApp-Runtime/releases/download/wine-11.20-12/escapp-wine-11.20-12.tar.xz",
+          "sha256": "8d6d299820bf500578f41430281fe226b439964ae26d209877027e9697b04b3f",
+          "size": 260222356,
           "license": "LGPL-2.1-or-later",
           "from": "wine",
           "into": "wine",

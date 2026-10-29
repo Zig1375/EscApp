@@ -80,3 +80,10 @@ targets:
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_IDENTITY: "-"
         ENABLE_PREVIEWS: YES
+      configs:
+        # Debug builds carry a fixed identity: macOS keeps a permission (Screen Recording) for the app's signer,
+        # and an ad-hoc signature, new with every build, lost it at each rebuild. CI and Release stay ad-hoc.
+        Debug:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: "Apple Development: Alexander Palchikov (H7BKH6V7GL)"
+          DEVELOPMENT_TEAM: UW8MNEYF65

@@ -4,14 +4,16 @@ import Foundation
 extension StoreClient {
     /// Store clients draw at the screen's full resolution. At Wine's default, Steam's windows were drawn at half
     /// the pixels and stretched by macOS: soft text with coloured ClearType fringes, jagged corners. The DPI
-    /// matches, so they keep their size: clients that handle high DPI (Steam, Epic) draw larger themselves, and
-    /// Wine enlarges the ones that don't. A store game started while its client is idle gets its own settings
+    /// matches, so they keep their size: clients that handle high DPI (Epic) draw larger themselves, and Wine
+    /// enlarges the ones that don't. A store game started while its client is idle gets its own settings
     /// (`GameLauncher.configure`). Only while the bottle's Wine is down.
-    static func drawSharp(_ bottle: URL, scale: Double = GameScaling.backingScale()) throws {
-        let retina = scale > 1
-        try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\Mac Driver"#, name: "RetinaMode",
+    /// - Parameter retina: false for a client whose own windows are drawn at a fixed pixel size, which Retina
+    ///   mode leaves at half the size of the rest of its interface (`StoreModule.drawsAtScreenResolution`).
+    static func drawSharp(_ bottle: URL, scale: Double = GameScaling.backingScale(), retina: Bool = true) throws {
+        let retina = retina && scale > 1
+        try BottleManager.setRegistryString(bottle: bottle, key: BottleManager.macDriverKey, name: "RetinaMode",
                                             value: retina ? "y" : "n")
-        try BottleManager.setRegistryDWord(bottle: bottle, key: #"Control Panel\Desktop"#, name: "LogPixels",
+        try BottleManager.setRegistryDWord(bottle: bottle, key: BottleManager.desktopKey, name: "LogPixels",
                                            value: UInt32(GameScaling.dpi(for: retina ? scale : 1)))
     }
 
@@ -26,11 +28,32 @@ extension StoreClient {
         try BottleManager.setCommandAsControl(bottle: bottle, true)
     }
 
-    /// Whether the bottle's Wine draws in Retina mode, as written before its client started (`drawSharp`).
-    static func runsRetina(_ bottle: URL) -> Bool {
+    /// What a bottle's Wine draws with, as it was written before the running Wine started: `drawSharp` for a
+    /// client, `GameLauncher.configure` for a game.
+    struct Drawn: Equatable, Sendable {
+        /// Retina mode: the screen's full resolution, with the DPI to match.
+        var retina: Bool
+        /// `LogPixels`: the system DPI Wine draws a DPI-unaware program with.
+        var dpi: Int
+    }
+
+    /// What the bottle's Wine draws with now; Wine's own defaults, no Retina mode and 96 DPI, when nothing wrote
+    /// them there.
+    static func drawn(_ bottle: URL) -> Drawn {
         let text = try? String(contentsOf: bottle.appending(path: "user.reg"), encoding: .utf8)
-        let key = #"Software\Wine\Mac Driver"#
-        return text.flatMap { WineRegistry.string(in: $0, key: key, name: "RetinaMode") } == "y"
+        let retina = text.flatMap { WineRegistry.string(in: $0, key: BottleManager.macDriverKey, name: "RetinaMode") }
+        let dpi = text.flatMap { WineRegistry.dword(in: $0, key: BottleManager.desktopKey, name: "LogPixels") }
+        return Drawn(retina: retina == "y", dpi: dpi.map(Int.init) ?? GameScaling.standardDPI)
+    }
+
+    /// Whether a game would be drawn worse than it asks for while the client keeps the bottle as it is. Wine
+    /// halves the mouse position for a program that doesn't handle high DPI when the client runs in Retina mode:
+    /// none of Banished's buttons could be clicked. A game's small window is enlarged only by a higher system
+    /// DPI, and the DPI has to be written before its Wine starts. Retina for a game that does handle high DPI,
+    /// when the client doesn't run in it, only draws softer, which isn't worth restarting the client for.
+    static func needsRestart(drawn: Drawn, wanted: Drawn) -> Bool {
+        if drawn.retina != wanted.retina { return drawn.retina }
+        return wanted.dpi > drawn.dpi
     }
 }
 

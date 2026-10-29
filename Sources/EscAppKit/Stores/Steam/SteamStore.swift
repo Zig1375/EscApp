@@ -23,6 +23,11 @@ struct SteamStore: StoreModule {
     /// Its web helper moves between client versions (`bin/cef/cef.win7x64`, `cef.win64`).
     let chromiumHelpers = ["Program Files (x86)/Steam/bin/cef/*/steamwebhelper.exe"]
 
+    /// Steam draws some of its own windows at a fixed pixel size: the window that checks for a new version and
+    /// updates the client, and its dialogs. In Retina mode those came out at half the size of the rest of its
+    /// interface, too small to read, so its client keeps Wine's defaults and macOS stretches the picture.
+    let drawsAtScreenResolution = false
+
     /// Steam's overlay off: Steam loads `gameoverlayrenderer64.dll` into each game it starts to draw over its
     /// picture, and under Wine on the Mac that hook broke Among Us on every graphics backend, a frozen black
     /// window with the overlay's notice in its corner, or a crash creating its Direct3D device. A DLL Wine may

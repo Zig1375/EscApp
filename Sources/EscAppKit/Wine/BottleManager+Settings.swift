@@ -1,6 +1,11 @@
 import Foundation
 
 extension BottleManager {
+    /// Wine's Mac driver: Retina mode, and both ⌘ keys.
+    static let macDriverKey = #"Software\Wine\Mac Driver"#
+    /// Windows' desktop: the system DPI Wine draws a DPI-unaware program with (`GameScaling`).
+    static let desktopKey = #"Control Panel\Desktop"#
+
     /// `EmulateModeset` lets a game switch to a low resolution without touching the Mac's display.
     /// `StretchWindows` (EscApp's Wine) lets the player drag the corner of a game window that can't be resized:
     /// a Unity game with a fixed 1440×800 window was half the screen on a Retina Mac and couldn't be made bigger.
@@ -15,7 +20,7 @@ extension BottleManager {
     /// Both ⌘ keys reach Windows as Ctrl (`GameRecord.commandAsControl`); off, they are the Windows key.
     static func setCommandAsControl(bottle: URL, _ on: Bool) throws {
         for side in ["LeftCommandIsCtrl", "RightCommandIsCtrl"] {
-            try setRegistryString(bottle: bottle, key: #"Software\Wine\Mac Driver"#, name: side, value: on ? "y" : "n")
+            try setRegistryString(bottle: bottle, key: macDriverKey, name: side, value: on ? "y" : "n")
         }
     }
 

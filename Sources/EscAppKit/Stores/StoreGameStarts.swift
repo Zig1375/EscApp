@@ -7,7 +7,7 @@ import Foundation
 /// Such a game is either taken over as it runs (`adopt`: it shows as playing and its time counts), or, when the
 /// launch EscApp would have made differs from it, closed at once and started again the way EscApp starts it
 /// (`prepare`): a game whose settings EscApp hasn't found yet (never started through it, or "Find Launch Settings
-/// Again"), or one that needs another Wine tree or Retina mode than the client is running with.
+/// Again"), or one that its client's bottle would draw worse than it asks for (`StoreClient.needsRestart`).
 public enum StoreGameStarts {
     public enum Verdict: Equatable, Sendable {
         case adopt
@@ -34,15 +34,13 @@ public enum StoreGameStarts {
     ///     launched once and then sent to "Find Launch Settings Again", was taken over as it ran on DXVK's black
     ///     window instead of being searched for.
     ///   - age: how long its first process has run.
-    ///   - retina: whether the client's Wine draws in Retina mode, and whether the game would get it.
+    ///   - drawn: what the client's bottle draws with, and what the game asks for (`StoreClient.needsRestart`).
     static func verdict(settled: Bool, age: TimeInterval, running: GraphicsBackend?, wanted: GraphicsBackend?,
-                        retina: (runs: Bool, wanted: Bool)) -> Verdict {
+                        drawn: (runs: StoreClient.Drawn, wanted: StoreClient.Drawn)) -> Verdict {
         guard age < preparesWithin else { return .adopt }
         if !settled { return .prepare }
         if let wanted, running != wanted { return .prepare }
-        // The same check as `StoreClient.prepareForGame`: Retina for a game that doesn't handle it halves the
-        // mouse position. Retina off for one that does only draws softer, which isn't worth a restart.
-        return retina.runs && !retina.wanted ? .prepare : .adopt
+        return StoreClient.needsRestart(drawn: drawn.runs, wanted: drawn.wanted) ? .prepare : .adopt
     }
 
     /// The store games running in their bottles that aren't in `skipping` (the games EscApp started or already
@@ -69,14 +67,16 @@ public enum StoreGameStarts {
                                                                          override: nil) }
                 }
                 let settled = (game.launches ?? 0) > 0 && (game.backend ?? game.chosenBackend) != nil
+                let drawn = StoreClient.drawn(bottle)
+                let wantsRetina = GameSettings.retina(game.retina, dpiAware: info?.dpiAware ?? false)
+                let (_, dpi) = GameLauncher.drawing(for: game, retina: wantsRetina)
                 let verdict = verdict(settled: settled, age: now.timeIntervalSince(since),
                                       running: BackendTree.backend(of: wine.root), wanted: wanted,
-                                      retina: (StoreClient.runsRetina(bottle),
-                                               GameSettings.retina(game.retina, dpiAware: info?.dpiAware ?? false)))
+                                      drawn: (drawn, StoreClient.Drawn(retina: wantsRetina, dpi: dpi)))
                 let environment = WineEnvironment.make(host: [:], bottle: bottle.path,
                                                        fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
                 let session = GameSession(wine: wine, environment: environment, processID: first.pid,
-                                          scale: StoreClient.runsRetina(bottle) ? 1 / GameScaling.backingScale() : 1,
+                                          scale: drawn.retina ? 1 / GameScaling.backingScale() : 1,
                                           gameFolder: folder)
                 found.append(Found(game: game, verdict: verdict, session: session, since: since))
             }

@@ -73,6 +73,9 @@ public struct Store: Hashable, Sendable, Identifiable, RawRepresentable, Codable
 
     var chromiumHelpers: [String] { module.chromiumHelpers }
 
+    /// Whether the client is drawn at the screen's full resolution on a Retina display (`StoreClient.drawSharp`).
+    var drawsAtScreenResolution: Bool { module.drawsAtScreenResolution }
+
     func clientArguments(clientReady: Bool) -> [String] { module.clientArguments(clientReady: clientReady) }
 
     /// `clientArguments` for the client in `bottle` as it is now.

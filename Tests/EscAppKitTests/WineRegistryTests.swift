@@ -68,4 +68,15 @@ import Testing
         #expect(WindowsVersion.read(fromUserReg: userReg) == nil)
         #expect(WineRegistry.string(in: userReg, key: #"Control Panel\Desktop"#, name: "Nope") == nil)
     }
+
+    @Test func readsDWordsAndIgnoresOtherTypes() {
+        let key = #"Control Panel\Desktop"#
+        var text = WineRegistry.setDWord(in: userReg, key: key, name: "LogPixels", value: 192, now: now)
+        #expect(WineRegistry.dword(in: text, key: key, name: "logpixels") == 192)
+        // A string of that name isn't a DWORD, and neither is a value of another key.
+        text = WineRegistry.setString(in: text, key: key, name: "Wallpaper", value: "192", now: now)
+        #expect(WineRegistry.dword(in: text, key: key, name: "Wallpaper") == nil)
+        #expect(WineRegistry.dword(in: text, key: #"Control Panel"#, name: "LogPixels") == nil)
+        #expect(WineRegistry.dword(in: text, key: key, name: "Nope") == nil)
+    }
 }

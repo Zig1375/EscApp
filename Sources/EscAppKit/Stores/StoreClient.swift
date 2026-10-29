@@ -86,13 +86,15 @@ public struct StoreClient: Sendable {
 
     /// Gets the store's bottle ready to start one of its games with `wine` (the game's graphics backend): a
     /// client running in another Wine tree is closed first, since everything in a bottle shares one tree.
-    /// So is a client running in Retina mode when the game doesn't handle high DPI: Wine then halved the mouse
-    /// position for it, and none of Banished's buttons could be clicked.
+    /// So is a client whose bottle would draw the game worse than it asks for (`needsRestart`).
     /// Returns whether the bottle was idle, so the game's settings could be written into its registry.
-    public func prepareForGame(_ store: Store, wine: Wine, retina: Bool) async throws -> Bool {
+    public func prepareForGame(_ store: Store, wine: Wine, retina: Bool, dpi: Int) async throws -> Bool {
         if let running = runningWine(store) {
             let sameTree = running.root.standardized == wine.root.standardized
-            guard !sameTree || Self.runsRetina(bottle(for: store)) && !retina else { return false }
+            let wanted = Drawn(retina: retina, dpi: dpi)
+            guard !sameTree || Self.needsRestart(drawn: Self.drawn(bottle(for: store)), wanted: wanted) else {
+                return false
+            }
             await shutDown(store)
         }
         _ = try await prepare(store, runtime: nil, wine: wine)
@@ -177,7 +179,7 @@ public struct StoreClient: Sendable {
             if let runtime { try await BottleManager(paths: paths, host: host).ensureBottle(for: store.bottleID,
                                                                                             runtime: runtime) }
             try ChromiumHelper.wrap(store, in: bottle(for: store))
-            try Self.drawSharp(bottle(for: store))
+            try Self.drawSharp(bottle(for: store), retina: store.drawsAtScreenResolution)
             try Self.setUpForGames(bottle(for: store))
             await store.module.prepareToStart(self, bottle: bottle(for: store), wine: wine)
         }

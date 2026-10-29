@@ -25,6 +25,11 @@ protocol StoreModule: Sendable {
     /// for one folder name.
     var chromiumHelpers: [String] { get }
 
+    /// Whether the client's window is drawn at the screen's full resolution on a Retina display: Wine's Retina
+    /// mode and the DPI to match (`StoreClient.drawSharp`). False for a client whose own windows are drawn at a
+    /// fixed pixel size: in Retina mode they come out at half the size of the rest of its interface.
+    var drawsAtScreenResolution: Bool { get }
+
     /// What the client and its games get in their environment. Launchers that embed Qt WebEngine (CD Projekt's,
     /// Ubisoft's) are a Chromium too, and drew nothing with GPU compositing, like Steam's own window.
     var environment: [String: String] { get }
@@ -87,6 +92,7 @@ struct StoreInstaller: Sendable {
 extension StoreModule {
     var gameFolders: [String] { [] }
     var chromiumHelpers: [String] { [] }
+    var drawsAtScreenResolution: Bool { true }
     var environment: [String: String] { [:] }
     func clientArguments(clientReady: Bool) -> [String] { [] }
     var launchesGames: Bool { true }

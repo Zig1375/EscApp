@@ -3,11 +3,12 @@ import Foundation
 import Testing
 
 @Suite struct StoreGameStartsTests {
+    /// What the client's bottle draws with, and what the game asks for.
     func verdict(settled: Bool = true, age: TimeInterval = 4, running: GraphicsBackend? = .dxvk,
-                 wanted: GraphicsBackend? = .dxvk, runsRetina: Bool = true,
-                 wantsRetina: Bool = true) -> StoreGameStarts.Verdict {
+                 wanted: GraphicsBackend? = .dxvk, drawn: StoreClient.Drawn = .init(retina: true, dpi: 192),
+                 wants: StoreClient.Drawn = .init(retina: true, dpi: 96)) -> StoreGameStarts.Verdict {
         StoreGameStarts.verdict(settled: settled, age: age, running: running, wanted: wanted,
-                                retina: (runsRetina, wantsRetina))
+                                drawn: (drawn, wants))
     }
 
     @Test func gameWithoutFoundSettingsIsPrepared() {
@@ -24,9 +25,18 @@ import Testing
     }
 
     @Test func retinaForAGameWithoutHighDPIIsPrepared() {
-        #expect(verdict(runsRetina: true, wantsRetina: false) == .prepare)
+        // Wine halves the mouse position of a program that doesn't handle high DPI while the client runs in
+        // Retina mode: none of Banished's buttons could be clicked.
+        #expect(verdict(drawn: .init(retina: true, dpi: 192), wants: .init(retina: false, dpi: 96)) == .prepare)
         // Retina off for a game that handles it only draws softer.
-        #expect(verdict(runsRetina: false, wantsRetina: true) == .adopt)
+        #expect(verdict(drawn: .init(retina: false, dpi: 96), wants: .init(retina: true, dpi: 96)) == .adopt)
+    }
+
+    @Test func smallWindowOfAGameIsPreparedFor() {
+        // Steam's client keeps Wine's defaults now, so a game's own small window needs the client restarted to
+        // get the system DPI that enlarges it. A bottle that already has that DPI is left alone.
+        #expect(verdict(drawn: .init(retina: false, dpi: 96), wants: .init(retina: false, dpi: 192)) == .prepare)
+        #expect(verdict(drawn: .init(retina: false, dpi: 192), wants: .init(retina: false, dpi: 192)) == .adopt)
     }
 
     @Test func unknownBackendDoesNotRestart() {
@@ -35,7 +45,8 @@ import Testing
 
     @Test func gameRunningForAWhileIsNeverClosed() {
         // EscApp opened while the game ran: it is taken over, not ended mid-play.
-        #expect(verdict(settled: false, age: 600, running: .dxvk, wanted: .dxmt, wantsRetina: false) == .adopt)
+        #expect(verdict(settled: false, age: 600, running: .dxvk, wanted: .dxmt,
+                        wants: .init(retina: false, dpi: 96)) == .adopt)
     }
 
     @Test func treeBackendComesFromItsMarker() throws {

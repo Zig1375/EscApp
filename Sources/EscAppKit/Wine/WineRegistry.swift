@@ -18,6 +18,18 @@ public enum WineRegistry {
         return nil
     }
 
+    /// `"Name"=dword:00000060` → 96. Other value types, and a value that isn't there, return nil.
+    public static func dword(in text: String, key: String, name: String) -> UInt32? {
+        let lines = text.components(separatedBy: "\n")
+        guard let section = sectionRange(in: lines, key: key) else { return nil }
+        for line in lines[section] {
+            if let (lineName, value) = parseDWord(line), lineName.caseInsensitiveCompare(name) == .orderedSame {
+                return value
+            }
+        }
+        return nil
+    }
+
     /// Returns `text` with the value set, adding the key if it doesn't exist yet.
     public static func setString(in text: String, key: String, name: String, value: String,
                                  now: Date = Date()) -> String {
@@ -81,6 +93,14 @@ public enum WineRegistry {
               let (value, tail) = readQuoted(rest.dropFirst()), tail.isEmpty
         else { return nil }
         return (name, value)
+    }
+
+    /// `"Name"=dword:00000060` → (Name, 96). Strings and other value types return nil.
+    private static func parseDWord(_ line: String) -> (String, UInt32)? {
+        guard line.hasPrefix("\""), let (name, rest) = readQuoted(Substring(line)),
+              rest.hasPrefix("=dword:")
+        else { return nil }
+        return UInt32(rest.dropFirst("=dword:".count), radix: 16).map { (name, $0) }
     }
 
     /// Reads a quoted, backslash-escaped string at the start of `text`; returns it and what follows. `\x30b4` is

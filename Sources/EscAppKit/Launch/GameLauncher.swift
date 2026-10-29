@@ -17,7 +17,8 @@ public struct GameLauncher: Sendable {
         public var log: URL
         /// How many times larger Wine draws the game's window (`GameScaling`).
         public var scale: Double = 1
-        /// Whether Wine draws the game in Retina mode (`GameSettings.retina`).
+        /// Whether Wine draws the game in Retina mode (`GameSettings.retina`), or the client's own setting when
+        /// its bottle was already running and the game had to keep it.
         public var retina = false
         /// A store game: the store's client and what makes it start the game. Nil starts the exe itself.
         public var client: (url: URL, arguments: [String])?
@@ -64,11 +65,11 @@ public struct GameLauncher: Sendable {
 
     /// A store game's client, made ready for it, and the command that starts the game through the client.
     /// Returns whether the bottle was idle; always for a game without a store.
-    private func prepareStore(for game: GameRecord, wine: Wine, retina: Bool) async throws
+    private func prepareStore(for game: GameRecord, wine: Wine, retina: Bool, dpi: Int) async throws
         -> (idle: Bool, client: (url: URL, arguments: [String])?) {
         guard let store = game.store else { return (true, nil) }
         let stores = StoreClient(paths: paths, host: host)
-        let idle = try await stores.prepareForGame(store, wine: wine, retina: retina)
+        let idle = try await stores.prepareForGame(store, wine: wine, retina: retina, dpi: dpi)
         guard store.launchesGames, let id = game.storeID else { return (idle, nil) }
         return (idle, try stores.playCommand(store, storeID: id))
     }
@@ -101,13 +102,17 @@ public struct GameLauncher: Sendable {
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder, d3dmetal: d3dmetal?.folder)
         // Retina only for games that say they handle high DPI; others would draw a tiny interface.
         let retina = GameSettings.retina(game.retina, dpiAware: info.dpiAware)
-        let (idle, client) = try await prepareStore(for: game, wine: wine, retina: retina)
+        let drawing = Self.drawing(for: game, retina: retina, predicted: files.window)
+        let (idle, client) = try await prepareStore(for: game, wine: wine, retina: retina, dpi: drawing.dpi)
         let fastSync = WineEnvironment.fastSync(for: game, wine: wine)
         if game.store == nil { await Self.stopWine(in: bottle, unless: fastSync) }
         // With the store's client already running in the right Wine, its registry can't be written: the game
         // keeps the settings the bottle had when the client started.
         let scale = idle ? try Self.configure(bottle: bottle, for: game, retina: retina,
                                               screen: GameScaling.availableScreen(), predicted: files.window) : 1
+        // What the game is really drawn with: while the client keeps the bottle, that is the client's own
+        // setting, and the log and the measuring of its window have to follow it rather than the game's wish.
+        let drawnRetina = idle ? retina : StoreClient.drawn(bottle).retina
         try files.link(into: bottle, registry: idle)
         try BackendTree.prepareBottle(bottle, for: backend, wine: wine)
         try await insertDisc(of: game, into: bottle)
@@ -127,9 +132,10 @@ public struct GameLauncher: Sendable {
         let chromium = game.store != nil ? nil
             : game.chromium ?? (info.chromium ? .inProcessGPU : nil)
         return Prepared(game: game, info: info, backend: backend, bottle: bottle, wine: wine,
-                        environment: environment, log: newLogFile(for: game.id), scale: scale, retina: retina,
-                        client: client, gameFolder: folder, chromium: chromium, storeClient: storeClient,
-                        locale: files.locale, rtps: files.rtps.map { "\($0.rtp.engine)/\($0.rtp.name)" },
+                        environment: environment, log: newLogFile(for: game.id), scale: scale,
+                        retina: drawnRetina, client: client, gameFolder: folder, chromium: chromium,
+                        storeClient: storeClient, locale: files.locale,
+                        rtps: files.rtps.map { "\($0.rtp.engine)/\($0.rtp.name)" },
                         redists: files.redists, d3dmetal: d3dmetal?.info,
                         notes: files.notes + moduleNotes(game, info, runtime))
     }
@@ -164,18 +170,16 @@ public struct GameLauncher: Sendable {
         // crashes itself, from the log.
         try BottleManager.disableCrashDialog(bottle: bottle)
         try WindowsFonts.replaceJapaneseFonts(bottle: bottle)
-        let macDriver = #"Software\Wine\Mac Driver"#
-        try BottleManager.setRegistryString(bottle: bottle, key: macDriver, name: "RetinaMode",
+        try BottleManager.setRegistryString(bottle: bottle, key: BottleManager.macDriverKey, name: "RetinaMode",
                                             value: retina ? "y" : "n")
         let command = game.commandAsControl != false
         try BottleManager.setCommandAsControl(bottle: bottle, command)
         // Full-screen games get an emulated display mode, small windowed ones a system DPI that enlarges them
         // (`GameScaling`), and fixed-size windows can be stretched.
         try BottleManager.enableScaling(bottle: bottle)
-        let scale = GameScaling.scale(setting: game.scaling ?? .auto, learned: game.window ?? predicted,
-                                      dpiAware: retina, screen: screen)
-        try BottleManager.setRegistryDWord(bottle: bottle, key: #"Control Panel\Desktop"#, name: "LogPixels",
-                                           value: UInt32(GameScaling.dpi(for: scale)))
+        let (scale, dpi) = Self.drawing(for: game, retina: retina, predicted: predicted, screen: screen)
+        try BottleManager.setRegistryDWord(bottle: bottle, key: BottleManager.desktopKey, name: "LogPixels",
+                                           value: UInt32(dpi))
         return scale
     }
 

@@ -91,7 +91,9 @@ struct GamePage: View {
                     DirectX12Tip(game: game, library: library)
                         .padding(.top, 4)
                 }
-                if GameSettings.retina(game.retina, dpiAware: library.infos[game.id]?.dpiAware ?? false) {
+                if StoreClient.retina(GameSettings.retina(game.retina,
+                                                          dpiAware: library.infos[game.id]?.dpiAware ?? false),
+                                      for: game.store) {
                     RetinaClicksTip(game: game, library: library)
                         .padding(.top, 4)
                 }
@@ -284,10 +286,16 @@ private struct DetailsColumn: View {
             }
             DetailRow(label: "Graphics") { Text(graphics) }
             DetailRow(label: "Retina") {
-                DesignSelect(selection: Binding(get: { game.retina ?? .auto }, set: { setting in
-                    library.changeSetting(of: game.id) { $0.retina = setting == .auto ? nil : setting }
-                }), options: GameScaling.Setting.allCases, title: retinaTitle)
-                .disabled(library.isPlaying(game.id))
+                if let store = game.store, !StoreClient.retina(true, for: store) {
+                    // The store's client keeps the shared bottle out of Retina mode (`StoreClient.retina`): "On"
+                    // here would be a choice that does nothing.
+                    Text("\(AdvancedPage.settingTitle(.off)), like \(store.name)")
+                } else {
+                    DesignSelect(selection: Binding(get: { game.retina ?? .auto }, set: { setting in
+                        library.changeSetting(of: game.id) { $0.retina = setting == .auto ? nil : setting }
+                    }), options: GameScaling.Setting.allCases, title: retinaTitle)
+                    .disabled(library.isPlaying(game.id))
+                }
             }
             DetailRow(label: "Played") { Text(played) }
             DetailRow(label: "Added") { Text(game.addedAt.formatted(date: .long, time: .omitted)) }

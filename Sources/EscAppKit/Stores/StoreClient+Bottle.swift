@@ -46,6 +46,16 @@ extension StoreClient {
         return Drawn(retina: retina == "y", dpi: dpi.map(Int.init) ?? GameScaling.standardDPI)
     }
 
+    /// Whether a game of `store` gets Wine's Retina mode. Retina belongs to the whole bottle rather than to one
+    /// program, and the client runs in that bottle too: a client whose own windows are drawn at a fixed pixel size
+    /// (Steam) can't be in Retina mode, so its games run without it — softer, at the size they should be. A game
+    /// started while such a client already runs keeps its settings (`needsRestart`); this is the same rule for a
+    /// client this launch starts itself. Among Us started from EscApp with Steam closed had Retina written into the
+    /// bottle before Steam started in it, and Steam's own window came out at half its size and stayed that way.
+    public static func retina(_ wanted: Bool, for store: Store?) -> Bool {
+        wanted && (store?.drawsAtScreenResolution ?? true)
+    }
+
     /// Whether a game would be drawn worse than it asks for while the client keeps the bottle as it is. Wine
     /// halves the mouse position for a program that doesn't handle high DPI when the client runs in Retina mode:
     /// none of Banished's buttons could be clicked. A game's small window is enlarged only by a higher system

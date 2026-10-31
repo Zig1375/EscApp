@@ -76,9 +76,10 @@ xcodebuild -project EscApp.xcodeproj -scheme EscApp -destination 'platform=macOS
   line in `Store.allCases`, and its logo, colour and purpose in the app's `StoreBar.swift`. A client whose own
   windows have a fixed pixel size sets `drawsAtScreenResolution = false` — Steam does, because Wine's Retina mode
   drew its update window and dialogs at half the size of the rest of its interface — and then macOS stretches the
-  picture of its whole interface. Games are unaffected: `GameLauncher.drawing` is the one place that computes the
-  scale and DPI written into the bottle, and `StoreClient.needsRestart` says when a game's own settings mean the
-  client must be restarted first.
+  picture of its whole interface. Its games run without Retina too (`StoreClient.retina`): Retina belongs to the
+  whole bottle, and a client started after a game wrote it there came out at half size. Their scale and DPI are
+  still their own: `GameLauncher.drawing` is the one place that computes what is written into the bottle, and
+  `StoreClient.needsRestart` says when a game's own settings mean the client must be restarted first.
 - Game modules (`docs/GAME-MODULES.md`): what particular games need, as data in the sibling repo `../EscApp-Games`,
   whose CI builds `games.json`. `GameModulesUpdater` fetches it daily into `GameModules.json` (the app's copy is
   `Resources/game-modules.json`, rebuilt with `tools/build_index.py --output` there); `GameModules` finds a game's

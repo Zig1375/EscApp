@@ -107,7 +107,10 @@ struct AdvancedPage: View {
         case .off: return "The game's window keeps its own size. Full-screen games still fill the screen."
         case .auto: break
         }
-        let retina = GameSettings.retina(game.retina, dpiAware: library.infos[game.id]?.dpiAware ?? false)
+        // A store's client shares the game's bottle, and one that can't draw in Retina mode takes the game's
+        // with it (`StoreClient.retina`).
+        let dpiAware = library.infos[game.id]?.dpiAware ?? false
+        let retina = StoreClient.retina(GameSettings.retina(game.retina, dpiAware: dpiAware), for: game.store)
         switch GameSettings.autoScaling(for: game, retina: retina) {
         case .notSeenYet:
             return "Auto: decided after the first launch, from the size of the game's window"

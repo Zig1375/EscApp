@@ -17,8 +17,9 @@ public struct GameLauncher: Sendable {
         public var log: URL
         /// How many times larger Wine draws the game's window (`GameScaling`).
         public var scale: Double = 1
-        /// Whether Wine draws the game in Retina mode (`GameSettings.retina`), or the client's own setting when
-        /// its bottle was already running and the game had to keep it.
+        /// Whether Wine draws the game in Retina mode (`GameSettings.retina`, narrowed by its store's client,
+        /// `StoreClient.retina`), or the client's own setting when its bottle was already running and the game
+        /// had to keep it.
         public var retina = false
         /// A store game: the store's client and what makes it start the game. Nil starts the exe itself.
         public var client: (url: URL, arguments: [String])?
@@ -100,8 +101,9 @@ public struct GameLauncher: Sendable {
                                         fetch: fetchGameFiles, progress: progress)
         progress(.graphics(backend, directX: info.directX.max()))
         let wine = try BackendTree.wine(for: backend, runtimeFolder: runtimeFolder, d3dmetal: d3dmetal?.folder)
-        // Retina only for games that say they handle high DPI; others would draw a tiny interface.
-        let retina = GameSettings.retina(game.retina, dpiAware: info.dpiAware)
+        // Retina only for games that say they handle high DPI; others would draw a tiny interface. A store's
+        // client shares the bottle, and one that can't draw in Retina mode takes the game's with it.
+        let retina = StoreClient.retina(GameSettings.retina(game.retina, dpiAware: info.dpiAware), for: game.store)
         let drawing = Self.drawing(for: game, retina: retina, predicted: files.window)
         let (idle, client) = try await prepareStore(for: game, wine: wine, retina: retina, dpi: drawing.dpi)
         let fastSync = WineEnvironment.fastSync(for: game, wine: wine)

@@ -47,6 +47,15 @@ import Testing
         #expect(StoreClient.drawn(temp.url) == StoreClient.Drawn(retina: false, dpi: 96))
     }
 
+    @Test func aClientsGamesKeepItsWayOfDrawing() {
+        // Among Us started from EscApp with Steam closed: Retina was written into the bottle for the game, Steam
+        // started in the same bottle, and its own window came out at half its size.
+        #expect(StoreClient.retina(true, for: .steam) == false)
+        #expect(StoreClient.retina(true, for: .epic))
+        #expect(StoreClient.retina(false, for: nil) == false)
+        #expect(StoreClient.retina(true, for: nil))
+    }
+
     @Test func aRetinaClientIsKnownFromItsBottle() throws {
         let temp = try TempFolder()
         try "WINE REGISTRY Version 2\n".write(to: temp.url.appending(path: "user.reg"), atomically: true,

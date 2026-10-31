@@ -68,7 +68,8 @@ public enum StoreGameStarts {
                 }
                 let settled = (game.launches ?? 0) > 0 && (game.backend ?? game.chosenBackend) != nil
                 let drawn = StoreClient.drawn(bottle)
-                let wantsRetina = GameSettings.retina(game.retina, dpiAware: info?.dpiAware ?? false)
+                let gameRetina = GameSettings.retina(game.retina, dpiAware: info?.dpiAware ?? false)
+                let wantsRetina = StoreClient.retina(gameRetina, for: game.store)
                 let (_, dpi) = GameLauncher.drawing(for: game, retina: wantsRetina)
                 let verdict = verdict(settled: settled, age: now.timeIntervalSince(since),
                                       running: BackendTree.backend(of: wine.root), wanted: wanted,

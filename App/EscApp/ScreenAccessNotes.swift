@@ -5,7 +5,6 @@ import SwiftUI
 /// It stays small on purpose: the game plays either way, and the window after setup already asked once.
 struct ScreenAccessNote: View {
     @State private var allowed: Bool
-    @Environment(\.openWindow) private var openWindow
 
     /// `allowed` is for snapshots (`ScreenAccessSnapshots`); the line itself follows the permission.
     init(allowed: Bool? = nil) {
@@ -20,7 +19,7 @@ struct ScreenAccessNote: View {
                         .accessibilityHidden(true)
                     Text("EscApp can't see game windows yet, so it may not find the right settings by itself.")
                         .fixedSize(horizontal: false, vertical: true)
-                    Button("Allow…") { openWindow(id: ScreenAccess.windowID) }
+                    Button("Allow…") { ScreenAccess.show() }
                         .buttonStyle(.plain)
                         .fontWeight(.semibold)
                         .foregroundStyle(Color.brand)
@@ -42,8 +41,8 @@ struct ScreenAccessNote: View {
 }
 
 /// On the first-launch screen while EscApp can't see game windows: the search it shows can't be trusted to find
-/// settings that work, since a game frozen on a black window may look like it runs. Text only: the cover is over
-/// everything, and turning the permission on means reopening EscApp, which would end the search.
+/// settings that work, since a game frozen on a black window may look like it runs. "Allow…" opens the steps over
+/// the cover (`ScreenAccess.show`).
 struct ScreenAccessWarning: View {
     private let allowed: Bool
 
@@ -64,10 +63,14 @@ struct ScreenAccessWarning: View {
                         .fontWeight(.semibold)
                     Text("""
                         Without the Screen Recording permission, EscApp can't guarantee that the settings it finds \
-                        really work: a game stuck on a black screen may look like it runs. You can allow it in \
-                        Settings › General.
+                        really work: a game stuck on a black screen may look like it runs.
                         """)
                         .fixedSize(horizontal: false, vertical: true)
+                    // The steps window opens over the cover; once the switch is on macOS reopens EscApp, which
+                    // ends this search, and the next launch searches again with the picture.
+                    Button("Allow…") { ScreenAccess.show() }
+                        .buttonStyle(CompactButtonStyle(kind: .primary))
+                        .padding(.top, 4)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }

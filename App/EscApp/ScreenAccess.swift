@@ -24,6 +24,16 @@ enum ScreenAccess {
         _ = CGRequestScreenCaptureAccess()
     }
 
+    /// Asks for the steps window from anywhere, the first-launch cover too: that is a plain AppKit window,
+    /// outside SwiftUI's scenes, where `openWindow` can't open one. The library window's `ScreenAccessOffer`
+    /// opens it, and EscApp comes forward, so the window is over the cover.
+    static let showRequest = Notification.Name("EscAppShowScreenAccess")
+
+    @MainActor static func show() {
+        NSApp.activate()
+        NotificationCenter.default.post(name: showRequest, object: nil)
+    }
+
     /// Asks macOS first: that puts EscApp in the Screen Recording list for this signature. After the permission
     /// was reset, or EscApp came with another signature, the list had no EscApp to turn on, or a stale one whose
     /// switch did nothing.
@@ -35,18 +45,23 @@ enum ScreenAccess {
     }
 }
 
-/// Opens the window once, after the first setup, while the permission isn't given.
+/// Opens the window once, after the first setup, while the permission isn't given, and whenever a note asks.
 struct ScreenAccessOffer: ViewModifier {
     let ready: Bool
     @Environment(\.openWindow) private var openWindow
 
     func body(content: Content) -> some View {
-        content.onChange(of: ready, initial: true) {
-            let defaults = UserDefaults.standard
-            guard ready, !defaults.bool(forKey: ScreenAccess.offeredKey), !ScreenAccess.allowed else { return }
-            defaults.set(true, forKey: ScreenAccess.offeredKey)
-            openWindow(id: ScreenAccess.windowID)
-        }
+        content
+            .onChange(of: ready, initial: true) {
+                let defaults = UserDefaults.standard
+                guard ready, !defaults.bool(forKey: ScreenAccess.offeredKey), !ScreenAccess.allowed else { return }
+                defaults.set(true, forKey: ScreenAccess.offeredKey)
+                openWindow(id: ScreenAccess.windowID)
+            }
+            // "Allow…" in a note about the permission (`ScreenAccess.show`).
+            .onReceive(NotificationCenter.default.publisher(for: ScreenAccess.showRequest)) { _ in
+                openWindow(id: ScreenAccess.windowID)
+            }
     }
 }
 

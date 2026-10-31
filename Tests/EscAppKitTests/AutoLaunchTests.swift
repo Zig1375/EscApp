@@ -156,7 +156,9 @@ import Testing
     func remembered() throws -> GraphicsBackend? { try GameLibrary.load(from: paths.library)[game.id]?.backend }
 
     @Test func aGameThatWorksNeedsOneAttempt() async throws {
-        let starter = try FakeStarter([.dxvk: .works], logs: logs())
+        // Its window stays up long enough for a busy CI runner's first look: one seen for 0.3 s could be missed, and
+        // then no size was learned.
+        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.02, exitAt: 1.5)], logs: logs())
         let learned = Mutex<Bool?>(nil)
         let result = try await play(starter) { event in
             if case let .working(_, wasLearned) = event { learned.withLock { $0 = wasLearned } }

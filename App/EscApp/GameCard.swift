@@ -18,6 +18,8 @@ struct GameCard: View {
     private var waitsForUpdate: Bool { state == nil && library.isUpdatingComponents }
     /// Opened during the update (a double-click on its exe): it starts by itself when the update finishes.
     private var startsAfterUpdate: Bool { waitsForUpdate && library.startsAfterUpdate.contains(game.id) }
+    /// The game's folder was moved or deleted: the card says so, since its icon is gone too.
+    private var filesMissing: Bool { state == nil && library.missingFiles.contains(game.id) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -47,7 +49,7 @@ struct GameCard: View {
         .contextMenu {
             if state == nil {
                 Button("Play") { library.play(game) }
-                    .disabled(!library.canPlay(game))
+                    .disabled(!library.canPlay(game) || filesMissing)
             }
             Button("About", action: showDetails)
             if case .running? = state {
@@ -71,6 +73,8 @@ struct GameCard: View {
 
     private func activate() {
         switch state {
+        // Nothing to start: the game's page says what happened and how to get it back.
+        case nil where filesMissing: showDetails()
         case nil: if library.canPlay(game) { library.play(game) }
         case .running?: library.showGame(game)
         case .starting?: break
@@ -89,16 +93,17 @@ struct GameCard: View {
                 LinearGradient(stops: [.init(color: .clear, location: 0.45), .init(color: .black.opacity(0.72),
                                                                                     location: 1)],
                                startPoint: .top, endPoint: .bottom)
-                    .opacity(isHovered || state != nil || startsAfterUpdate ? 1 : 0)
+                    .opacity(isHovered || state != nil || startsAfterUpdate || filesMissing ? 1 : 0)
                     .allowsHitTesting(false)
             }
             .overlay {
-                Image(systemName: waitsForUpdate ? "hourglass" : "play.fill")
+                // A grey symbol of what's wrong instead of Play when the game can't start from here.
+                Image(systemName: filesMissing ? "questionmark.folder" : waitsForUpdate ? "hourglass" : "play.fill")
                     .font(.system(size: 20, weight: .bold))
                     .foregroundStyle(.white)
-                    .offset(x: waitsForUpdate ? 0 : 2)
+                    .offset(x: waitsForUpdate || filesMissing ? 0 : 2)
                     .frame(width: 52, height: 52)
-                    .background(waitsForUpdate ? Color.gray : Color.brand, in: .circle)
+                    .background(waitsForUpdate || filesMissing ? Color.gray : Color.brand, in: .circle)
                     // A white ring keeps the amber circle apart from a brown or orange cover.
                     .overlay { Circle().strokeBorder(.white.opacity(0.9), lineWidth: 2) }
                     .shadow(color: .black.opacity(0.4), radius: 10, y: 3)
@@ -144,6 +149,17 @@ struct GameCard: View {
                 runningButtons { Text("Show Game") }
                 runningButtons { Image(systemName: "arrow.up.forward.app") }
             }
+        // Before anything else the game might need: without its files nothing else matters.
+        case nil where filesMissing && !isHovered:
+            HStack(spacing: 6) {
+                Image(systemName: "questionmark.folder")
+                Text("Files not found").lineLimit(1)
+            }
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 34, alignment: .leading)
+            .padding(.leading, 4)
+            .help(Text("EscApp can't find \(game.executable)"))
         // A DirectX 12 game without D3DMetal says so before the click, which opens the explanation.
         case nil where library.directX12Needs[game.id] != nil && !waitsForUpdate && !isHovered:
             HStack(spacing: 6) {
@@ -165,7 +181,11 @@ struct GameCard: View {
             .padding(.leading, 4)
         case nil:
             VStack(spacing: 6) {
-                if waitsForUpdate {
+                if filesMissing {
+                    Text("Files not found")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.white)
+                } else if waitsForUpdate {
                     Group {
                         if startsAfterUpdate {
                             Text("Starts after the update")
@@ -319,7 +339,7 @@ struct PlayButton: View {
                     .padding(.horizontal, large ? 12 : 0)
             }
             .buttonStyle(BrandButtonStyle(kind: .primary, height: large ? 40 : 34))
-            .disabled(!library.canPlay(game))
+            .disabled(!library.canPlay(game) || library.missingFiles.contains(game.id))
             .help(library.isUpdatingComponents ? Text("Playable after the update") : Text(verbatim: ""))
         }
     }

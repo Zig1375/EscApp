@@ -33,6 +33,9 @@ final class LibraryModel {
     /// Games whose cover the player chose, which "Remove Cover" can take away.
     private(set) var customCovers: Set<GameID> = []
     private(set) var infos: [GameID: ExecutableInfo] = [:]
+    /// Games whose program is no longer where the library says: the folder was moved or deleted (Daughter For
+    /// Dessert's chapters 7–10, unpacked and later removed, kept their cards with a blank square and no reason).
+    private(set) var missingFiles: Set<GameID> = []
     /// DirectX 12 games that can't start until D3DMetal is added (`LibraryModel+DirectX12`).
     var directX12Needs: [GameID: DirectX12Need] = [:]
     var states: [GameID: PlayState] = [:]
@@ -125,6 +128,7 @@ final class LibraryModel {
             .sorted { ($0.lastPlayed ?? $0.addedAt) > ($1.lastPlayed ?? $1.addedAt) }
         // Only from a library that was read: an unreadable Games.json must not take every cover with it.
         if let loaded { CustomCovers.prune(keeping: Set(loaded.games.map(\.id)), paths: paths) }
+        refreshMissingFiles()
         for game in games where icons[game.id] == nil { loadIcon(for: game) }
         // Asked again on each reload: Steam downloads a new game's cover some time after the game appears.
         for game in games where covers[game.id] == nil { loadCover(for: game) }
@@ -324,7 +328,7 @@ final class LibraryModel {
         loadCover(for: game)
     }
 
-    private func loadIcon(for game: GameRecord) {
+    fileprivate func loadIcon(for game: GameRecord) {
         let exe = URL(filePath: game.executable)
         Task.detached(priority: .utility) {
             guard let info = try? ExecutableInfo.read(exe) else { return }
@@ -338,6 +342,17 @@ final class LibraryModel {
                 if fullBleed { self.fullBleedIcons.insert(game.id) } else { self.fullBleedIcons.remove(game.id) }
             }
         }
+    }
+}
+
+extension LibraryModel {
+    /// Checked on every reload and whenever EscApp comes to the front, since the folder is usually put back or
+    /// removed in Finder. A game whose program is back gets its icon read again.
+    func refreshMissingFiles() {
+        let missing = Set(games.filter { !FileManager.default.fileExists(atPath: $0.executable) }.map(\.id))
+        guard missing != missingFiles else { return }
+        for game in games where missingFiles.contains(game.id) && !missing.contains(game.id) { loadIcon(for: game) }
+        missingFiles = missing
     }
 }
 

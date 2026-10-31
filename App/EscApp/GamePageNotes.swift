@@ -42,6 +42,42 @@ struct RetinaClicksTip: View {
 
 /// Under the actions of a DirectX 12 game while D3DMetal isn't added (`DirectX12Need`): what the game needs and
 /// the way to it, before the player tries Play and learns it from a message.
+/// The game's program is no longer where it was (`LibraryModel.missingFiles`): where it was looked for, and the
+/// two ways back. Same amber box as the DirectX 12 tip.
+struct MissingFilesNote: View {
+    let game: GameRecord
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "questionmark.folder")
+                .font(.system(size: 13, weight: .medium))
+                .padding(.top, 1)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("""
+                    EscApp can't find this game's files. If you moved its folder, open the game from its new \
+                    place. If you deleted it, put it back.
+                    """)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(verbatim: game.executable)
+                    .font(.system(size: 11))
+                    .lineLimit(2)
+                    .truncationMode(.middle)
+                    .textSelection(.enabled)
+                    .opacity(0.8)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .font(.system(size: 13))
+        .foregroundStyle(Color.warnText)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .frame(maxWidth: 460, alignment: .leading)
+        .background(Color.warnBackground, in: .rect(cornerRadius: 10, style: .continuous))
+        .overlay { RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Color.warnBorder) }
+    }
+}
+
 struct DirectX12Tip: View {
     let game: GameRecord
     let library: LibraryModel

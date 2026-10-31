@@ -87,7 +87,10 @@ struct GamePage: View {
                         HStack(spacing: 8) { secondaryActions(game) }
                     }
                 }
-                if library.directX12Needs[game.id] != nil {
+                if library.missingFiles.contains(game.id) {
+                    MissingFilesNote(game: game)
+                        .padding(.top, 4)
+                } else if library.directX12Needs[game.id] != nil {
                     DirectX12Tip(game: game, library: library)
                         .padding(.top, 4)
                 }

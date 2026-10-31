@@ -63,7 +63,8 @@ extension LibraryModel {
     }
 
     func play(_ game: GameRecord) {
-        guard states[game.id] == nil, !waitsForUpdate(game), !askedForDirectX12(game) else { return }
+        guard states[game.id] == nil, !reportedMissingFiles(game), !waitsForUpdate(game),
+              !askedForDirectX12(game) else { return }
         states[game.id] = .starting
         launch = Launch(id: game.id, name: game.name, firstTime: (game.launches ?? 0) == 0)
         let control = LaunchControl()
@@ -106,6 +107,19 @@ extension LibraryModel {
                 launchFailed(game, error)
             }
         }
+    }
+
+    /// Play on a game whose program is gone: say so plainly instead of a launch that fails somewhere in Wine.
+    /// Checked again first, in case the folder came back since the card was drawn. True when it was said.
+    private func reportedMissingFiles(_ game: GameRecord) -> Bool {
+        refreshMissingFiles()
+        guard missingFiles.contains(game.id) else { return false }
+        notice = Notice(title: String(localized: "\(game.name)'s files are missing"),
+                        message: String(localized: """
+                            EscApp can't find \(game.executable). If you moved the game's folder, open the game \
+                            from its new place. If you deleted it, put it back, or delete the game from EscApp.
+                            """))
+        return true
     }
 
     /// A launch that couldn't start the game at all.

@@ -9,6 +9,7 @@ extension LibraryModel {
         center.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated {
                 self.coolTask?.cancel()
+                self.refreshMissingFiles()
                 self.warmLastPlayed()
             }
         }

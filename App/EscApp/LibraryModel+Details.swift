@@ -71,8 +71,13 @@ extension LibraryModel {
         }
     }
 
+    /// With the program gone, the nearest folder that's still there: selecting a missing file did nothing at all.
     func showInFinder(_ game: GameRecord) {
-        NSWorkspace.shared.activateFileViewerSelecting([URL(filePath: game.executable)])
+        var url = URL(filePath: game.executable)
+        while !FileManager.default.fileExists(atPath: url.path(percentEncoded: false)), url.pathComponents.count > 1 {
+            url = url.deletingLastPathComponent()
+        }
+        NSWorkspace.shared.activateFileViewerSelecting([url])
     }
 
     func latestLog(for game: GameRecord) -> URL? {

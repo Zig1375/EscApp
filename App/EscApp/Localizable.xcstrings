@@ -25622,6 +25622,266 @@
           }
         }
       }
+    },
+    "%@'s files are missing": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Dateien von %@ fehlen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan los archivos de %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Les fichiers de %@ sont introuvables"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mancano i file di %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@のファイルが見つかりません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ 파일을 찾을 수 없습니다"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файлы игры %@ не найдены"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找不到 %@ 的文件"
+          }
+        }
+      }
+    },
+    "EscApp can't find %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp findet %@ nicht"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp no encuentra %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp ne trouve pas %@"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp non trova %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscAppは%@を見つけられません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp에서 %@ 파일을 찾을 수 없습니다"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp не может найти %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 找不到 %@"
+          }
+        }
+      }
+    },
+    "EscApp can't find %@. If you moved the game's folder, open the game from its new place. If you deleted it, put it back, or delete the game from EscApp.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp findet %@ nicht. Wenn du den Ordner des Spiels verschoben hast, öffne das Spiel an seinem neuen Ort. Wenn du ihn gelöscht hast, lege ihn zurück oder lösche das Spiel aus EscApp."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp no encuentra %@. Si moviste la carpeta del juego, ábrelo desde su nueva ubicación. Si la eliminaste, vuelve a ponerla o elimina el juego de EscApp."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp ne trouve pas %@. Si vous avez déplacé le dossier du jeu, ouvrez le jeu depuis son nouvel emplacement. Si vous l’avez supprimé, remettez-le en place ou supprimez le jeu d’EscApp."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp non trova %@. Se hai spostato la cartella del gioco, apri il gioco dalla nuova posizione. Se l’hai eliminata, rimettila al suo posto o elimina il gioco da EscApp."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscAppは%@を見つけられません。ゲームのフォルダを移動した場合は、新しい場所からゲームを開いてください。削除した場合は元に戻すか、EscAppからゲームを削除してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp에서 %@ 파일을 찾을 수 없습니다. 게임 폴더를 옮겼다면 새 위치에서 게임을 여세요. 삭제했다면 다시 넣거나 EscApp에서 게임을 삭제하세요."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp не может найти %@. Если вы переместили папку игры, откройте игру с нового места. Если удалили — верните её или удалите игру из EscApp."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 找不到 %@。如果你移动了游戏文件夹，请从新位置打开游戏。如果你删除了它，请将其放回，或从 EscApp 中删除该游戏。"
+          }
+        }
+      }
+    },
+    "EscApp can't find this game's files. If you moved its folder, open the game from its new place. If you deleted it, put it back.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp findet die Dateien dieses Spiels nicht. Wenn du seinen Ordner verschoben hast, öffne das Spiel an seinem neuen Ort. Wenn du ihn gelöscht hast, lege ihn zurück."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp no encuentra los archivos de este juego. Si moviste su carpeta, abre el juego desde su nueva ubicación. Si la eliminaste, vuelve a ponerla."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp ne trouve pas les fichiers de ce jeu. Si vous avez déplacé son dossier, ouvrez le jeu depuis son nouvel emplacement. Si vous l’avez supprimé, remettez-le en place."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp non trova i file di questo gioco. Se hai spostato la sua cartella, apri il gioco dalla nuova posizione. Se l’hai eliminata, rimettila al suo posto."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscAppはこのゲームのファイルを見つけられません。フォルダを移動した場合は、新しい場所からゲームを開いてください。削除した場合は元に戻してください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp에서 이 게임의 파일을 찾을 수 없습니다. 폴더를 옮겼다면 새 위치에서 게임을 여세요. 삭제했다면 다시 넣으세요."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp не может найти файлы этой игры. Если вы переместили её папку, откройте игру с нового места. Если удалили — верните её."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 找不到此游戏的文件。如果你移动了它的文件夹，请从新位置打开游戏。如果你删除了它，请将其放回。"
+          }
+        }
+      }
+    },
+    "Files not found": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dateien fehlen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faltan archivos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fichiers absents"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "File mancanti"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイルが見つかりません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "파일을 찾을 수 없음"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нет файлов"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "找不到文件"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -11,3 +11,6 @@ Tests/Fixtures/probes/.escapp
 
 # Claude Code session lock
 .claude/*.lock
+
+# Each developer's own Debug signing identity (App/Signing.xcconfig)
+App/Signing.local.xcconfig

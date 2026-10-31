@@ -104,7 +104,7 @@ public enum StoreGameStarts {
             // Without the Screen Recording permission, a window filling the screen stands in for a blank one.
             let blank = await WindowPicture.look(windowOf: owners)?.nearlyBlank ?? GameWindows.fillsScreen(owners)
             if !owners.isEmpty, frozen.observe(blank: blank, cpu: WineProcesses.cpuSeconds(of: owners),
-                                               at: Date().timeIntervalSince(start)) {
+                                               owners: owners, at: Date().timeIntervalSince(start)) {
                 return true
             }
             try? await Task.sleep(for: .seconds(2))

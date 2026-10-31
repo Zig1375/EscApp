@@ -1,0 +1,10 @@
+// Debug signing. Ad-hoc unless App/Signing.local.xcconfig (not committed) names a developer's own identity:
+// macOS keeps a permission (Screen Recording) for the app's signer, and an ad-hoc signature, new with every build,
+// lost it at each rebuild. A fixed identity in the shared project broke the build for anyone without it.
+// Signing.local.xcconfig, for example:
+//   CODE_SIGN_STYLE = Manual
+//   CODE_SIGN_IDENTITY = Apple Development: Your Name (ABCDE12345)
+//   DEVELOPMENT_TEAM = ABCDE12345
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = -
+#include? "Signing.local.xcconfig"

@@ -8,7 +8,7 @@ import ScreenCaptureKit
 /// else about it looks fine: a window, a running process, no error in the log.
 ///
 /// Reading another program's window needs the Screen Recording permission. Without it the answer is "don't
-/// know", and the check is skipped; nothing is asked from here (the app asks once, `LibraryModel`).
+/// know", and the check is skipped; nothing is asked from here (the app asks once, `ScreenAccess`).
 /// What one look at a game's window saw.
 public struct WindowLook: Sendable, Equatable {
     /// The window's number: a launcher's window and the game's main window are told apart by it.

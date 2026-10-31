@@ -32,7 +32,8 @@ extension AutoLaunch {
                 return .blankPicture
             }
             if !owners.isEmpty,
-               frozen.observe(blank: look?.nearlyBlank ?? fullScreen(owners), cpu: cpu(owners), at: elapsed) {
+               frozen.observe(blank: look?.nearlyBlank ?? fullScreen(owners), cpu: cpu(owners), owners: owners,
+                              at: elapsed) {
                 return .frozen
             }
             guard (try? await Task.sleep(for: .seconds(timing.lateEvery))) != nil else { return nil }
@@ -98,7 +99,8 @@ struct WatchLooks {
         // Without the Screen Recording permission the picture can't be seen, and nothing asks for it: a window
         // filling the screen stands in for a blank one. Among Us's frozen window did, while idle.
         let isFrozen = judge.checksFrozen
-            && frozen.observe(blank: look?.nearlyBlank ?? fullScreen(owners), cpu: cpu(owners), at: elapsed)
+            && frozen.observe(blank: look?.nearlyBlank ?? fullScreen(owners), cpu: cpu(owners), owners: owners,
+                              at: elapsed)
         return (judge.checksPicture ? look?.blank : nil, isFrozen)
     }
 }

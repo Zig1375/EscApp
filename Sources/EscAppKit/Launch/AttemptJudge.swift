@@ -138,6 +138,8 @@ struct FrozenWindow: Sendable, Equatable {
     /// When the window was first seen frozen, and the CPU seconds then.
     private var since: TimeInterval?
     private var cpuThen: TimeInterval = 0
+    /// The processes `cpuThen` was summed over.
+    private var ownersThen: Set<Int32> = []
 
     init(holds: TimeInterval) {
         self.holds = holds
@@ -151,15 +153,20 @@ struct FrozenWindow: Sendable, Equatable {
     /// - Parameters:
     ///   - blank: what a look at the window showed.
     ///   - cpu: CPU seconds the window's processes have used so far; nil when it can't be told.
+    ///   - owners: the processes `cpu` is summed over. When they change the sums don't compare (one that ended
+    ///     takes its seconds with it, and a busy game would look idle), so the wait starts again.
     /// - Returns: whether the game has now been frozen for `holds`.
-    mutating func observe(blank: Bool, cpu: TimeInterval?, at elapsed: TimeInterval) -> Bool {
+    mutating func observe(blank: Bool, cpu: TimeInterval?, owners: [Int32] = [],
+                          at elapsed: TimeInterval) -> Bool {
         guard blank, let cpu else {
             since = nil
             return false
         }
-        guard let start = since, cpu - cpuThen <= Self.idleShare * (elapsed - start) else {
+        let owners = Set(owners)
+        guard let start = since, owners == ownersThen, cpu - cpuThen <= Self.idleShare * (elapsed - start) else {
             since = elapsed
             cpuThen = cpu
+            ownersThen = owners
             return false
         }
         return elapsed - start >= holds

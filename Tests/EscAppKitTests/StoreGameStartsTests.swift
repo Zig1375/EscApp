@@ -112,6 +112,20 @@ import Testing
         #expect(share >= WindowPicture.nearlyBlankShare)
     }
 
+    @Test func anEndedProcessStartsTheWaitAgain() {
+        // A helper of the game ends and takes its CPU seconds with it: the sum drops, which isn't idling.
+        var frozen = FrozenWindow(holds: 10)
+        var caught: [Bool] = []
+        for second in stride(from: 0.0, through: 8, by: 2) {
+            caught.append(frozen.observe(blank: true, cpu: 50 + second * 0.01, owners: [1, 2], at: second))
+        }
+        caught.append(frozen.observe(blank: true, cpu: 20, owners: [1], at: 10))
+        caught.append(frozen.observe(blank: true, cpu: 20, owners: [1], at: 18))
+        let afterTen = frozen.observe(blank: true, cpu: 20, owners: [1], at: 20)
+        #expect(!caught.contains(true))
+        #expect(afterTen)
+    }
+
     @Test func unknownCPUNeverFreezes() {
         var frozen = FrozenWindow(holds: 1)
         for second in stride(from: 0.0, through: 10, by: 1) {

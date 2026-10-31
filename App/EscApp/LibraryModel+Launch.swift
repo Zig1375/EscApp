@@ -256,7 +256,10 @@ extension LibraryModel {
         Task {
             var shown = false
             while launch?.id == id, launch?.phase == .preparing, states[id] == .starting {
-                let asks = stores.question(store, storeID: storeID) != nil
+                // Reads the end of the client's log: off the main actor, every 2 seconds for as long as it starts.
+                let asks = await Task.detached(priority: .utility) {
+                    stores.question(store, storeID: storeID) != nil
+                }.value
                 if launch?.storeAsks != asks { launch?.storeAsks = asks }
                 if asks, !shown {
                     shown = true

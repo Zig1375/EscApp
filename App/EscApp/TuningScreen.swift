@@ -95,7 +95,9 @@ final class TuningCover {
         guardTask = Task { [weak self, weak library] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .milliseconds(500))
-                guard let self, let library, let launch = library.launch, launch.tuning != nil else { continue }
+                // The cover or the library gone: nothing is left to guard, and the loop must not outlive them.
+                guard let self, let library else { return }
+                guard let launch = library.launch, launch.tuning != nil else { continue }
                 let owners = library.sessions[launch.id].map(GameWindows.owners(of:)) ?? []
                 for pid in Set(owners + [launch.tuning?.windowOwner].compactMap(\.self)) {
                     let raised = GameWindows.windowNumbers(of: pid).contains { (Self.layer(of: $0) ?? 0) > 0 }

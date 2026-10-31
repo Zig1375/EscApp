@@ -36,6 +36,7 @@ struct SimpleTuningCard: View {
             }
             // All three as tall as the tallest.
             .fixedSize(horizontal: false, vertical: true)
+            ScreenAccessWarning()
             VStack(spacing: 8) {
                 // Installing what the game needs takes as long as it takes; the minute starts after it.
                 if let component = launch.component {

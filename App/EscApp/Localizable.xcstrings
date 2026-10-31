@@ -25466,6 +25466,162 @@
           }
         }
       }
+    },
+    "EscApp can't see game windows yet, so it may not find the right settings by itself.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp kann Spielfenster noch nicht sehen und findet die passenden Einstellungen deshalb vielleicht nicht selbst."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp aún no puede ver las ventanas de los juegos, así que quizá no encuentre los ajustes adecuados por sí solo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp ne voit pas encore les fenêtres des jeux : il risque de ne pas trouver seul les bons réglages."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp non vede ancora le finestre dei giochi, quindi potrebbe non trovare da solo le impostazioni giuste."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp はまだゲームのウインドウを見られないため、適切な設定を自動で見つけられないことがあります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp이 아직 게임 창을 볼 수 없어 알맞은 설정을 스스로 찾지 못할 수 있습니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp пока не видит окна игр, поэтому может не подобрать подходящие настройки сам."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 还无法查看游戏窗口，因此可能无法自行找到合适的设置。"
+          }
+        }
+      }
+    },
+    "EscApp can't see game windows": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp kann Spielfenster nicht sehen"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp no puede ver las ventanas de los juegos"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp ne voit pas les fenêtres des jeux"
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp non vede le finestre dei giochi"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp はゲームのウインドウを見られません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp이 게임 창을 볼 수 없습니다"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp не видит окна игр"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EscApp 无法查看游戏窗口"
+          }
+        }
+      }
+    },
+    "Without the Screen Recording permission, EscApp can't guarantee that the settings it finds really work: a game stuck on a black screen may look like it runs. You can allow it in Settings › General.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ohne die Berechtigung zur Bildschirmaufnahme kann EscApp nicht garantieren, dass die gefundenen Einstellungen wirklich funktionieren: Ein Spiel, das auf einem schwarzen Bildschirm hängt, kann so aussehen, als liefe es. Du kannst es unter Einstellungen › Allgemein erlauben."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin el permiso de grabación de pantalla, EscApp no puede garantizar que los ajustes que encuentre funcionen de verdad: un juego atascado en una pantalla negra puede parecer que funciona. Puedes permitirlo en Ajustes › General."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sans l’autorisation d’enregistrement de l’écran, EscApp ne peut pas garantir que les réglages trouvés fonctionnent vraiment : un jeu bloqué sur un écran noir peut sembler tourner. Vous pouvez l’autoriser dans Réglages › Général."
+          }
+        },
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senza il permesso di registrazione dello schermo, EscApp non può garantire che le impostazioni trovate funzionino davvero: un gioco bloccato su uno schermo nero può sembrare in esecuzione. Puoi consentirlo in Impostazioni › Generali."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面収録の許可がないと、EscApp は見つけた設定が本当に動くことを保証できません。黒い画面で止まったゲームが動いているように見えることがあるためです。「設定」›「一般」で許可できます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "화면 기록 권한이 없으면 EscApp은 찾은 설정이 실제로 작동하는지 보장할 수 없습니다. 검은 화면에서 멈춘 게임이 실행 중인 것처럼 보일 수 있기 때문입니다. 설정 › 일반에서 허용할 수 있습니다."
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Без разрешения на запись экрана EscApp не может гарантировать, что подобранные настройки действительно работают: игра, зависшая на чёрном экране, может выглядеть запущенной. Разрешить можно в «Настройки» › «Основные»."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "没有屏幕录制权限，EscApp 无法保证找到的设置真的可用：卡在黑屏上的游戏可能看起来像在运行。你可以在“设置”›“通用”中允许。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

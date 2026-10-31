@@ -200,6 +200,7 @@ private struct TuningCard: View {
                        detail: filesDetail.map { Text(verbatim: $0) })
             TuningStep(state: launch.windowsState == .done ? .done : .now, title: windowsTitle, detail: nil)
             if launch.windowsState == .done { attempts }
+            ScreenAccessWarning()
             Text("""
                 The game's window stays hidden while EscApp checks: it may open and close a few times. Once \
                 something works, the game appears by itself.

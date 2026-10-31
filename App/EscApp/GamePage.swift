@@ -97,6 +97,11 @@ struct GamePage: View {
                     RetinaClicksTip(game: game, library: library)
                         .padding(.top, 4)
                 }
+                // Graphics picked in Advanced is never searched for, and the permission changes nothing for it.
+                if game.chosenBackend == nil {
+                    ScreenAccessNote()
+                        .padding(.top, 2)
+                }
             }
         }
     }

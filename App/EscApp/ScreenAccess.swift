@@ -324,7 +324,8 @@ enum ScreenAccessReport {
     }
 }
 
-/// Debug builds only: `EscApp -snapshotScreenAccess <folder>` draws each step of the window, light and dark, into
+/// Debug builds only: `EscApp -snapshotScreenAccess <folder>` draws each step of the window, and the game page's
+/// and first-launch screen's notes (`ScreenAccessNotes`), light and dark, into
 /// PNGs in the app's language (`-AppleLanguages (ru)`) and quits: the later steps can't be reached without
 /// answering macOS's own question.
 @MainActor
@@ -336,10 +337,15 @@ enum ScreenAccessSnapshots {
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let language = Bundle.main.preferredLocalizations.first ?? "en"
         ScreenAccessWindow.stillPictures = true
-        let shots: [(String, ScreenAccessWindow)] = [
-            ("1-ask", ScreenAccessWindow(step: .ask, allowed: false)),
-            ("2-settings", ScreenAccessWindow(step: .settings, allowed: false)),
-            ("3-done", ScreenAccessWindow(step: .settings, allowed: true)),
+        let shots: [(String, AnyView)] = [
+            ("1-ask", AnyView(ScreenAccessWindow(step: .ask, allowed: false))),
+            ("2-settings", AnyView(ScreenAccessWindow(step: .settings, allowed: false))),
+            ("3-done", AnyView(ScreenAccessWindow(step: .settings, allowed: true))),
+            // The game page's line and the first-launch screen's warning, at their widths there.
+            ("4-note", AnyView(ScreenAccessNote(allowed: false).padding(16).frame(width: 520)
+                .background(Color.windowBackground))),
+            ("5-warning", AnyView(ScreenAccessWarning(allowed: false).padding(24).frame(width: 600)
+                .background(Color.cardBackground))),
         ]
         for (name, view) in shots {
             for scheme in [ColorScheme.light, .dark] {

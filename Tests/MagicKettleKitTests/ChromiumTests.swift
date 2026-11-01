@@ -77,6 +77,33 @@ import Testing
                                                   blank: true) }
         #expect(other.observe(elapsed: 10, window: true, exitCode: nil, idle: false) == .working)
     }
+
+    /// A busy Mac may look fewer times than planned: a white window isn't let through for that.
+    @Test func tooFewBlankLooksMeanLookingAgainNotWorking() {
+        func judge(looks: Int) -> AttemptJudge {
+            var judge = AttemptJudge(windowTimeout: 60, windowHolds: 10)
+            judge.checksPicture = true
+            _ = judge.observe(elapsed: 0, window: true, exitCode: nil, idle: false)
+            for look in 0..<looks { _ = judge.observe(elapsed: Double(look), window: true, exitCode: nil, idle: false,
+                                                      blank: true) }
+            return judge
+        }
+        // Three blank looks when the check ends: one more, and it is blank.
+        var few = judge(looks: 3)
+        #expect(few.observe(elapsed: 27, window: true, exitCode: nil, idle: false) == nil)
+        #expect(few.observe(elapsed: 30, window: true, exitCode: nil, idle: false, blank: true)
+            == .failed(.blankPicture))
+        // Or a picture after all.
+        var drawn = judge(looks: 3)
+        #expect(drawn.observe(elapsed: 30, window: true, exitCode: nil, idle: false, blank: false) == .working)
+        // No look at all (no Screen Recording permission): it works as before.
+        var unseen = judge(looks: 0)
+        #expect(unseen.observe(elapsed: 27, window: true, exitCode: nil, idle: false) == .working)
+        // Looks that stopped coming don't keep it checked for ever.
+        var stalled = judge(looks: 3)
+        #expect(stalled.observe(elapsed: 79, window: true, exitCode: nil, idle: false) == nil)
+        #expect(stalled.observe(elapsed: 81, window: true, exitCode: nil, idle: false) == .working)
+    }
 }
 
 extension AutoLaunchTests {
@@ -84,8 +111,9 @@ extension AutoLaunchTests {
         var chromiumGame = game
         chromiumGame.chromium = .inProcessGPU
         try GameLibrary.modify(paths.library) { $0[chromiumGame.id] = chromiumGame }
-        // Running well past the blank check (0.27 s here), so a busy machine can't end it first.
-        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.02, exitAt: 0.8)], logs: logs())
+        // Running past the longest blank check (0.27 s here, three times that with too few looks), so a busy
+        // machine can't end it before its window was looked at four times.
+        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.02, exitAt: 1.5)], logs: logs())
         // The first start's window stays white; the second one draws.
         let picture: @Sendable ([Int32]) async -> WindowLook? = { owners in
             WindowLook(window: 1, blank: owners == [100])

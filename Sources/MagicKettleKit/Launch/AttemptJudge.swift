@@ -49,6 +49,8 @@ public struct AttemptJudge: Sendable, Equatable {
     /// How long a Chromium window may stay blank before that counts: a cold start under Wine draws Electron's
     /// first page after about 20 s.
     static let blankPatience: TimeInterval = 40
+    /// How many times `blankAfter` a window with too few looks, all blank, is looked at before it counts as working.
+    static let blankLookLonger: TimeInterval = 3
     /// Scaled with `windowHolds`, so tests with short holds stay short.
     var blankAfter: TimeInterval { max(windowHolds, Self.blankPatience * windowHolds / Self.windowHolds) }
 
@@ -85,13 +87,21 @@ public struct AttemptJudge: Sendable, Equatable {
         if window, let windowSince, elapsed - windowSince >= windowHolds {
             // A Chromium window that hasn't drawn yet gets longer; one that has works.
             guard checksPicture, !sawPicture else { return .working }
-            if elapsed - windowSince >= blankAfter {
-                return blankSamples >= Self.blankSamplesNeeded ? .failed(.blankPicture) : .working
-            }
+            if let verdict = blankVerdict(held: elapsed - windowSince) { return verdict }
         }
         if idle { return .ended }
         if windowSince == nil, let windowTimeout, elapsed >= windowTimeout { return .failed(.noWindow) }
         return nil
+    }
+
+    /// A Chromium window that has only ever been blank, up for `held`: nil while it is still being looked at.
+    private func blankVerdict(held: TimeInterval) -> Verdict? {
+        guard held >= blankAfter else { return nil }
+        if blankSamples >= Self.blankSamplesNeeded { return .failed(.blankPicture) }
+        // Some looks, all blank, but fewer than needed: a busy Mac looked less often than planned (a CI runner took
+        // three looks where four fit, and a white window passed). Look again rather than call it working unseen;
+        // without any look (no Screen Recording permission) it works as before.
+        return blankSamples == 0 || held >= Self.blankLookLonger * blankAfter ? .working : nil
     }
 }
 

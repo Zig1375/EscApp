@@ -157,8 +157,18 @@ struct LibraryView: View {
                 }
                 .buttonStyle(BrandButtonStyle(height: 32, radius: 8))
             } else {
-                Text("Plaviox")
-                    .font(.system(size: 15, weight: .bold))
+                // In a window too narrow for the tagline next to the search field, only the name is left.
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 6) {
+                        appName
+                        Text(verbatim: "—").foregroundStyle(.secondary)
+                        Text("Just open it and play")
+                            .font(.system(size: 15))
+                            .foregroundStyle(.secondary)
+                    }
+                    .fixedSize()
+                    appName
+                }
                 Spacer(minLength: 0)
                 SearchField(text: $search)
                 Button { library.chooseGameFile() } label: {
@@ -178,6 +188,10 @@ struct LibraryView: View {
                 .accessibilityLabel("Settings")
             }
         }
+    }
+
+    private var appName: some View {
+        Text("Plaviox").font(.system(size: 15, weight: .bold))
     }
 
 }

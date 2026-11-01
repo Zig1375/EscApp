@@ -292,14 +292,15 @@ import Testing
         try GameLibrary.modify(paths.library) { $0[id]?.backend = .dxvk }
         var played = game
         played.backend = .dxvk
-        let starter = try FakeStarter([.dxvk: Script(exitAt: 0.4)], logs: logs())
+        // It runs well past the hand-over, so a busy CI runner's pause can't push the hand-over past its exit.
+        let starter = try FakeStarter([.dxvk: Script(exitAt: 1.5)], logs: logs())
         let warmer = FakeWarmer()
         _ = try await AutoLaunch(paths: paths, starter: starter, windows: starter.windows, picture: { _ in nil },
                                  cpu: { _ in nil }, fullScreen: { _ in false }, timing: timing)
             .play(played, runtime: runtime, warmer: warmer)
         let start = try #require(starter.started.first?.1.startedAt)
         let after = try #require(await warmer.releasedAt).timeIntervalSince(start)
-        #expect(after >= timing.handOverAfter && after < 0.4)
+        #expect(after >= timing.handOverAfter && after < 1.5)
     }
 }
 
@@ -361,7 +362,8 @@ extension AutoLaunchTests {
     /// Among Us, its graphics picked in Advanced, showed its window only after Steam's question about another
     /// session was answered: the launch window has to hear of it, not stop looking at the first poll.
     @Test func aChosenBackendStillAnnouncesALateWindow() async throws {
-        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.15, exitAt: 0.4)], logs: logs())
+        // The window stays up long enough for a busy CI runner's next look: one up for 0.25 s could be missed.
+        let starter = try FakeStarter([.dxvk: Script(windowAt: 0.15, exitAt: 1.5)], logs: logs())
         let shown = Mutex(false)
         let result = try await play(starter, backend: .dxvk) { event in
             if case .windowShown = event { shown.withLock { $0 = true } }

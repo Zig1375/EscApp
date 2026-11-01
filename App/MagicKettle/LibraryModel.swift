@@ -62,7 +62,7 @@ final class LibraryModel {
     /// Ticks once a minute so "12 min" in the menu bar and cards stays current.
     private(set) var now = Date()
     /// Whether double-clicking an .exe in Finder opens Magic Kettle.
-    private(set) var isDefaultForExe = true
+    var isDefaultForExe = true
     /// Settings → General: the Retina setting new games get (`SharedSettings`).
     private(set) var newGameRetina = GameScaling.Setting.auto
     /// Stores whose client is installed (Stores.dc.html).
@@ -248,37 +248,6 @@ final class LibraryModel {
         update(game.id) { $0.executable = url.path(percentEncoded: false) }
         icons[game.id] = nil
         reload()
-    }
-
-    func makeDefaultForExe() {
-        Task {
-            let types = [UTType("com.microsoft.windows-executable"), UTType(filenameExtension: "msi")]
-                .compactMap { $0 }
-            // Launch Services picks among copies with this bundle id, and kept picking a day-old development
-            // build in DerivedData: double-clicking an .exe opened that copy, with its old first-launch screen.
-            // Registering this copy first makes it the one chosen.
-            LSRegisterURL(Bundle.main.bundleURL as CFURL, true)
-            for type in types {
-                try? await NSWorkspace.shared.setDefaultApplication(at: Bundle.main.bundleURL, toOpen: type)
-            }
-            // Launch Services takes a moment to answer with the new handler after the player approves.
-            for _ in 0..<10 where !isDefaultForExe {
-                refreshDefaultHandler()
-                try? await Task.sleep(for: .milliseconds(300))
-            }
-        }
-    }
-
-    /// By bundle id, not path: with two copies of Magic Kettle on the Mac (a development build in DerivedData and one
-    /// elsewhere) Launch Services may name the other copy, and the switch in Settings stayed off after it was
-    /// approved. `makeDefaultForExe` registers this copy first so that it is the one that opens.
-    func refreshDefaultHandler() {
-        guard let type = UTType("com.microsoft.windows-executable"),
-              let handler = NSWorkspace.shared.urlForApplication(toOpen: type) else {
-            isDefaultForExe = false
-            return
-        }
-        isDefaultForExe = Bundle(url: handler)?.bundleIdentifier == Bundle.main.bundleIdentifier
     }
 
     func currentRuntime() throws -> (RuntimeManifest.Runtime, [KnownGame])? {

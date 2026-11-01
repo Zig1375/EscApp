@@ -33,8 +33,9 @@ targets:
       properties:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        # Magic Kettle opens Windows programs and installers. "Default" rank: Magic Kettle becomes their app unless
-        # the user already picked another one; Settings offers to make Magic Kettle the default.
+        # Magic Kettle opens Windows programs and installers. "Default" rank alone leaves them with an app the user
+        # picked before (Whisky), so Magic Kettle also takes them on its first launch (`claimExeFilesOnce`).
+        # An .msi is com.microsoft.msi-installer on a Mac where Whisky declared it, so both types are listed.
         CFBundleDocumentTypes:
           - CFBundleTypeName: Windows Program
             CFBundleTypeRole: Viewer
@@ -43,7 +44,7 @@ targets:
           - CFBundleTypeName: Windows Installer
             CFBundleTypeRole: Viewer
             LSHandlerRank: Default
-            LSItemContentTypes: [com.microsoft.windows-installer]
+            LSItemContentTypes: [com.microsoft.windows-installer, com.microsoft.msi-installer]
           # A game's CD. "Alternate": Finder keeps mounting disc images itself; Magic Kettle is in "Open With" and
           # takes an image dropped on its icon or window.
           - CFBundleTypeName: Disc Image

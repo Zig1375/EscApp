@@ -4,13 +4,16 @@ import MagicKettleKit
 extension MagicKettleCommand {
     /// `kettle install <setup.exe | game.msi | disc.iso>`: the app's install screens in one go. A disc image is
     /// attached and its installer run from drive D:; the recommended program becomes the game unless
-    /// `--program` names another.
+    /// `--program` names another. Each `--next-disc <image>` goes in when the installer asks for another disc, in
+    /// the order given.
     func install(_ arguments: [String]) async -> Output {
         var options = Options(arguments)
         let folderValue = options.value("--folder")
         let nameValue = options.value("--name")
         let programValue = options.value("--program")
         let ejectDisc = options.flag("--eject")
+        var nextDiscs: [URL] = []
+        while let next = options.value("--next-disc") { nextDiscs.append(URL(filePath: next).standardizedFileURL) }
         guard let path = options.positional() else { return failure("install needs a setup.exe, .msi or disc image") }
         if let unknown = options.leftover { return failure("Unknown option: \(unknown)") }
         let file = URL(filePath: path).standardizedFileURL
@@ -31,15 +34,24 @@ extension MagicKettleCommand {
             let folder = folderValue.map { URL(filePath: $0, directoryHint: .isDirectory) }
                 ?? gameInstaller.defaultFolder(for: name)
             let plan = GameInstaller.Plan(installer: installer, kind: kind, name: name, folder: folder, disc: disc)
-            let installed = try await gameInstaller.install(plan, runtime: runtime, progress: report(plan))
+            let id = GameID.make()
+            let discs = DiscQueue(nextDiscs)
+            let installed = try await gameInstaller.install(plan, id: id, runtime: runtime,
+                                                            progress: report(plan, discs: discs, install: id,
+                                                                            runtime: runtime))
             let result = try finishInstall(installed, with: gameInstaller, program: programValue,
                                            keepDisc: disc != nil && !ejectDisc)
-            if let disc { await DiscImage.detach(disc) }
+            await detach(disc, nextDiscs)
             return result
         } catch {
-            if let disc { await DiscImage.detach(disc) }
+            await detach(disc, nextDiscs)
             return failure("\(error)")
         }
+    }
+
+    private func detach(_ disc: MountedDisc?, _ others: [URL]) async {
+        if let disc { await DiscImage.detach(disc) }
+        for image in others { await DiscImage.detach(image: image, paths: paths) }
     }
 
     /// The installer itself, or the one on a disc image, which is attached first.
@@ -56,14 +68,29 @@ extension MagicKettleCommand {
         return (found.url, disc)
     }
 
-    private func report(_ plan: GameInstaller.Plan) -> @Sendable (GameInstaller.Step) -> Void {
-        let progress = progress
+    private func report(_ plan: GameInstaller.Plan, discs: DiscQueue, install id: GameID,
+                        runtime: RuntimeManifest.Runtime) -> @Sendable (GameInstaller.Step) -> Void {
+        let (progress, paths, host) = (progress, paths, host)
         let target = plan.kind.takesFolder ? " into \(plan.folder.path(percentEncoded: false))…" : "…"
         let name = plan.installer.lastPathComponent
         return { step in
             switch step {
             case let .windows(firstTime): if firstTime { progress("Setting up Windows (once)…") }
             case .installing: progress("Running \(name) (\(plan.kind.rawValue))\(target)")
+            case let .asksForDisc(text):
+                guard let image = discs.next() else {
+                    return progress("The installer asks: \(text). No --next-disc left: answer it in its window.")
+                }
+                progress("The installer asks: \(text). Putting \(image.lastPathComponent) in drive D:")
+                Task {
+                    do {
+                        let disc = try await DiscImage.attach(image, paths: paths)
+                        try await GameInstaller(paths: paths, host: host).changeDisc(to: disc, install: id,
+                                                                                    runtime: runtime)
+                    } catch {
+                        progress("Couldn't change the disc: \(error)")
+                    }
+                }
             case .findingGame: progress("Looking for the game's program…")
             }
         }
@@ -94,6 +121,16 @@ extension MagicKettleCommand {
                     record.disc.map { "Disc in D: on every launch: \($0)" } ?? "No disc", log]
         return success(summary.joined(separator: "\n"))
     }
+}
+
+/// The `--next-disc` images not put in yet.
+final class DiscQueue: @unchecked Sendable {
+    private let lock = NSLock()
+    private var images: [URL]
+
+    init(_ images: [URL]) { self.images = images }
+
+    func next() -> URL? { lock.withLock { images.isEmpty ? nil : images.removeFirst() } }
 }
 
 struct CLIError: Error, CustomStringConvertible {

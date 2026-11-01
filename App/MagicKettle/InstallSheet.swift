@@ -126,10 +126,32 @@ struct InstallSheet: View {
         case .installing:
             Text("The installer's window is open. Go through it as in Windows: Magic Kettle waits until it finishes.")
                 .modifier(BodyStyle())
+        case let .asksForDisc(text):
+            Text("The installer asks for another disc:").modifier(BodyStyle())
+            Text(verbatim: text).font(.system(size: 13, weight: .semibold))
+            Text("Choose that disc's image. Then answer the installer's window (Retry or OK).")
+                .modifier(HintStyle())
         case .findingGame:
             Text("Looking for the game's program…").modifier(BodyStyle())
         }
         ProgressView().progressViewStyle(.linear).tint(.brand)
+        if install.disc != nil {
+            switch step {
+            case .asksForDisc:
+                buttons {
+                    Button("Choose Disc Image…") { library.changeInstallDisc() }
+                        .buttonStyle(BrandButtonStyle(kind: .primary, height: 32, radius: 8))
+                        .keyboardShortcut(.defaultAction)
+                }
+            case .installing:
+                // Some installers ask for the next CD in a window of their own, which Magic Kettle can't read.
+                buttons {
+                    Button("Change Disc…") { library.changeInstallDisc() }
+                }
+            case .windows, .findingGame:
+                EmptyView()
+            }
+        }
     }
 
     // MARK: 3. Installed

@@ -92,8 +92,10 @@ public struct MagicKettleCommand: Sendable {
                                            Launch a game like the app does, trying the next backend when it
                                            fails at start, and wait until it closes
           install <setup.exe|.msi|.iso> [--folder <path>] [--name <name>] [--program <exe>] [--eject]
+              [--next-disc <image>]...
                                            Install a game like the app does: from a disc image, its installer
-                                           runs from drive D: and the disc stays in for the game (--eject: not)
+                                           runs from drive D: and the disc stays in for the game (--eject: not);
+                                           each --next-disc goes in when the installer asks for another disc
         """
 
     private func pathsReport() -> String {

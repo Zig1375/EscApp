@@ -27,6 +27,7 @@ i686-w64-mingw32-gcc -municode -DNSIS_STYLE -O2 -s -static -o nsis-x86.exe setup
 rm setup.res
 i686-w64-mingw32-gcc -O2 -s -static -o lowres-x86.exe lowresprobe.c -ld3d9 -lgdi32
 i686-w64-mingw32-gcc -O2 -s -static -o cd-x86.exe cdprobe.c
+i686-w64-mingw32-gcc -O2 -s -static -o discsetup-x86.exe discsetupprobe.c -lshell32
 x86_64-w64-mingw32-gcc -O2 -s -static -o stretch-x64.exe stretchprobe.c -ld3d9 -ld3d11 -ldxguid -lgdi32
 rm probe.ico
 ls -l *.exe

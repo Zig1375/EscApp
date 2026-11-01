@@ -122,11 +122,35 @@ public enum DiscDrive {
     public static func insert(_ disc: MountedDisc, into bottle: URL) throws {
         let devices = bottle.appending(path: "dosdevices", directoryHint: .isDirectory)
         try link(devices.appending(path: "\(letter):"), to: disc.mountPoint.path(percentEncoded: false))
-        // The raw device: Wine reads the label from it.
-        let raw = disc.device.replacingOccurrences(of: "/dev/disk", with: "/dev/rdisk")
-        try link(devices.appending(path: "\(letter)::"), to: raw)
+        try link(devices.appending(path: "\(letter)::"), to: rawDevice(of: disc))
         try BottleManager.setRegistryString(bottle: bottle, key: #"Software\Wine\Drives"#, name: "\(letter):",
                                             value: "cdrom", file: "system.reg")
+    }
+
+    /// `tools/disc-changer`, run in the bottle to change the disc while Wine runs.
+    static var changer: URL? { Bundle.module.url(forResource: "disc-changer", withExtension: "exe") }
+
+    /// Swaps the disc while the bottle's Wine runs: an installer asking for its second disc. Relinking `d:` from
+    /// the Mac is enough for files, but Wine's mount manager keeps the label it read when it started, so the
+    /// installer still saw disc 1's label and asked again. The changer defines the drive again from inside Wine,
+    /// as winecfg does: the mount manager links the new disc and reads its label.
+    public static func change(to disc: MountedDisc, in bottle: URL, wine: Wine,
+                              environment: [String: String]) async throws {
+        guard let changer else { throw DiscError.cantChange(disc.image.lastPathComponent) }
+        let result = try await ProcessRunner.run(wine.wine.path, changerArguments(changer, disc),
+                                                 environment: environment)
+        guard result.status == 0, result.output.contains("changed") else {
+            throw DiscError.cantChange(disc.image.lastPathComponent)
+        }
+    }
+
+    static func changerArguments(_ changer: URL, _ disc: MountedDisc) -> [String] {
+        [changer.path(percentEncoded: false), letter, disc.mountPoint.path(percentEncoded: false), rawDevice(of: disc)]
+    }
+
+    /// The raw device: Wine reads the label from it.
+    static func rawDevice(of disc: MountedDisc) -> String {
+        disc.device.replacingOccurrences(of: "/dev/disk", with: "/dev/rdisk")
     }
 
     /// Empties the drive. The `cdrom` mark stays: an empty CD drive is what a game expects to find.
@@ -146,11 +170,13 @@ public enum DiscDrive {
 
 public enum DiscError: Error, Equatable, CustomStringConvertible {
     case cantAttach(String)
+    case cantChange(String)
     case missing(String)
 
     public var description: String {
         switch self {
         case let .cantAttach(name): "Couldn't open the disc image \(name)."
+        case let .cantChange(name): "Couldn't put the disc image \(name) in the drive."
         case let .missing(path): "The game's disc image isn't at \(path) any more."
         }
     }

@@ -207,6 +207,18 @@ private let fixtures = URL(filePath: #filePath).deletingLastPathComponent()
         #expect(BottleMigration.kind(of: devices.appending(path: "d:")) == nil)
     }
 
+    /// The next disc of a game on several CDs goes in from inside Wine, so its label is read anew.
+    @Test func theNextDiscIsDefinedThroughTheChanger() throws {
+        let changer = try #require(DiscDrive.changer)
+        #expect(try ExecutableInfo.read(changer).format == .pe64)
+        let disc = MountedDisc(image: URL(filePath: "/g2.iso"), mountPoint: URL(filePath: "/tmp/disc 2"),
+                               device: "/dev/disk15", attachedByMagicKettle: true)
+        #expect(DiscDrive.changerArguments(changer, disc)
+            == [changer.path(percentEncoded: false), "d", "/tmp/disc 2", "/dev/rdisk15"])
+        #expect(LogDiagnosis.asksForDisc(
+            #"00f8:trace:msgbox:MSGBOX_OnInit L"Please insert disc 2 of 3 of Probe Saga into your CD-ROM drive.""#))
+    }
+
     @Test func theDiscMenuAndInstallerAreToldApart() throws {
         let temp = try TempFolder()
         let probes = fixtures.appending(path: "probes")

@@ -20,6 +20,10 @@ extension LibraryModel {
         var phase: Phase
         /// The disc in drive D:, when installing from an image.
         var disc: MountedDisc?
+        /// The game's id once its installer runs, for putting another disc in.
+        var installID: GameID?
+        /// Discs put in while installing (a game on several CDs); they come out with the first one.
+        var otherDiscs: [URL] = []
         var contents: DiscContents?
         var installer: URL?
         var kind: InstallerKind?
@@ -107,11 +111,14 @@ extension LibraryModel {
         guard let current = install, let installer = current.installer, let kind = current.kind else { return }
         let plan = GameInstaller.Plan(installer: installer, kind: kind, name: current.name, folder: current.folder,
                                       disc: current.disc)
+        let id = GameID.make()
         install?.phase = .installing(.installing)
+        install?.installID = id
         Task {
             do {
                 guard let (runtime, _) = try currentRuntime() else { throw BottleError.runtimeMissing("") }
-                let installed = try await GameInstaller(paths: paths).install(plan, runtime: runtime) { step in
+                let installed = try await GameInstaller(paths: paths).install(plan, id: id,
+                                                                              runtime: runtime) { step in
                     Task { @MainActor in
                         if case .installing? = self.install?.phase { self.install?.phase = .installing(step) }
                     }
@@ -127,6 +134,29 @@ extension LibraryModel {
                 notice = Notice(title: String(localized: "Couldn't install \(plan.name)"),
                                 message: String(describing: error))
                 await closeInstall()
+            }
+        }
+    }
+
+    /// "Change Disc…" while installing: a game on several CDs asks for the next one. The installer's own box
+    /// ("Please insert disc 2") waits; once the disc is in, its Retry or OK goes on.
+    func changeInstallDisc() {
+        guard let current = install, let id = current.installID else { return }
+        let panel = NSOpenPanel()
+        panel.message = String(localized: "Choose the disc image the installer asks for")
+        panel.allowedContentTypes = DiscImage.extensions.compactMap { UTType(filenameExtension: $0) }
+        panel.directoryURL = current.disc?.image.deletingLastPathComponent()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        Task {
+            do {
+                guard let (runtime, _) = try currentRuntime() else { throw BottleError.runtimeMissing("") }
+                let disc = try await DiscImage.attach(url, paths: paths)
+                install?.otherDiscs.append(url)
+                try await GameInstaller(paths: paths).changeDisc(to: disc, install: id, runtime: runtime)
+                if case .installing(.asksForDisc)? = install?.phase { install?.phase = .installing(.installing) }
+            } catch {
+                notice = Notice(title: String(localized: "Couldn't change the disc"),
+                                message: String(describing: error))
             }
         }
     }
@@ -165,8 +195,11 @@ extension LibraryModel {
 
     private func closeInstall() async {
         let disc = install?.disc
+        let others = install?.otherDiscs ?? []
         install = nil
         if let disc { await DiscImage.detach(disc) }
+        // By image: one put in twice was attached once, and only Magic Kettle's own attachments come out.
+        for image in others { await DiscImage.detach(image: image, paths: paths) }
     }
 
     private func busyInstalling() {

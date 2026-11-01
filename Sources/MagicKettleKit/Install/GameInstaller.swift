@@ -33,6 +33,9 @@ public struct GameInstaller: Sendable {
         case windows(firstTime: Bool)
         /// The installer's own window is up; Magic Kettle waits until it and everything it started have finished.
         case installing
+        /// The installer asked for another disc in a message box (the second CD of a game on several): the box's
+        /// text. Once the player puts that disc in (`changeDisc`), the step is `installing` again.
+        case asksForDisc(String)
         case findingGame
     }
 
@@ -86,12 +89,12 @@ public struct GameInstaller: Sendable {
 
     /// Runs the installer to the end and finds what it installed. Nothing is in the library yet: `finish` adds the
     /// game once the player picked its program, `cancel` takes the bottle away again.
-    public func install(_ plan: Plan, runtime: RuntimeManifest.Runtime,
-                        progress: @Sendable (Step) -> Void = { _ in }) async throws -> Installed {
+    /// - Parameter id: the game's id, known before the install ends so a disc can be changed during it.
+    public func install(_ plan: Plan, id: GameID = .make(), runtime: RuntimeManifest.Runtime,
+                        progress: @escaping @Sendable (Step) -> Void = { _ in }) async throws -> Installed {
         guard let runtimeFolder = RuntimeInstaller(paths: paths).installed(runtime) else {
             throw BottleError.runtimeMissing(runtime.id)
         }
-        let id = GameID.make()
         let bottles = BottleManager(paths: paths, host: host)
         progress(.windows(firstTime: !bottles.hasTemplate(for: runtime)))
         let bottle = try await bottles.ensureBottle(for: id, runtime: runtime, windows: plan.windowsVersion)
@@ -114,7 +117,23 @@ public struct GameInstaller: Sendable {
         var template: URL
     }
 
-    private func run(_ plan: Plan, in target: Target, progress: @Sendable (Step) -> Void) async throws -> Installed {
+    /// Puts another disc in drive `D:` while the installer of game `id` runs. The disc it replaces stays attached
+    /// until the install ends: the installer may still run from it.
+    public func changeDisc(to disc: MountedDisc, install id: GameID, runtime: RuntimeManifest.Runtime) async throws {
+        guard let runtimeFolder = RuntimeInstaller(paths: paths).installed(runtime) else {
+            throw BottleError.runtimeMissing(runtime.id)
+        }
+        let bottle = paths.bottle(forGame: id)
+        let wine = Wine(runtimeFolder: runtimeFolder)
+        try await DiscDrive.change(to: disc, in: bottle, wine: wine, environment: environment(bottle, wine))
+    }
+
+    private func environment(_ bottle: URL, _ wine: Wine) -> [String: String] {
+        WineEnvironment.make(host: host, bottle: bottle.path, fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
+    }
+
+    private func run(_ plan: Plan, in target: Target,
+                     progress: @escaping @Sendable (Step) -> Void) async throws -> Installed {
         let (id, bottle, wine) = (target.id, target.bottle, target.wine)
         let fileManager = FileManager.default
         let gamesRoot = Self.gamesDriveRoot(for: plan)
@@ -126,8 +145,7 @@ public struct GameInstaller: Sendable {
 
         let folder = WindowsPath.windowsPath(of: plan.folder, under: gamesRoot, drive: Self.gamesDrive)
             ?? #"G:\Game"#
-        let environment = WineEnvironment.make(host: host, bottle: bottle.path,
-                                               fastSync: WineEnvironment.fastSync(for: nil, wine: wine))
+        let environment = environment(bottle, wine)
         let log = paths.logs(forGame: id).appending(path: "install-\(Self.timestamp()).log")
         try fileManager.createDirectory(at: log.deletingLastPathComponent(), withIntermediateDirectories: true)
         // Room for this one: the newest two installs' logs stay.
@@ -136,11 +154,14 @@ public struct GameInstaller: Sendable {
 
         progress(.installing)
         let arguments = command(for: plan, folder: folder, bottle: bottle)
+        let watch = plan.disc == nil ? nil : Self.watchForDiscRequests(in: log, progress: progress)
+        defer { watch?.cancel() }
         try await Self.runToEnd(wine, arguments, in: plan.installer.deletingLastPathComponent(),
                                 environment: environment, log: log)
         // Installers hand their work to other processes (Inno's setup.tmp, msiexec's server) and exit at once:
         // done means the bottle has gone quiet.
         _ = try? await ProcessRunner.run(wine.wineserver.path, ["-w"], environment: environment)
+        watch?.cancel()
 
         progress(.findingGame)
         let targets = shortcutTargets(since: started, bottle: bottle)
@@ -238,6 +259,20 @@ public struct GameInstaller: Sendable {
             guard url.pathExtension.lowercased() == "lnk",
                   let values = try? url.resourceValues(forKeys: Set(keys)) else { return false }
             return max(values.contentModificationDate ?? .distantPast, values.creationDate ?? .distantPast) >= start
+        }
+    }
+
+    /// Reads the install log as it is written and reports each message box asking for a disc. A box shown again
+    /// (the player pressed Retry with the wrong disc in) is a new request.
+    static func watchForDiscRequests(in log: URL, progress: @escaping @Sendable (Step) -> Void) -> Task<Void, Never> {
+        Task.detached {
+            let tail = LogTail(log)
+            while !Task.isCancelled {
+                for line in tail.newLines() where LogDiagnosis.asksForDisc(line) {
+                    progress(.asksForDisc(LogDiagnosis.messageText(line)))
+                }
+                try? await Task.sleep(for: .milliseconds(300))
+            }
         }
     }
 

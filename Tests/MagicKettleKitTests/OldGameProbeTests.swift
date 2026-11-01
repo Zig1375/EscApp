@@ -32,6 +32,30 @@ enum WineHome {
         return iso
     }
 
+    /// A game on `count` CDs, each a tiny ISO: disc N is labelled PROBEDISC<N> and holds DATA\PART<N>.DAT
+    /// ("disc N"); disc 1 also holds the setup probe for several discs as SETUP.EXE, DISCS.TXT and the game.
+    static func makeDiscs(_ count: Int, in folder: URL) async throws -> [URL] {
+        let fileManager = FileManager.default
+        var images: [URL] = []
+        for number in 1...count {
+            let root = folder.appending(path: "disc\(number)")
+            try fileManager.createDirectory(at: root.appending(path: "DATA"), withIntermediateDirectories: true)
+            try Data("disc \(number)".utf8).write(to: root.appending(path: "DATA/PART\(number).DAT"))
+            if number == 1 {
+                try fileManager.createDirectory(at: root.appending(path: "GAME"), withIntermediateDirectories: true)
+                try fileManager.copyItem(at: Probes.url("discsetup-x86"), to: root.appending(path: "SETUP.EXE"))
+                try fileManager.copyItem(at: Probes.url("d3d9-x86"), to: root.appending(path: "GAME/probegame.exe"))
+                try Data("\(count)\r\n".utf8).write(to: root.appending(path: "DISCS.TXT"))
+            }
+            let iso = folder.appending(path: "Probe Saga \(number).iso")
+            try await ProcessRunner.check("/usr/bin/hdiutil", ["makehybrid", "-iso", "-joliet",
+                                                               "-default-volume-name", "PROBEDISC\(number)",
+                                                               "-o", iso.path, root.path])
+            images.append(iso)
+        }
+        return images
+    }
+
     static func gameFolder(_ name: String, paths: AppPaths) -> URL {
         paths.games.appending(path: "\(name)-\(UUID().uuidString.prefix(8))", directoryHint: .isDirectory)
     }
@@ -101,6 +125,58 @@ struct InstallProbeTests {
         defer { try? GameRemover.removeFromApp(installed.id, paths: paths) }
         #expect(installed.found.programs.map(\.name) == ["probegame.exe", "probe_config.exe"])
         #expect(installed.found.programs.last?.role == .settings)
+    }
+}
+
+@Suite(.enabled(if: ProcessInfo.processInfo.environment["MAGICKETTLE_INTEGRATION"] == "1"), .serialized)
+struct MultiDiscProbeTests {
+    /// A game on three CDs: its installer runs from disc 1 and asks for discs 2 and 3 in turn.
+    @Test func aGameOnThreeDiscsInstallsWithEachDiscInTurn() async throws {
+        let (paths, runtime) = try WineHome.current()
+        let temp = try TempFolder()
+        let images = try await WineHome.makeDiscs(3, in: temp.url)
+        #expect(try images.map { try $0.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0 }.allSatisfy {
+            $0 < 2_000_000
+        })
+        let first = try await DiscImage.attach(images[0], paths: paths)
+        let folder = WineHome.gameFolder("Probe Saga", paths: paths)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let installer = first.mountPoint.appending(path: "SETUP.EXE")
+        #expect(InstallerKind.detect(installer) == .innoSetup)
+
+        let plan = GameInstaller.Plan(installer: installer, kind: .innoSetup, name: "Probe Saga", folder: folder,
+                                      disc: first)
+        // The player: each time the installer asks, the next disc goes in. Its box goes on by itself once it is.
+        let gameInstaller = GameInstaller(paths: paths)
+        let id = GameID.make()
+        let asked = Mutex<[String]>([])
+        let installed = try await gameInstaller.install(plan, id: id, runtime: runtime) { step in
+            guard case let .asksForDisc(text) = step else { return }
+            let count = asked.withLock { $0.append(text); return $0.count }
+            guard count < images.count else { return }
+            Task {
+                do {
+                    let disc = try await DiscImage.attach(images[count], paths: paths)
+                    try await gameInstaller.changeDisc(to: disc, install: id, runtime: runtime)
+                } catch {
+                    Issue.record(error)
+                }
+            }
+        }
+        defer { try? GameRemover.removeFromApp(installed.id, paths: paths) }
+        for image in images { await DiscImage.detach(image: image, paths: paths) }
+
+        let log = try String(contentsOf: installed.log, encoding: .utf8)
+        #expect(log.contains("SETUP DONE"), "\(log.suffix(1500))")
+        #expect(asked.withLock { $0 } == ["Please insert disc 2 of 3 of Probe Saga into your CD-ROM drive.",
+                                          "Please insert disc 3 of 3 of Probe Saga into your CD-ROM drive."])
+        #expect(installed.id == id)
+        for number in 1...3 {
+            let part = folder.appending(path: "PART\(number).DAT")
+            #expect((try? String(contentsOf: part, encoding: .utf8)) == "disc \(number)", "PART\(number).DAT")
+        }
+        #expect(installed.found.recommended?.url.standardizedFileURL
+            == folder.appending(path: "probegame.exe").standardizedFileURL)
     }
 }
 

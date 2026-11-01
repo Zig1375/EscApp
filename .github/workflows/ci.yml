@@ -20,12 +20,12 @@ jobs:
       - name: Build the app
         run: |
           xcodegen generate
-          xcodebuild -project EscApp.xcodeproj -scheme EscApp -configuration Debug \
+          xcodebuild -project Plaviox.xcodeproj -scheme Plaviox -configuration Debug \
             -destination 'platform=macOS,arch=arm64' -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO build
       - name: Every UI string is translated into every language
         run: scripts/check-translations.py .build/xcode
 
-  # Every push to main that passes becomes a release: tag vX.Y.N and EscApp-X.Y.N.zip (ad-hoc signed, not
+  # Every push to main that passes becomes a release: tag vX.Y.N and Plaviox-X.Y.N.zip (ad-hoc signed, not
   # notarized). One at a time, so two quick pushes never take the same build number.
   release:
     needs: build
@@ -51,17 +51,17 @@ jobs:
       - name: Build the app
         run: |
           xcodegen generate
-          xcodebuild -project EscApp.xcodeproj -scheme EscApp -configuration Release \
+          xcodebuild -project Plaviox.xcodeproj -scheme Plaviox -configuration Release \
             -destination 'platform=macOS,arch=arm64' -derivedDataPath .build/xcode \
-            ESCAPP_BUILD=${{ steps.version.outputs.build }} \
+            PLAVIOX_BUILD=${{ steps.version.outputs.build }} \
             CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= build
-          app=.build/xcode/Build/Products/Release/EscApp.app
+          app=.build/xcode/Build/Products/Release/Plaviox.app
           test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$app/Contents/Info.plist")" \
             = "${{ steps.version.outputs.version }}"
-          ditto -c -k --keepParent "$app" "EscApp-${{ steps.version.outputs.version }}.zip"
+          ditto -c -k --keepParent "$app" "Plaviox-${{ steps.version.outputs.version }}.zip"
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "v${{ steps.version.outputs.version }}" "EscApp-${{ steps.version.outputs.version }}.zip" \
-            --target "$GITHUB_SHA" --title "EscApp ${{ steps.version.outputs.version }}" --generate-notes
+          gh release create "v${{ steps.version.outputs.version }}" "Plaviox-${{ steps.version.outputs.version }}.zip" \
+            --target "$GITHUB_SHA" --title "Plaviox ${{ steps.version.outputs.version }}" --generate-notes

@@ -1,3 +1,3 @@
-LIBRARY escapp_missing.dll
+LIBRARY plaviox_missing.dll
 EXPORTS
-escapp_missing_function
+plaviox_missing_function

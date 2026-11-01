@@ -1,7 +1,7 @@
 /* A game with a fixed-size window (640x480 client): `probe gdi|d3d9|d3d11 [seconds] [script [width height]]`.
  * Draws a checkerboard and a white box under the mouse, and once a second prints what the game sees: its client
  * size, the screen size, WM_SIZE count, and where the mouse is in client coordinates. Used to check that stretching
- * the window on the Mac (EscApp's Wine, StretchWindows) doesn't change anything the game sees, and that the mouse
+ * the window on the Mac (Plaviox's Wine, StretchWindows) doesn't change anything the game sees, and that the mouse
  * still lands where it points. `script` runs the checks by itself: it resizes the window the way the Mac driver does
  * when the player drags its corner (width and height are the Mac display's pixels, 3456x2234 by default), then
  * changes its own size, goes full screen and back, and prints the scale after each step. A copy whose name contains
@@ -82,13 +82,13 @@ int main(int argc, char **argv) {
     WNDCLASSW wc = {0};
     wc.lpfnWndProc = proc;
     wc.hInstance = GetModuleHandleW(NULL);
-    wc.lpszClassName = L"EscAppStretch";
+    wc.lpszClassName = L"PlavioxStretch";
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     RegisterClassW(&wc);
     RECT frame = {0, 0, width, height};
     DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
     AdjustWindowRect(&frame, style, FALSE);
-    HWND w = CreateWindowExW(0, L"EscAppStretch", L"EscApp stretch probe", style, 100, 100,
+    HWND w = CreateWindowExW(0, L"PlavioxStretch", L"Plaviox stretch probe", style, 100, 100,
                              frame.right - frame.left, frame.bottom - frame.top, NULL, NULL, wc.hInstance, NULL);
 
     IDirect3DDevice9 *d9 = NULL;

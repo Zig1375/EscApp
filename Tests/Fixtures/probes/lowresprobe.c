@@ -1,5 +1,5 @@
 /* An old game's full screen: switches the display to 640x480 (or `probe WxH`), covers it with a popup window and
- * draws a checkerboard with GDI for a few seconds, then reports what Windows told it. EscApp's tests use it to see
+ * draws a checkerboard with GDI for a few seconds, then reports what Windows told it. Plaviox's tests use it to see
  * whether the Mac's own display changed and how large the game ends up on screen. `probe 640x480 d3d9` draws with
  * Direct3D 9 in exclusive full screen instead. */
 #define COBJMACROS
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     WNDCLASSW wc = {0};
     wc.lpfnWndProc = proc;
     wc.hInstance = GetModuleHandleW(NULL);
-    wc.lpszClassName = L"EscAppLowRes";
+    wc.lpszClassName = L"PlavioxLowRes";
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     RegisterClassW(&wc);
     HWND w;
@@ -53,10 +53,10 @@ int main(int argc, char **argv) {
         RECT frame = {0, 0, width, height};
         DWORD style = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
         AdjustWindowRect(&frame, style, FALSE);
-        w = CreateWindowExW(0, L"EscAppLowRes", L"EscApp low-res probe", style, 100, 100, frame.right - frame.left,
+        w = CreateWindowExW(0, L"PlavioxLowRes", L"Plaviox low-res probe", style, 100, 100, frame.right - frame.left,
                             frame.bottom - frame.top, NULL, NULL, wc.hInstance, NULL);
     } else {
-        w = CreateWindowExW(WS_EX_TOPMOST, L"EscAppLowRes", L"EscApp low-res probe", WS_POPUP | WS_VISIBLE, 0, 0,
+        w = CreateWindowExW(WS_EX_TOPMOST, L"PlavioxLowRes", L"Plaviox low-res probe", WS_POPUP | WS_VISIBLE, 0, 0,
                             width, height, NULL, NULL, wc.hInstance, NULL);
     }
 

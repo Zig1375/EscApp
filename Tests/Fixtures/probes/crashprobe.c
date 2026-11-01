@@ -1,10 +1,10 @@
 /* Opens a window and a Direct3D 11 device, then crashes after a second: a game that fails on every backend.
-   EscApp should try each one and then give up. */
+   Plaviox should try each one and then give up. */
 #include <d3d11.h>
 #include "common.h"
 
 int main(void) {
-    probe_window(L"EscApp crash probe");
+    probe_window(L"Plaviox crash probe");
     ID3D11Device *device = NULL;
     D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, NULL, 0, D3D11_SDK_VERSION, &device, NULL, NULL);
     DWORD until = GetTickCount() + 1000;

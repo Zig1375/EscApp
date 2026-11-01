@@ -1,11 +1,11 @@
-/* EscApp's window check for a store's bottle: prints one line per top-level window Windows counts as shown,
+/* Plaviox's window check for a store's bottle: prints one line per top-level window Windows counts as shown,
  * minimised ones included, then exits.
  *
  * store-windows.exe
  *
  * A store's client hides its window when the player closes it and goes on running (Steam then opened a chat
  * window by itself when a message came). From the Mac a hidden window and a minimised one look the same: both
- * are off screen. Inside Wine they differ, so EscApp asks here before it quits the client.
+ * are off screen. Inside Wine they differ, so Plaviox asks here before it quits the client.
  *
  * Each line is "<process id>\t<1 if minimised>\t<title>". */
 #include <windows.h>

@@ -1,6 +1,6 @@
 /* A stand-in for an old game's setup.exe, for the installer tests. Like Inno Setup it takes the folder as
  * `/DIR=...`, and like it the program started first hands the work to a copy of itself in %TEMP% and exits at
- * once, so EscApp has to wait for the bottle rather than for setup.exe. The copy installs the files in GAME\ next
+ * once, so Plaviox has to wait for the bottle rather than for setup.exe. The copy installs the files in GAME\ next
  * to setup.exe, writes an uninstaller, a registry key and Start menu shortcuts made through the shell. */
 #define COBJMACROS
 #include <windows.h>
@@ -8,7 +8,7 @@
 #include <shobjidl.h>
 #include <stdio.h>
 
-/* Makes EscApp's detection see Inno Setup, or with -DNSIS_STYLE NSIS, which also reads its folder the way NSIS
+/* Makes Plaviox's detection see Inno Setup, or with -DNSIS_STYLE NSIS, which also reads its folder the way NSIS
  * does: raw from the command line, after an unquoted " /D=" that must come last. */
 #ifdef NSIS_STYLE
 const char nsis_mark[] = "NullsoftInst";

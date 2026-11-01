@@ -1,7 +1,7 @@
 /* An old game that checks for its CD: it looks for a CD-ROM drive labelled PROBEGAME holding GAME\probegame.exe.
  * Without it, it asks for the disc in a message box and quits once the box is closed (by itself after 10 s, so
  * tests don't wait for a click: Wine ignores MessageBoxTimeout's timeout); with it, it shows a window for a few
- * seconds. EscApp's tests use it for "the game asks for its disc". */
+ * seconds. Plaviox's tests use it for "the game asks for its disc". */
 #include <windows.h>
 #include <stdio.h>
 
@@ -31,9 +31,9 @@ int main(void) {
         WNDCLASSA wc = {0};
         wc.lpfnWndProc = proc;
         wc.hInstance = GetModuleHandleA(NULL);
-        wc.lpszClassName = "EscAppCdProbe";
+        wc.lpszClassName = "PlavioxCdProbe";
         RegisterClassA(&wc);
-        CreateWindowA("EscAppCdProbe", "EscApp CD probe", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 640, 480,
+        CreateWindowA("PlavioxCdProbe", "Plaviox CD probe", WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 640, 480,
                       NULL, NULL, wc.hInstance, NULL);
         for (int i = 0; i < 200; i++) {
             MSG msg;

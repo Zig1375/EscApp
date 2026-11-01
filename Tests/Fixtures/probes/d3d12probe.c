@@ -44,7 +44,7 @@ static void transition(ID3D12GraphicsCommandList *list, ID3D12Resource *resource
 
 int main(int argc, char **argv) {
     int offscreen = argc > 1 && !strcmp(argv[1], "offscreen");
-    HWND window = offscreen ? NULL : probe_window(L"EscApp D3D12 probe");
+    HWND window = offscreen ? NULL : probe_window(L"Plaviox D3D12 probe");
 
     IDXGIFactory4 *factory = NULL;
     CHECK("factory", CreateDXGIFactory2(0, &IID_IDXGIFactory4, (void **)&factory));

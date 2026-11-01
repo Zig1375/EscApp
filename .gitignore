@@ -3,10 +3,10 @@
 .DS_Store
 *.xcodeproj/
 DerivedData/
-App/EscApp/Info.plist
+App/Plaviox/Info.plist
 
 # Left by running the probes in place
-Tests/Fixtures/probes/.escapp
+Tests/Fixtures/probes/.plaviox
 *.dxvk-cache
 
 # Claude Code session lock

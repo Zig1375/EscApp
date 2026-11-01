@@ -3,10 +3,10 @@
 .DS_Store
 *.xcodeproj/
 DerivedData/
-App/Plaviox/Info.plist
+App/MagicKettle/Info.plist
 
 # Left by running the probes in place
-Tests/Fixtures/probes/.plaviox
+Tests/Fixtures/probes/.magickettle
 *.dxvk-cache
 
 # Claude Code session lock

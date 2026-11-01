@@ -1,0 +1,77 @@
+{
+ "format": 1,
+ "generated": "2026-10-28T19:49:10Z",
+ "commit": "f1ac56b0eeed87762787bec947c8c5b0ee85778d",
+ "modules": [
+  {
+   "id": "among-us",
+   "revision": 1,
+   "format": 1,
+   "name": "Among Us",
+   "note": "Unity 2022.3, Direct3D 11, Rewired for input. Checked on the Steam copy, Wine 11.20 (Magic Kettle builds 10 and 11), on an M2 Max. On build 10 the game hung for good after its intro on every backend: its first XInput call waited for Wine's controller thread, which waited for the window lock. MagicKettle-Runtime build 11 fixes that in Wine (patch 0012), so nothing here works around it.",
+   "match": {
+    "steam": [
+     "945360"
+    ],
+    "exe": [
+     {
+      "name": "Among Us.exe"
+     }
+    ]
+   },
+   "requires": {
+    "wine": {
+     "from": "11.20"
+    }
+   },
+   "fixes": [
+    {
+     "note": "With XInput working, DXVK reaches the main menu and plays. D3DMetal crashed in UnityPlayer.dll right after creating its device (read of address 0x20), so DXVK goes first and D3DMetal never needs its turn. DXMT wasn't checked with XInput fixed.",
+     "launch": {
+      "prefer": {
+       "backend": [
+        "dxvk"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": "before-we-leave",
+   "revision": 3,
+   "format": 1,
+   "name": "Before We Leave",
+   "note": "Unity 2019.4, Direct3D 11. Checked on the Epic Games Store copy, Wine 11.20 (Magic Kettle build 9), on an M2 Max. The Steam copy (1073910) is matched too but not checked yet.",
+   "match": {
+    "steam": [
+     "1073910"
+    ],
+    "epic": [
+     "61449320f87347a8bf02159cbf8adb7f:36b11de2ebd3409f9a4435619dfa0fea:Salmon"
+    ],
+    "exe": [
+     {
+      "name": "Before We Leave.exe"
+     }
+    ]
+   },
+   "requires": {
+    "wine": {
+     "from": "11.20"
+    }
+   },
+   "fixes": [
+    {
+     "note": "With DXVK, the auto choice for Direct3D 11, the game's full-screen window stayed black: the game ran and DXVK presented, but no picture appeared. With DXMT the menu shows and the buttons work. Required, not preferred: the black window counted as a start, so DXVK was remembered as working and a preference never got its turn.",
+     "launch": {
+      "require": {
+       "backend": "dxmt"
+      }
+     }
+    }
+   ]
+  }
+ ],
+ "shared": []
+}

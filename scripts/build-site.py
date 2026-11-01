@@ -27,7 +27,7 @@ PAGES = [("template.html", "index.html"), ("directx12.html", "directx12.html")]
 REDIRECT = """  <script>
     try {
       var supported = %s;
-      if (!localStorage.getItem("plaviox-language")) {
+      if (!localStorage.getItem("magickettle-language")) {
         var wanted = (navigator.languages || [navigator.language]).map(function (l) {
           l = l.toLowerCase();
           return l.indexOf("zh") === 0 ? "zh-Hans" : l.split("-")[0];
@@ -40,7 +40,7 @@ REDIRECT = """  <script>
     } catch (e) {}
   </script>"""
 
-REMEMBER = ' onclick="try{localStorage.setItem(\'plaviox-language\',\'%s\')}catch(e){}"'
+REMEMBER = ' onclick="try{localStorage.setItem(\'magickettle-language\',\'%s\')}catch(e){}"'
 
 
 def path_of(lang):

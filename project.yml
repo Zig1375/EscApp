@@ -1,5 +1,5 @@
-# Generates Plaviox.xcodeproj: `xcodegen generate`. The project file isn't committed; this is the source of truth.
-name: Plaviox
+# Generates MagicKettle.xcodeproj: `xcodegen generate`. The project file isn't committed; this is the source of truth.
+name: MagicKettle
 options:
   bundleIdPrefix: com.zig1375
   deploymentTarget:
@@ -8,33 +8,33 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    # The app is PLAVIOX_VERSION.PLAVIOX_BUILD. Only the first two parts live here; the release job in
+    # The app is MAGICKETTLE_VERSION.MAGICKETTLE_BUILD. Only the first two parts live here; the release job in
     # .github/workflows/ci.yml numbers builds 1, 2, 3… across all versions (scripts/next-version.sh) and passes
-    # PLAVIOX_BUILD. A local build is build 0. Keep PlavioxCommand.version the same (a test checks it).
-    PLAVIOX_VERSION: "1.0"
-    PLAVIOX_BUILD: "0"
-    MARKETING_VERSION: "$(PLAVIOX_VERSION).$(PLAVIOX_BUILD)"
-    CURRENT_PROJECT_VERSION: "$(PLAVIOX_BUILD)"
+    # MAGICKETTLE_BUILD. A local build is build 0. Keep MagicKettleCommand.version the same (a test checks it).
+    MAGICKETTLE_VERSION: "1.0"
+    MAGICKETTLE_BUILD: "0"
+    MARKETING_VERSION: "$(MAGICKETTLE_VERSION).$(MAGICKETTLE_BUILD)"
+    CURRENT_PROJECT_VERSION: "$(MAGICKETTLE_BUILD)"
     ARCHS: arm64
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_EMIT_LOC_STRINGS: YES
     LOCALIZATION_PREFERS_STRING_CATALOGS: YES
 packages:
-  Plaviox:
+  MagicKettle:
     path: .
 targets:
-  Plaviox:
+  MagicKettle:
     type: application
     platform: macOS
     sources:
-      - App/Plaviox
+      - App/MagicKettle
     info:
-      path: App/Plaviox/Info.plist
+      path: App/MagicKettle/Info.plist
       properties:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        # Plaviox opens Windows programs and installers. "Default" rank: Plaviox becomes their app unless the user
-        # already picked another one; Settings offers to make Plaviox the default.
+        # Magic Kettle opens Windows programs and installers. "Default" rank: Magic Kettle becomes their app unless
+        # the user already picked another one; Settings offers to make Magic Kettle the default.
         CFBundleDocumentTypes:
           - CFBundleTypeName: Windows Program
             CFBundleTypeRole: Viewer
@@ -44,7 +44,7 @@ targets:
             CFBundleTypeRole: Viewer
             LSHandlerRank: Default
             LSItemContentTypes: [com.microsoft.windows-installer]
-          # A game's CD. "Alternate": Finder keeps mounting disc images itself; Plaviox is in "Open With" and
+          # A game's CD. "Alternate": Finder keeps mounting disc images itself; Magic Kettle is in "Open With" and
           # takes an image dropped on its icon or window.
           - CFBundleTypeName: Disc Image
             CFBundleTypeRole: Viewer
@@ -62,16 +62,19 @@ targets:
             UTTypeTagSpecification:
               public.filename-extension: [msi]
     dependencies:
-      - package: Plaviox
-        product: PlavioxKit
+      - package: MagicKettle
+        product: MagicKettleKit
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.zig1375.Plaviox
-        PRODUCT_NAME: Plaviox
-        # App/Plaviox/AppIcon.icon (Icon Composer): macOS 26 shapes it itself; Xcode renders the older sizes.
+        PRODUCT_BUNDLE_IDENTIFIER: com.zig1375.MagicKettle
+        # The app is "Magic Kettle.app", so the menu bar and About say the name with its space; Swift code imports
+        # the module without one.
+        PRODUCT_NAME: Magic Kettle
+        PRODUCT_MODULE_NAME: MagicKettle
+        # App/MagicKettle/AppIcon.icon (Icon Composer): macOS 26 shapes it itself; Xcode renders the older sizes.
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Plaviox
+        INFOPLIST_KEY_CFBundleDisplayName: "Magic Kettle"
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.games
         INFOPLIST_KEY_NSHumanReadableCopyright: "Apache-2.0"
         # Wine needs to load unsigned code and map executable memory, which the sandbox forbids.

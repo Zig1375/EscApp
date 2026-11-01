@@ -11,8 +11,8 @@
 
 #define EXTRA_FLAGS L" --disable-gpu --disable-gpu-compositing --in-process-gpu"
 
-// Plaviox tells its wrapper from the vendor's helper by this text (`ChromiumHelper.marker`).
-__attribute__((used)) static const char marker[] = "plaviox-chromium-helper/1";
+// Magic Kettle tells its wrapper from the vendor's helper by this text (`ChromiumHelper.marker`).
+__attribute__((used)) static const char marker[] = "magickettle-chromium-helper/1";
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command, int show) {
     wchar_t real[MAX_PATH];

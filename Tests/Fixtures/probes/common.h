@@ -12,10 +12,10 @@ static HWND probe_window(const wchar_t *title) {
     WNDCLASSW wc = {0};
     wc.lpfnWndProc = probe_proc;
     wc.hInstance = GetModuleHandleW(NULL);
-    wc.lpszClassName = L"PlavioxProbe";
+    wc.lpszClassName = L"MagicKettleProbe";
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     RegisterClassW(&wc);
-    HWND w = CreateWindowW(L"PlavioxProbe", title, WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
+    HWND w = CreateWindowW(L"MagicKettleProbe", title, WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT,
                            640, 480, NULL, NULL, wc.hInstance, NULL);
     return w;
 }

@@ -1,4 +1,4 @@
-/* Plaviox's window keeper: runs in a game's bottle beside the game, remembers where the player put the game's
+/* Magic Kettle's window keeper: runs in a game's bottle beside the game, remembers where the player put the game's
  * window and how large they made it, and puts it back there at the next launch. Wine creates the game's windows
  * where the game asks, and games rarely remember; doing it from inside Wine needs no permission on the Mac.
  *

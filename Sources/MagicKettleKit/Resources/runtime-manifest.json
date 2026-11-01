@@ -1,0 +1,722 @@
+{
+  "format": 1,
+  "runtimes": [
+    {
+      "id": "wine-11.0-whisky-3.1.1",
+      "minApp": "0.1.0",
+      "minMacOS": "15.0",
+      "components": [
+        {
+          "kind": "wine",
+          "version": "11.0 (WhiskyWine 3.1.1)",
+          "url": "https://github.com/frankea/Whisky/releases/download/v3.1.1/Libraries.tar.gz",
+          "sha256": "01f3a1b43b98065fe20c529c1023b61dd79a6d2ad93bba6040865f646481ccf3",
+          "size": 332438526,
+          "license": "LGPL-2.1-or-later",
+          "from": "Libraries/Wine",
+          "into": "wine"
+        },
+        {
+          "kind": "dxvk",
+          "version": "1.10.3-20230507-repack",
+          "url": "https://github.com/Gcenx/DXVK-macOS/releases/download/v1.10.3-20230507-repack/dxvk-macOS-async-v1.10.3-20230507-repack-builtin.tar.gz",
+          "sha256": "810b1e5caf8ce975b784fae866a130ad23fa0ea233b0e5609cbc4a45f3ef6f00",
+          "size": 2785833,
+          "license": "Zlib",
+          "from": "dxvk-macOS-async-v1.10.3-20230507-repack-builtin",
+          "into": "dxvk"
+        },
+        {
+          "kind": "dxmt",
+          "version": "0.80",
+          "url": "https://github.com/3Shain/dxmt/releases/download/v0.80/dxmt-v0.80-builtin.tar.gz",
+          "sha256": "8f260e36b5739e68f3bad613381441385c4dc7b85b78ba8de653d5a6a264529d",
+          "size": 18681669,
+          "license": "MIT",
+          "from": "v0.80",
+          "into": "dxmt"
+        }
+      ]
+    },
+    {
+      "id": "wine-11.20-magickettle-15",
+      "minApp": "0.1.0",
+      "minMacOS": "15.0",
+      "components": [
+        {
+          "kind": "wine",
+          "version": "11.20 (Magic Kettle build 15)",
+          "url": "https://github.com/Zig1375/MagicKettle-Runtime/releases/download/wine-11.20-15/magickettle-wine-11.20-15.tar.xz",
+          "sha256": "7b3196a5a5fac07a554f4b098db01e04172f084883d9ffdd1bbcd052e1a363ca",
+          "size": 260706852,
+          "license": "LGPL-2.1-or-later",
+          "from": "wine",
+          "into": "wine",
+          "features": [
+            "osync",
+            "d3dmetal"
+          ]
+        },
+        {
+          "kind": "dxvk",
+          "version": "1.10.3-20230507-repack",
+          "url": "https://github.com/Gcenx/DXVK-macOS/releases/download/v1.10.3-20230507-repack/dxvk-macOS-async-v1.10.3-20230507-repack-builtin.tar.gz",
+          "sha256": "810b1e5caf8ce975b784fae866a130ad23fa0ea233b0e5609cbc4a45f3ef6f00",
+          "size": 2785833,
+          "license": "Zlib",
+          "from": "dxvk-macOS-async-v1.10.3-20230507-repack-builtin",
+          "into": "dxvk"
+        },
+        {
+          "kind": "dxmt",
+          "version": "0.80",
+          "url": "https://github.com/3Shain/dxmt/releases/download/v0.80/dxmt-v0.80-builtin.tar.gz",
+          "sha256": "8f260e36b5739e68f3bad613381441385c4dc7b85b78ba8de653d5a6a264529d",
+          "size": 18681669,
+          "license": "MIT",
+          "from": "v0.80",
+          "into": "dxmt"
+        }
+      ]
+    }
+  ],
+  "games": [],
+  "rtps": [
+    {
+      "engine": "RGSS",
+      "name": "Standard",
+      "version": "1.04 (English, with the Japanese engines)",
+      "url": "https://assets.rpgmakerweb.com/xp_rtp104e.exe",
+      "sha256": "b3bd20ad7f413b40ac233aafd2e061de1dc429c2eadb59d0b3157ba3c47f16b2",
+      "size": 22994937,
+      "license": "Enterbrain RTP EULA",
+      "setup": ""
+    },
+    {
+      "engine": "RGSS2",
+      "name": "RPGVX",
+      "version": "2.02 (Japanese, with the English engine)",
+      "url": "https://cdn.tkool.jp/updata/rtp/vx_rtp202.zip",
+      "sha256": "ac668cd1ea09abd6fcd66fc67f8203a2ae8a0c4e696389241549973dcdde42d0",
+      "size": 36819395,
+      "license": "Enterbrain RTP EULA",
+      "setup": "RPGVX_RTP202/setup.exe"
+    },
+    {
+      "engine": "RGSS3",
+      "name": "RPGVXAce",
+      "version": "1.00",
+      "url": "https://assets.rpgmakerweb.com/RPGVXAce_RTP.zip",
+      "sha256": "7e93d0ead93a686218b7c671bf099ef42f09f536083bd0b2f0fa6423a39fc19b",
+      "size": 194690591,
+      "license": "Enterbrain RTP EULA",
+      "setup": "RTP100/Setup.exe"
+    }
+  ],
+  "redists": [
+    {
+      "id": "vcrun2005-x86",
+      "name": "Microsoft Visual C++ 2005",
+      "kind": "vcrun",
+      "version": "8.0.50727.6195",
+      "architecture": "x86",
+      "url": "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x86.EXE",
+      "sha256": "8648c5fc29c44b9112fe52f9a33f80e7fc42d10f3b5b42b2121542a13e44adfd",
+      "size": 2710520,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/q"
+      ],
+      "provides": [
+        "msvcr80.dll",
+        "msvcp80.dll",
+        "msvcm80.dll",
+        "atl80.dll",
+        "mfc80.dll",
+        "mfc80u.dll",
+        "vcomp.dll"
+      ],
+      "check": "windows/winsxs"
+    },
+    {
+      "id": "vcrun2005-x64",
+      "name": "Microsoft Visual C++ 2005",
+      "kind": "vcrun",
+      "version": "8.0.50727.6195",
+      "architecture": "x64",
+      "url": "https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x64.EXE",
+      "sha256": "4487570bd86e2e1aac29db2a1d0a91eb63361fcaac570808eb327cd4e0e2240d",
+      "size": 3179000,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/q"
+      ],
+      "provides": [
+        "msvcr80.dll",
+        "msvcp80.dll",
+        "msvcm80.dll",
+        "atl80.dll",
+        "mfc80.dll",
+        "mfc80u.dll",
+        "vcomp.dll"
+      ],
+      "check": "windows/winsxs"
+    },
+    {
+      "id": "vcrun2008-x86",
+      "name": "Microsoft Visual C++ 2008",
+      "kind": "vcrun",
+      "version": "9.0.30729.6161",
+      "architecture": "x86",
+      "url": "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe",
+      "sha256": "8742bcbf24ef328a72d2a27b693cc7071e38d3bb4b9b44dec42aa3d2c8d61d92",
+      "size": 4483040,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/q"
+      ],
+      "provides": [
+        "msvcr90.dll",
+        "msvcp90.dll",
+        "msvcm90.dll",
+        "atl90.dll",
+        "mfc90.dll",
+        "mfc90u.dll",
+        "vcomp90.dll"
+      ],
+      "check": "windows/winsxs"
+    },
+    {
+      "id": "vcrun2008-x64",
+      "name": "Microsoft Visual C++ 2008",
+      "kind": "vcrun",
+      "version": "9.0.30729.6161",
+      "architecture": "x64",
+      "url": "https://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe",
+      "sha256": "c5e273a4a16ab4d5471e91c7477719a2f45ddadb76c7f98a38fa5074a6838654",
+      "size": 5211080,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/q"
+      ],
+      "provides": [
+        "msvcr90.dll",
+        "msvcp90.dll",
+        "msvcm90.dll",
+        "atl90.dll",
+        "mfc90.dll",
+        "mfc90u.dll",
+        "vcomp90.dll"
+      ],
+      "check": "windows/winsxs"
+    },
+    {
+      "id": "vcrun2010-x86",
+      "name": "Microsoft Visual C++ 2010",
+      "kind": "vcrun",
+      "version": "10.0.40219.325",
+      "architecture": "x86",
+      "url": "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x86.exe",
+      "sha256": "99dce3c841cc6028560830f7866c9ce2928c98cf3256892ef8e6cf755147b0d8",
+      "size": 8993744,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/q",
+        "/norestart"
+      ],
+      "provides": [
+        "msvcr100.dll",
+        "msvcp100.dll",
+        "atl100.dll",
+        "mfc100.dll",
+        "mfc100u.dll",
+        "vcomp100.dll"
+      ],
+      "check": "windows/syswow64"
+    },
+    {
+      "id": "vcrun2010-x64",
+      "name": "Microsoft Visual C++ 2010",
+      "kind": "vcrun",
+      "version": "10.0.40219.325",
+      "architecture": "x64",
+      "url": "https://download.microsoft.com/download/1/6/5/165255E7-1014-4D0A-B094-B6A430A6BFFC/vcredist_x64.exe",
+      "sha256": "f3b7a76d84d23f91957aa18456a14b4e90609e4ce8194c5653384ed38dada6f3",
+      "size": 10277328,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/q",
+        "/norestart"
+      ],
+      "provides": [
+        "msvcr100.dll",
+        "msvcp100.dll",
+        "atl100.dll",
+        "mfc100.dll",
+        "mfc100u.dll",
+        "vcomp100.dll"
+      ],
+      "check": "windows/system32"
+    },
+    {
+      "id": "vcrun2012-x86",
+      "name": "Microsoft Visual C++ 2012",
+      "kind": "vcrun",
+      "version": "11.0.61030",
+      "architecture": "x86",
+      "url": "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe",
+      "sha256": "b924ad8062eaf4e70437c8be50fa612162795ff0839479546ce907ffa8d6e386",
+      "size": 6554576,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "msvcr110.dll",
+        "msvcp110.dll",
+        "atl110.dll",
+        "mfc110.dll",
+        "mfc110u.dll",
+        "vcomp110.dll",
+        "vccorlib110.dll"
+      ],
+      "check": "windows/syswow64"
+    },
+    {
+      "id": "vcrun2012-x64",
+      "name": "Microsoft Visual C++ 2012",
+      "kind": "vcrun",
+      "version": "11.0.61030",
+      "architecture": "x64",
+      "url": "https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe",
+      "sha256": "681be3e5ba9fd3da02c09d7e565adfa078640ed66a0d58583efad2c1e3cc4064",
+      "size": 7186992,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "msvcr110.dll",
+        "msvcp110.dll",
+        "atl110.dll",
+        "mfc110.dll",
+        "mfc110u.dll",
+        "vcomp110.dll",
+        "vccorlib110.dll"
+      ],
+      "check": "windows/system32"
+    },
+    {
+      "id": "vcrun2013-x86",
+      "name": "Microsoft Visual C++ 2013",
+      "kind": "vcrun",
+      "version": "12.0.40664",
+      "architecture": "x86",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/10912113/5da66ddebb0ad32ebd4b922fd82e8e25/vcredist_x86.exe",
+      "sha256": "53b605d1100ab0a88b867447bbf9274b5938125024ba01f5105a9e178a3dcdbd",
+      "size": 6510136,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "msvcr120.dll",
+        "msvcp120.dll",
+        "mfc120.dll",
+        "mfc120u.dll",
+        "vcomp120.dll",
+        "vccorlib120.dll"
+      ],
+      "check": "windows/syswow64"
+    },
+    {
+      "id": "vcrun2013-x64",
+      "name": "Microsoft Visual C++ 2013",
+      "kind": "vcrun",
+      "version": "12.0.40664",
+      "architecture": "x64",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/10912041/cee5d6bca2ddbcd039da727bf4acb48a/vcredist_x64.exe",
+      "sha256": "a4bba7701e355ae29c403431f871a537897c363e215cafe706615e270984f17c",
+      "size": 7200744,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "msvcr120.dll",
+        "msvcp120.dll",
+        "mfc120.dll",
+        "mfc120u.dll",
+        "vcomp120.dll",
+        "vccorlib120.dll"
+      ],
+      "check": "windows/system32"
+    },
+    {
+      "id": "vcrun14-x86",
+      "name": "Microsoft Visual C++ 2015–2026",
+      "kind": "vcrun",
+      "version": "14.51.36247",
+      "architecture": "x86",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/6ad63323-a427-4c58-8464-9f1f19f62359/F0BAB33A302B3CDB2E11113760D016F54FD3D2632C65BA7834FAC4F0ABD7F1A3/VC_redist.x86.exe",
+      "sha256": "f0bab33a302b3cdb2e11113760d016f54fd3d2632c65ba7834fac4f0abd7f1a3",
+      "size": 6941536,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "vcruntime140.dll",
+        "vcruntime140_1.dll",
+        "msvcp140.dll",
+        "msvcp140_1.dll",
+        "msvcp140_2.dll",
+        "msvcp140_atomic_wait.dll",
+        "msvcp140_codecvt_ids.dll",
+        "concrt140.dll",
+        "vccorlib140.dll",
+        "vcomp140.dll",
+        "vcamp140.dll",
+        "mfc140.dll",
+        "mfc140u.dll"
+      ],
+      "check": "windows/syswow64"
+    },
+    {
+      "id": "vcrun14-x64",
+      "name": "Microsoft Visual C++ 2015–2026",
+      "kind": "vcrun",
+      "version": "14.51.36247",
+      "architecture": "x64",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/ebdab8e5-1d7b-4d9f-a11b-cbb1720c3b12/843068991DAAA1F73AD9F6239BCE4D0F6A07A51F18C37EA2A867E9BECA71295C/VC_redist.x64.exe",
+      "sha256": "843068991daaa1f73ad9f6239bce4d0f6a07a51f18c37ea2a867e9beca71295c",
+      "size": 18731856,
+      "license": "Microsoft Visual C++ Redistributable",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "vcruntime140.dll",
+        "vcruntime140_1.dll",
+        "msvcp140.dll",
+        "msvcp140_1.dll",
+        "msvcp140_2.dll",
+        "msvcp140_atomic_wait.dll",
+        "msvcp140_codecvt_ids.dll",
+        "concrt140.dll",
+        "vccorlib140.dll",
+        "vcomp140.dll",
+        "vcamp140.dll",
+        "mfc140.dll",
+        "mfc140u.dll"
+      ],
+      "check": "windows/system32"
+    },
+    {
+      "id": "dotnet3-x86",
+      "name": "Microsoft .NET 3.1",
+      "kind": "dotnet",
+      "version": "3.1.32",
+      "architecture": "x86",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/3f353d2c-0431-48c5-bdf6-fbbe8f901bb5/542a4af07c1df5136a98a1c2df6f3d62/windowsdesktop-runtime-3.1.32-win-x86.exe",
+      "sha256": "765436d4aa3de87af8b390d1cd16fce94c5f72dd04173adbb49c940b98b47704",
+      "size": 49125288,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/3",
+        "Microsoft.WindowsDesktop.App/3"
+      ],
+      "check": "Program Files (x86)/dotnet/shared/Microsoft.WindowsDesktop.App/3.1.32"
+    },
+    {
+      "id": "dotnet3-x64",
+      "name": "Microsoft .NET 3.1",
+      "kind": "dotnet",
+      "version": "3.1.32",
+      "architecture": "x64",
+      "url": "https://download.visualstudio.microsoft.com/download/pr/b92958c6-ae36-4efa-aafe-569fced953a5/1654639ef3b20eb576174c1cc200f33a/windowsdesktop-runtime-3.1.32-win-x64.exe",
+      "sha256": "22f4050ae4b6cdfd109f229f7f7a56f3b3afde00f592babfe890177c76ad8e40",
+      "size": 54712856,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/3",
+        "Microsoft.WindowsDesktop.App/3"
+      ],
+      "check": "Program Files/dotnet/shared/Microsoft.WindowsDesktop.App/3.1.32"
+    },
+    {
+      "id": "dotnet5-x86",
+      "name": "Microsoft .NET 5",
+      "kind": "dotnet",
+      "version": "5.0.17",
+      "architecture": "x86",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/5.0.17/windowsdesktop-runtime-5.0.17-win-x86.exe",
+      "sha256": "63fef76824c51df09ed6fc5b031796fad64435db0e72f1735021b55760360c98",
+      "size": 49729032,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/5",
+        "Microsoft.WindowsDesktop.App/5"
+      ],
+      "check": "Program Files (x86)/dotnet/shared/Microsoft.WindowsDesktop.App/5.0.17"
+    },
+    {
+      "id": "dotnet5-x64",
+      "name": "Microsoft .NET 5",
+      "kind": "dotnet",
+      "version": "5.0.17",
+      "architecture": "x64",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/5.0.17/windowsdesktop-runtime-5.0.17-win-x64.exe",
+      "sha256": "925cc68a346cf5692fc1b52f498db32edd278ade3f4331539b7914e23f3af417",
+      "size": 55338488,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/5",
+        "Microsoft.WindowsDesktop.App/5"
+      ],
+      "check": "Program Files/dotnet/shared/Microsoft.WindowsDesktop.App/5.0.17"
+    },
+    {
+      "id": "dotnet6-x86",
+      "name": "Microsoft .NET 6",
+      "kind": "dotnet",
+      "version": "6.0.36",
+      "architecture": "x86",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/6.0.36/windowsdesktop-runtime-6.0.36-win-x86.exe",
+      "sha256": "4e77bd970df0a06528ee88d33e4a8c9fb85beedbdd7219b017083acf0c3aa39e",
+      "size": 52173224,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/6",
+        "Microsoft.WindowsDesktop.App/6"
+      ],
+      "check": "Program Files (x86)/dotnet/shared/Microsoft.WindowsDesktop.App/6.0.36"
+    },
+    {
+      "id": "dotnet6-x64",
+      "name": "Microsoft .NET 6",
+      "kind": "dotnet",
+      "version": "6.0.36",
+      "architecture": "x64",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/6.0.36/windowsdesktop-runtime-6.0.36-win-x64.exe",
+      "sha256": "0d20debb26fc8b2bc84f25fbd9d4596a6364af8517ebf012e8b871127b798941",
+      "size": 57380656,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/6",
+        "Microsoft.WindowsDesktop.App/6"
+      ],
+      "check": "Program Files/dotnet/shared/Microsoft.WindowsDesktop.App/6.0.36"
+    },
+    {
+      "id": "dotnet7-x86",
+      "name": "Microsoft .NET 7",
+      "kind": "dotnet",
+      "version": "7.0.20",
+      "architecture": "x86",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/7.0.20/windowsdesktop-runtime-7.0.20-win-x86.exe",
+      "sha256": "58d32d9857bda5da99afc217669aedacdffb20aed61f15315718eeb3a455b273",
+      "size": 53193856,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/7",
+        "Microsoft.WindowsDesktop.App/7"
+      ],
+      "check": "Program Files (x86)/dotnet/shared/Microsoft.WindowsDesktop.App/7.0.20"
+    },
+    {
+      "id": "dotnet7-x64",
+      "name": "Microsoft .NET 7",
+      "kind": "dotnet",
+      "version": "7.0.20",
+      "architecture": "x64",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/7.0.20/windowsdesktop-runtime-7.0.20-win-x64.exe",
+      "sha256": "57e7c16e7226c9a29dbc3faedd9e5876cec494c7660528052f52160521e7b714",
+      "size": 58011208,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/7",
+        "Microsoft.WindowsDesktop.App/7"
+      ],
+      "check": "Program Files/dotnet/shared/Microsoft.WindowsDesktop.App/7.0.20"
+    },
+    {
+      "id": "dotnet8-x86",
+      "name": "Microsoft .NET 8",
+      "kind": "dotnet",
+      "version": "8.0.33",
+      "architecture": "x86",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/8.0.33/windowsdesktop-runtime-8.0.33-win-x86.exe",
+      "sha256": "c53526f89d73c8026ac5217ad08069d17547e8d8aa33ecdc898130030a47a14f",
+      "size": 53711792,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/8",
+        "Microsoft.WindowsDesktop.App/8"
+      ],
+      "check": "Program Files (x86)/dotnet/shared/Microsoft.WindowsDesktop.App/8.0.33"
+    },
+    {
+      "id": "dotnet8-x64",
+      "name": "Microsoft .NET 8",
+      "kind": "dotnet",
+      "version": "8.0.33",
+      "architecture": "x64",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/8.0.33/windowsdesktop-runtime-8.0.33-win-x64.exe",
+      "sha256": "4de14de0b327e801d7a691cb1afc8a00db5313a698ef53b979fc6f84fce631de",
+      "size": 58398672,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/8",
+        "Microsoft.WindowsDesktop.App/8"
+      ],
+      "check": "Program Files/dotnet/shared/Microsoft.WindowsDesktop.App/8.0.33"
+    },
+    {
+      "id": "dotnet9-x86",
+      "name": "Microsoft .NET 9",
+      "kind": "dotnet",
+      "version": "9.0.22",
+      "architecture": "x86",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/9.0.22/windowsdesktop-runtime-9.0.22-win-x86.exe",
+      "sha256": "32d140ee7ce3dddd4f450e48f3cb11dba79a5e4d09c168b97957361753ef283c",
+      "size": 55338704,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/9",
+        "Microsoft.WindowsDesktop.App/9"
+      ],
+      "check": "Program Files (x86)/dotnet/shared/Microsoft.WindowsDesktop.App/9.0.22"
+    },
+    {
+      "id": "dotnet9-x64",
+      "name": "Microsoft .NET 9",
+      "kind": "dotnet",
+      "version": "9.0.22",
+      "architecture": "x64",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/9.0.22/windowsdesktop-runtime-9.0.22-win-x64.exe",
+      "sha256": "79777a9e4d95f9f10126c2bc2bac673df987a29b64ce107b3fd1704f63633865",
+      "size": 60574328,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/9",
+        "Microsoft.WindowsDesktop.App/9"
+      ],
+      "check": "Program Files/dotnet/shared/Microsoft.WindowsDesktop.App/9.0.22"
+    },
+    {
+      "id": "dotnet10-x86",
+      "name": "Microsoft .NET 10",
+      "kind": "dotnet",
+      "version": "10.0.14",
+      "architecture": "x86",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/10.0.14/windowsdesktop-runtime-10.0.14-win-x86.exe",
+      "sha256": "dc55074ab269c4c13aa51d684ef803d4b5ad5ee5e1eb8238efc190c8fbd0d5fd",
+      "size": 55571928,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/10",
+        "Microsoft.WindowsDesktop.App/10"
+      ],
+      "check": "Program Files (x86)/dotnet/shared/Microsoft.WindowsDesktop.App/10.0.14"
+    },
+    {
+      "id": "dotnet10-x64",
+      "name": "Microsoft .NET 10",
+      "kind": "dotnet",
+      "version": "10.0.14",
+      "architecture": "x64",
+      "url": "https://builds.dotnet.microsoft.com/dotnet/WindowsDesktop/10.0.14/windowsdesktop-runtime-10.0.14-win-x64.exe",
+      "sha256": "91c2795a7b1e2480caa83fce9514dc2e2d21e277d9a297311faba6040bad7330",
+      "size": 60035296,
+      "license": "MIT",
+      "arguments": [
+        "/install",
+        "/quiet",
+        "/norestart"
+      ],
+      "provides": [
+        "Microsoft.NETCore.App/10",
+        "Microsoft.WindowsDesktop.App/10"
+      ],
+      "check": "Program Files/dotnet/shared/Microsoft.WindowsDesktop.App/10.0.14"
+    }
+  ]
+}

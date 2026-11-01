@@ -37,7 +37,7 @@
             <a class="btn btn-primary" href="https://github.com/Zig1375/EscApp">{{follow}}</a>
             <a class="btn btn-ghost" href="https://github.com/Zig1375/EscApp/releases/latest">{{download}}</a>
           </div>
-          <p class="req">{{requirements}}</p>
+          <p class="req">{{requirements}} · <a href="#install">{{install_link}}</a></p>
         </div>
         <img class="hero-icon" src="{{root}}icon.png" alt="{{icon_alt}}">
       </div>
@@ -77,6 +77,26 @@
           <figcaption>{{setup_caption}}</figcaption>
         </figure>
       </div>
+    </section>
+
+    <section id="install">
+      <h2>{{install_title}}</h2>
+      <p class="sub">{{install_lead}}</p>
+      <div class="steps">
+        <div class="step">
+          <h3>{{install1_title}}</h3>
+          <p>{{install1_text}}</p>
+        </div>
+        <div class="step">
+          <h3>{{install2_title}}</h3>
+          <p>{{install2_text}}</p>
+        </div>
+        <div class="step">
+          <h3>{{install3_title}}</h3>
+          <p>{{install3_text}}</p>
+        </div>
+      </div>
+      <p class="sub install-terminal">{{install_terminal}} <code>xattr -dr com.apple.quarantine /Applications/EscApp.app</code></p>
     </section>
 
     <section id="features">

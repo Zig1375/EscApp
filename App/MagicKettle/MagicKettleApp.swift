@@ -50,7 +50,7 @@ struct MagicKettleApp: App {
         .windowStyle(.hiddenTitleBar)
         .commands {
             CommandGroup(after: .appInfo) {
-                CheckForUpdatesButton(components: components)
+                CheckForUpdatesButton(components: components, updater: delegate.updater)
             }
         }
 
@@ -62,7 +62,8 @@ struct MagicKettleApp: App {
         }
 
         Settings {
-            SettingsView(components: components, library: delegate.library, directX12: directX12)
+            SettingsView(components: components, library: delegate.library, updater: delegate.updater,
+                         directX12: directX12)
         }
 
         Window("DirectX 12", id: DirectX12Window.id) {
@@ -87,6 +88,7 @@ struct MagicKettleApp: App {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let library = LibraryModel()
+    let updater = AppUpdater()
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         #if DEBUG
@@ -147,12 +149,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 private struct CheckForUpdatesButton: View {
     let components: ComponentsModel
+    let updater: AppUpdater
     @Environment(\.openSettings) private var openSettings
 
     var body: some View {
-        Button("Check for Component Updates…") {
+        Button("Check for Updates…") {
             UserDefaults.standard.set(SettingsView.Section.components.rawValue, forKey: SettingsView.sectionKey)
             openSettings()
+            updater.checkForUpdates()
             Task { await components.checkNow() }
         }
     }

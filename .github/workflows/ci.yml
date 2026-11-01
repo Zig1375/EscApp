@@ -62,9 +62,15 @@ jobs:
           /usr/libexec/PlistBuddy -c 'Print CFBundleIconName' "$app/Contents/Info.plist"
           test -s "$app/Contents/Resources/AppIcon.icns"
           ditto -c -k --keepParent "$app" "MagicKettle-${{ steps.version.outputs.version }}.zip"
+      - name: Sign the update
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          scripts/appcast.sh "MagicKettle-${{ steps.version.outputs.version }}.zip" \
+            "${{ steps.version.outputs.version }}" "${{ steps.version.outputs.build }}" > appcast.xml
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "v${{ steps.version.outputs.version }}" "MagicKettle-${{ steps.version.outputs.version }}.zip" \
-            --target "$GITHUB_SHA" --title "Magic Kettle ${{ steps.version.outputs.version }}" --generate-notes
+            appcast.xml --target "$GITHUB_SHA" --title "Magic Kettle ${{ steps.version.outputs.version }}" --generate-notes

@@ -24,7 +24,8 @@ struct SettingsView: View {
     static let sectionKey = "SettingsSection"
     let components: ComponentsModel
     let library: LibraryModel
-    /// Remembered, and set by "Check for Component Updates…" to land on Components.
+    let updater: AppUpdater
+    /// Remembered, and set by "Check for Updates…" to land on Components.
     @AppStorage(SettingsView.sectionKey) private var section: Section = .general
     let directX12: DirectX12Model
 
@@ -66,7 +67,7 @@ struct SettingsView: View {
     @ViewBuilder private var page: some View {
         switch section {
         case .general: GeneralCard(components: components, library: library)
-        case .components: ComponentsCard(components: components)
+        case .components: ComponentsCard(components: components, updater: updater)
         case .directX12: DirectX12Card(model: directX12, components: components)
         case .disk: DiskCard(components: components)
         case .saves: SavesCard(profile: components.paths.profile)
@@ -135,6 +136,7 @@ struct Note: View {
 
 private struct ComponentsCard: View {
     let components: ComponentsModel
+    let updater: AppUpdater
     @State private var showsLicenses = false
 
     var body: some View {
@@ -195,7 +197,9 @@ private struct ComponentsCard: View {
                 Button("Update") { Task { await components.installUpdate() } }
                     .buttonStyle(CompactButtonStyle(kind: .primary))
             }
+            // The app and its components both: a player looking for a new Magic Kettle presses this one.
             Button(components.isChecking ? "Checking…" : "Check for Updates") {
+                updater.checkForUpdates()
                 Task { await components.checkNow() }
             }
             .buttonStyle(CompactButtonStyle())

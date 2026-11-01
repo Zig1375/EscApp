@@ -1044,54 +1044,54 @@
         }
       }
     },
-    "Check for Component Updates…": {
+    "Check for Updates…": {
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nach Komponenten-Updates suchen …"
+            "value": "Nach Updates suchen …"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Buscar actualizaciones de componentes…"
+            "value": "Buscar actualizaciones…"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rechercher des mises à jour des composants…"
+            "value": "Rechercher des mises à jour…"
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Controlla aggiornamenti componenti…"
+            "value": "Controlla aggiornamenti…"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "コンポーネントのアップデートを確認…"
+            "value": "アップデートを確認…"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "구성 요소 업데이트 확인…"
+            "value": "업데이트 확인…"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Проверить обновления компонентов…"
+            "value": "Проверить обновления…"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "检查组件更新…"
+            "value": "检查更新…"
           }
         }
       }

@@ -22,6 +22,10 @@ settings:
 packages:
   MagicKettle:
     path: .
+  # Updates the app itself (AppUpdater). The same version's tools sign releases in ci.yml (scripts/appcast.sh).
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.0
 targets:
   MagicKettle:
     type: application
@@ -33,6 +37,11 @@ targets:
       properties:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # Sparkle: the newest release's appcast.xml, and the public half of the key ci.yml signs releases with.
+        SUFeedURL: https://github.com/Zig1375/MagicKettle/releases/latest/download/appcast.xml
+        SUPublicEDKey: 0px5Il6ozIc1xcFv70Cbs36fr0eO3CQb9mCupOg4prs=
+        # Daily checks from the first launch, without Sparkle asking for permission on the second one.
+        SUEnableAutomaticChecks: true
         # Magic Kettle opens Windows programs and installers. "Default" rank alone leaves them with an app the user
         # picked before (Whisky), so Magic Kettle also takes them on its first launch (`claimExeFilesOnce`).
         # An .msi is com.microsoft.msi-installer on a Mac where Whisky declared it, so both types are listed.
@@ -65,6 +74,7 @@ targets:
     dependencies:
       - package: MagicKettle
         product: MagicKettleKit
+      - package: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.zig1375.MagicKettle
@@ -81,6 +91,9 @@ targets:
         # Wine needs to load unsigned code and map executable memory, which the sandbox forbids.
         ENABLE_APP_SANDBOX: NO
         ENABLE_HARDENED_RUNTIME: YES
+        # Releases are signed ad hoc, which gives no team: library validation then refused the embedded
+        # Sparkle.framework ("different Team IDs") and the app quit at launch.
+        CODE_SIGN_ENTITLEMENTS: App/MagicKettle/MagicKettle.entitlements
         ENABLE_PREVIEWS: YES
       configs:
         # Debug signs from App/Signing.xcconfig (target settings would override it, so signing isn't in `base`).

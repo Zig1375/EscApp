@@ -8,6 +8,18 @@ Magic Kettle is a Mac app (Apple Silicon, macOS 15+) that runs Windows games thr
 bottles, prefixes or Wine. The design and milestones are in `docs/ARCHITECTURE.md` (Russian); read it before
 changing behaviour. The user speaks Russian: answer in Russian, but code, comments and commit messages are English.
 
+## Release notes: every change goes into one
+
+Every push to `main` becomes a release, described by `release-notes/v<version>.md` (`scripts/next-version.sh` prints
+the next version); the release job refuses a push without one. Keep it current as you work:
+
+- Every change players can notice adds to the notes of the release it will ship in, in the same commit: a bold
+  first sentence saying what is different now, then why and what it means, as detailed as
+  MagicKettle-Runtime's releases. Say what to watch for. A push with only internal changes still says so.
+- The release in progress is the notes file that has not been pushed yet. While commits stay local, keep adding to
+  it. Once pushed, its release is spoken for: never edit it for later changes; write the next version's file.
+- Before pushing, tell the user what the release will say.
+
 ## Commands
 
 ```bash

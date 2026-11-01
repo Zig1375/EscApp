@@ -26,7 +26,8 @@ jobs:
         run: scripts/check-translations.py .build/xcode
 
   # Every push to main that passes becomes a release: tag vX.Y.N and MagicKettle-X.Y.N.zip (ad-hoc signed, not
-  # notarized). One at a time, so two quick pushes never take the same build number.
+  # notarized). One at a time, so two quick pushes never take the same build number. The release's description is
+  # release-notes/vX.Y.N.md, committed with the change; a push without one is refused before building.
   release:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -48,6 +49,8 @@ jobs:
           read -r version build <<< "$(scripts/next-version.sh)"
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "build=$build" >> "$GITHUB_OUTPUT"
+          [ -f "release-notes/v$version.md" ] \
+            || { echo "::error::Add release-notes/v$version.md (what changed in this release) and commit it first."; exit 1; }
       - name: Build the app
         run: |
           xcodegen generate
@@ -62,15 +65,26 @@ jobs:
           /usr/libexec/PlistBuddy -c 'Print CFBundleIconName' "$app/Contents/Info.plist"
           test -s "$app/Contents/Resources/AppIcon.icns"
           ditto -c -k --keepParent "$app" "MagicKettle-${{ steps.version.outputs.version }}.zip"
+      - name: Release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=${{ steps.version.outputs.version }}
+          scripts/release-notes.sh "$version" "MagicKettle-$version.zip" "$GITHUB_SHA" > "$RUNNER_TEMP/notes.md"
+          # Sparkle's update window shows the notes as HTML. "markdown" mode: "gfm" breaks lines at every newline.
+          gh api markdown -f mode=markdown -F "text=@release-notes/v$version.md" \
+            > "$RUNNER_TEMP/notes.html"
       - name: Sign the update
         env:
           SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
           scripts/appcast.sh "MagicKettle-${{ steps.version.outputs.version }}.zip" \
-            "${{ steps.version.outputs.version }}" "${{ steps.version.outputs.build }}" > appcast.xml
+            "${{ steps.version.outputs.version }}" "${{ steps.version.outputs.build }}" "$RUNNER_TEMP/notes.html" \
+            > appcast.xml
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "v${{ steps.version.outputs.version }}" "MagicKettle-${{ steps.version.outputs.version }}.zip" \
-            appcast.xml --target "$GITHUB_SHA" --title "Magic Kettle ${{ steps.version.outputs.version }}" --generate-notes
+            appcast.xml --target "$GITHUB_SHA" --title "Magic Kettle ${{ steps.version.outputs.version }}" \
+            --notes-file "$RUNNER_TEMP/notes.md"

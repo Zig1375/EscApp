@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
       - name: Tools
@@ -30,7 +30,7 @@ jobs:
   release:
     needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: macos-15
+    runs-on: macos-26
     permissions:
       contents: write
     concurrency:
@@ -58,6 +58,9 @@ jobs:
           app=".build/xcode/Build/Products/Release/Magic Kettle.app"
           test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$app/Contents/Info.plist")" \
             = "${{ steps.version.outputs.version }}"
+          # Xcode before 26 doesn't know Icon Composer's AppIcon.icon: it copies it in and the app shows a blank icon.
+          /usr/libexec/PlistBuddy -c 'Print CFBundleIconName' "$app/Contents/Info.plist"
+          test -s "$app/Contents/Resources/AppIcon.icns"
           ditto -c -k --keepParent "$app" "MagicKettle-${{ steps.version.outputs.version }}.zip"
       - name: Publish
         env:

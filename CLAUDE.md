@@ -10,15 +10,18 @@ changing behaviour. The user speaks Russian: answer in Russian, but code, commen
 
 ## Release notes: every change goes into one
 
-Every push to `main` becomes a release, described by `release-notes/v<version>.md` (`scripts/next-version.sh` prints
-the next version); the release job refuses a push without one. Keep it current as you work:
+Only a pushed tag `vX.Y.N` makes a release (`ci.yml`); pushes to `main` release nothing, so README and other
+pushes don't need a release. A release is described by `release-notes/v<version>.md` (`scripts/next-version.sh`
+prints the next version); the release job refuses a tag without one. Release only when the user asks. Keep the
+notes current as you work:
 
 - Every change players can notice adds to the notes of the release it will ship in, in the same commit: a bold
   first sentence saying what is different now, then why and what it means, as detailed as
-  MagicKettle-Runtime's releases. Say what to watch for. A push with only internal changes still says so.
-- The release in progress is the notes file that has not been pushed yet. While commits stay local, keep adding to
-  it. Once pushed, its release is spoken for: never edit it for later changes; write the next version's file.
-- Before pushing, tell the user what the release will say.
+  MagicKettle-Runtime's releases. Say what to watch for. Changes players can't notice (README, CI, docs) need none.
+- The release in progress is the notes file of the version not tagged yet; it may already be on `main`. Keep adding
+  to it. Once its tag is pushed, it is spoken for: never edit it for later changes; write the next version's file.
+- Releasing: commit the notes, then `git tag v<version>` on that commit and `git push origin v<version>`. Before
+  pushing the tag, tell the user what the release will say.
 
 ## Commands
 
@@ -79,7 +82,7 @@ xcodebuild -project MagicKettle.xcodeproj -scheme MagicKettle -destination 'plat
   workflow by hand in `../MagicKettle-Runtime`, then replace the `wine-11.20-magickettle-<n>` runtime here with the release's
   `magickettle-wine-*.component.json` (version, url, sha256, size) and carry the `features` list (`osync`, `d3dmetal`)
   over by hand — the workflow's json has none. Check the published archive against the manifest by downloading it
-  and its sha256. Every push to `main` that passes CI becomes a release (`ci.yml`), a documentation-only one too.
+  and its sha256. The app picks the new runtime up in its next release (a pushed `v*` tag).
 - DirectX 12: `D3DMetal` takes Apple's D3DMetal from the player's own download of Apple's "Evaluation environment for
   Windows games" (checked by Apple's signature, copied unchanged to `MagicKettle/D3DMetal`); Magic Kettle never ships or
   downloads it, and nothing of Apple's goes into the repository. The `d3dmetal` backend needs a Wine with the

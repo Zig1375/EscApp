@@ -71,6 +71,16 @@ xcodegen generate          # creates MagicKettle.xcodeproj from project.yml
 open MagicKettle.xcodeproj
 ```
 
+## Support the project
+
+Magic Kettle is free. If it runs a game you love, you can say thanks in crypto. Send each coin only over the network
+named next to it.
+
+- **BTC** (Bitcoin): `bc1qhz50yan4knlkdfy4dm4amu0p052k5rc9fz7xqr`
+- **USDT** (TRC-20, Tron): `TQ3Sh1qZA2RCargeKuE5NwcVHVpNSn2Skj`
+- **ETH** (Ethereum, Arbitrum One, Base): `0xc481b1f2cE5B8F56C7EFc9dF9F320E68b71DeCC4`
+- **GRAM** (TON): `UQB8NW4c48kR0L1oTvseprwP2NHIJpEPAHPkgp8yRaIfU69n`
+
 ## License
 
 Apache-2.0. Wine, DXVK, DXMT and Wine Mono are downloaded separately under their own licenses. D3DMetal is Apple's

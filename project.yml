@@ -9,8 +9,8 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     # The app is MAGICKETTLE_VERSION.MAGICKETTLE_BUILD. Only the first two parts live here; the release job in
-    # .github/workflows/ci.yml numbers builds 1, 2, 3… across all versions (scripts/next-version.sh) and passes
-    # MAGICKETTLE_BUILD. A local build is build 0. Keep MagicKettleCommand.version the same (a test checks it).
+    # .github/workflows/ci.yml takes the build number from the release tag's last part (vX.Y.N, numbered 1, 2, 3…
+    # across all versions: scripts/next-version.sh) and passes MAGICKETTLE_BUILD. A local build is build 0. Keep MagicKettleCommand.version the same (a test checks it).
     MAGICKETTLE_VERSION: "1.0"
     MAGICKETTLE_BUILD: "0"
     MARKETING_VERSION: "$(MAGICKETTLE_VERSION).$(MAGICKETTLE_BUILD)"

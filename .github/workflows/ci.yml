@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*.*.*']
   pull_request:
 
 jobs:
@@ -25,12 +26,12 @@ jobs:
       - name: Every UI string is translated into every language
         run: scripts/check-translations.py .build/xcode
 
-  # Every push to main that passes becomes a release: tag vX.Y.N and MagicKettle-X.Y.N.zip (ad-hoc signed, not
-  # notarized). One at a time, so two quick pushes never take the same build number. The release's description is
-  # release-notes/vX.Y.N.md, committed with the change; a push without one is refused before building.
+  # Pushing a tag vX.Y.N (scripts/next-version.sh prints the next one) makes a release: MagicKettle-X.Y.N.zip
+  # (ad-hoc signed, not notarized), build number N. Pushes to main without a tag release nothing. The release's
+  # description is release-notes/vX.Y.N.md in the tagged commit; a tag without one is refused before building.
   release:
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: macos-26
     permissions:
       contents: write
@@ -46,9 +47,12 @@ jobs:
       - name: Version
         id: version
         run: |
-          read -r version build <<< "$(scripts/next-version.sh)"
+          version=${GITHUB_REF_NAME#v}
+          base=$(sed -n 's/^ *MAGICKETTLE_VERSION: *"\([0-9]*\.[0-9]*\)".*/\1/p' project.yml)
+          [[ "$version" =~ ^${base//./\\.}\.([0-9]+)$ ]] \
+            || { echo "::error::Tag $GITHUB_REF_NAME doesn't match MAGICKETTLE_VERSION $base in project.yml."; exit 1; }
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "build=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
           [ -f "release-notes/v$version.md" ] \
             || { echo "::error::Add release-notes/v$version.md (what changed in this release) and commit it first."; exit 1; }
       - name: Build the app
@@ -86,5 +90,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "v${{ steps.version.outputs.version }}" "MagicKettle-${{ steps.version.outputs.version }}.zip" \
-            appcast.xml --target "$GITHUB_SHA" --title "Magic Kettle ${{ steps.version.outputs.version }}" \
+            appcast.xml --verify-tag --title "Magic Kettle ${{ steps.version.outputs.version }}" \
             --notes-file "$RUNNER_TEMP/notes.md"
